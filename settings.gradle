@@ -1,0 +1,8 @@
+rootProject.name = "TuyaSmartBizbundle"
+include ':app'
+
+include ':panel'
+include ':share'
+include ':miniapp'
+include ':ai_voice'
+include ':activator'

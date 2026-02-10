@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ai_voice_background">#F5F6F8</color>
+    <color name="ai_voice_card_blue">#3F6BFF</color>
+    <color name="ai_voice_card_green">#3EC176</color>
+    <color name="ai_voice_action_bg">#FFFFFF</color>
+    <color name="ai_voice_text_primary">#1E1E1E</color>
+    <color name="ai_voice_text_secondary">#9AA0A6</color>
+    <color name="ai_voice_text_on_card">#FFFFFF</color>
+    <color name="ai_voice_tab_selected">#2F7BF6</color>
+    <color name="ai_voice_tab_unselected">#9AA0A6</color>
+    <color name="ai_voice_logout_text">#E45B5B</color>
+    <color name="ai_voice_icon_tint">#2F7BF6</color>
+</resources>

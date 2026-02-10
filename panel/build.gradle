@@ -1,0 +1,76 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdk 33
+
+    defaultConfig {
+        minSdkVersion 23
+        targetSdkVersion 33
+        versionCode 1
+        versionName "1.0"
+        namespace "com.tuya.smart.bizubundle.panel.demo"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+
+    //必须依赖---start
+    //homesdk 基础能力
+    api "com.thingclips.smart:thingsmart:${sdk_version}"
+
+    api enforcedPlatform("com.thingclips.smart:thingsmart-BizBundlesBom:${biz_bom_version}")
+
+    //设备控制业务包 RN容器
+    api "com.thingclips.smart:thingsmart-bizbundle-panel"
+    //基础扩展能力
+    api("com.thingclips.smart:thingsmart-bizbundle-basekit") {
+        exclude group: "com.thingclips.smart", module: "thingplugin-annotation"
+    }
+    //涂鸦业务扩展能力
+    api "com.thingclips.smart:thingsmart-bizbundle-bizkit"
+    //设备控制相关能力
+    api "com.thingclips.smart:thingsmart-bizbundle-devicekit"
+
+    //强烈建议引入---start
+    //家庭相关依赖
+    api "com.thingclips.smart:thingsmart-bizbundle-family"
+    //地園扩展能力
+    api "com.thingclips.smart:thingsmart-bizbundle-mapkit"
+    //多媒体扩展能力
+    api "com.thingclips.smart:thingsmart-bizbundle-mediakit"
+
+    api "com.thingclips.smart:thingsmart-ipcsdk:${ipc_sdk_version}"
+    //按需依赖---start
+    //IPC 面板相关依赖项
+    api "com.thingclips.smart:thingsmart-bizbundle-camera_panel"
+
+    // 高德地图
+    implementation 'com.amap.api:search:7.9.0'
+    implementation 'com.amap.api:3dmap:8.1.0'
+    api 'com.thingclips.smart:thingsmart-react-native-amap:4.5.0-rc.1'
+    // 谷歌地图
+    api 'com.thingclips.smart:thingsmart-react-native-googlemap:4.5.0-rc.1'
+    api 'com.google.android.gms:play-services-maps:18.0.0'
+
+    // qq music (speaker products)
+    // qq 音乐 （音箱产品）
+//    api project(':qqmusic')
+    api("com.tencent.yunxiaowei.dmsdk:core:2.3.0") {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
+    api("com.tencent.yunxiaowei.webviewsdk:webviewsdk:2.3.0") {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
+}

@@ -1,24 +1,24 @@
 
-## Project Introduction
+## 项目介绍
 
-The **AI Voice UI BizBundle** is designed to upgrade standard audio products—such as Bluetooth headphones, smart glasses, and speakers—into AI-powered devices. It provides access to AI recording and translation features, utilizing professional recording algorithms combined with advanced language models. It supports real-time, accurate transcription and translation across more than 100 languages worldwide.
+AI 音频 UI 业务包是针对普通蓝牙耳机、眼镜、音箱等音频类产品直接升级为 AI 产品，即可使用 AI 记录和翻译功能，专业录音算法配合先进的语言模型，覆盖全球 100+ 种语言的实时精准转写和实时翻译。
 
-Before integrating this BizBundle, please complete the [Preparation](https://developer.tuya.com/en/docs/app-development/preparation?id=Ka8qhzjybzmko) and [Quick Integration](https://developer.tuya.com/en/docs/app-development/integrated?id=Ka69nt96cw0uj) steps.
+在接入该业务包之前请先完成 [准备工作](https://developer.tuya.com/cn/docs/app-development/preparation?id=Ka8qhzjybzmko) 和 [快速集成](https://developer.tuya.com/cn/docs/app-development/integrated?id=Ka69nt96cw0uj)。
 
-AI Voice BizBundle Demo Link: [https://github.com/tuya/tuya-aivoice-android-sdk-sample.git](https://github.com/tuya/tuya-aivoice-android-sdk-sample.git).
+AI 音频业务包：[https://github.com/tuya/tuya-aivoice-android-sdk-sample.git](https://github.com/tuya/tuya-aivoice-android-sdk-sample.git).
 
 ---
 
-## Brief Summary of Considerations
+## 注意事项
 
-### 1. Preparation
+### 1. 准备工作
 
-- **Description**: Ensure that you have applied for the AppKey, AppSecretKey, AppID, signing components, etc., on the Tuya IoT Platform and integrated them into your project.
-- **Documentation**: [Preparation for Integrating App SDK](https://developer.tuya.com/en/docs/app-development/integrated?id=Ka69nt96cw0uj)
+- **说明**: 请确保在Tuya IOT平台申请了AppKey、AppSecretKey、AppID、签名组件等，并集成到项目中。
+- **文档**：[集成APP SDK准备工作](https://developer.tuya.com/cn/docs/app-development/integrated?id=Ka69nt96cw0uj)
 
-### Add Maven Repositories
-Add the following content to the `build.gradle` file in the root directory of your project:
 
+### 添加maven仓库
+在项目的根目录下的build.gradle文件中，添加以下内容
 ```groovy
 buildscript {
     
@@ -74,11 +74,11 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
 ```
 
-### Add Component Dependencies
-Add the following component dependencies to the `build.gradle` file of the module where the BizBundle is being integrated:
-
+### 添加组件依赖
+在集成业务包的module工程下的build.gradle文件中添加以下组件依赖
 ```groovy
 api enforcedPlatform("com.thingclips.smart:thingsmart-BizBundlesBom:${biz_bom_version}")
 
@@ -101,3 +101,4 @@ api "com.thingclips.smart:thingsmart:${sdk_version}"
 api "com.thingclips.smart:thingsmart-ipcsdk:${ipc_sdk_version}"
 
 ```
+

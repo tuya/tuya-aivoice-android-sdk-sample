@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/thing_theme_open_color_background"
+    tools:context=".MainActivity">
+
+    <FrameLayout
+        android:id="@+id/toolbar_main"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/current_family_name"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:drawableRight="@drawable/ic_arrow_drop_down_black_24dp"
+            android:gravity="center"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="family"
+            android:textColor="@color/thing_theme_open_color_head_line_text"
+            android:textSize="24dp" />
+
+        <TextView
+            android:id="@+id/logout"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="right"
+            android:gravity="center"
+            android:paddingRight="16dp"
+            android:text="Logout"
+            android:textColor="@color/thing_theme_open_color_head_line_text"
+            android:textSize="16sp" />
+    </FrameLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_main">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/theme_switch"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="主题色切换(Switch Theme)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/panel"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="设备控制业务包(Device Control)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+
+            <TextView
+                android:id="@+id/mall"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="商城业务包(Mall)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/scene"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="场景业务包(Scene)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/ipc"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="ipc 业务包(IPC)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/aibuds"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="耳机小程序(Earphone)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/cloud_storage"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="云存储购买业务包(Cloud Stroage)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/activator"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="配网业务包(Device Access Config)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/message"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="消息中心(Message Center)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/feedback"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="常见问题与反馈(FAQ)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+            <TextView
+                android:id="@+id/ota"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="OTA(Firmware Upgrade)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+            <TextView
+                android:id="@+id/family"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="家庭管理(House Management)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/device_detail"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="Device Detail 业务包(Device Detail)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/control"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="多控关联业务包(Multi Control)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/location"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="地图定位(Location)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+            <TextView
+                android:id="@+id/groupmanager"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="群组(Group)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/alexa_google_bind"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="alexa &amp; google bind"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/light_scene"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="灯光场景(Light Scene)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/share"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="分享(Share)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/speech"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="speech sdk"
+                android:visibility="gone"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/miniapp"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="小程序SDK(MiniApp SDK)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/third_service"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="高级功能(Advanced Features)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+            <TextView
+                android:id="@+id/market_push"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginBottom="50dp"
+                android:gravity="center"
+                android:text="营销推送(Marketing Push)"
+                android:textColor="@color/thing_theme_open_color_head_line_text" />
+
+        </LinearLayout>
+
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

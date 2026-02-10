@@ -1,0 +1,66 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdk 33
+
+    defaultConfig {
+        minSdkVersion 23
+        targetSdkVersion 33
+        namespace "com.thingclips.smart.bizbundle.miniapp.demo"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.6.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'com.google.android.material:material:1.1.0'
+    api enforcedPlatform("com.thingclips.smart:thingsmart-BizBundlesBom:${biz_bom_version}")
+    // 小程序业务包
+    implementation "com.thingclips.smart:thingsmart-bizbundle-miniapp"
+    // 扩展能力组件集合, 提供小程序扩展能力, 按需依赖声明
+    // 基础扩展能力, 对标微信大部分API
+    implementation ("com.thingclips.smart:thingsmart-bizbundle-basekit"){
+        exclude group:"com.thingclips.smart",module:"thingplugin-annotation"
+    }
+    // 扫码实现flavor区分
+//    chinaImplementation 'com.thingclips.smart:thingsmart-qrcode-scankit:4.8.0-rc.2'
+//    internationalImplementation 'com.thingclips.smart:thingsmart-qrcode-mlkit:4.8.0-rc.1'
+
+    // 家庭业务扩展能力
+    implementation "com.thingclips.smart:thingsmart-bizbundle-homekit"
+    // 涂鸦业务扩展能力
+    implementation "com.thingclips.smart:thingsmart-bizbundle-bizkit"
+//    chinaImplementation 'com.thingclips.smart:thingsmart-amaplocation:4.5.0-rc.1'
+//    internationalImplementation 'com.thingclips.smart:thingsmart-googlelocation:4.5.0-rc.1'
+//
+//    // 地图扩展能力
+//    implementation "com.thingclips.smart:thingsmart-bizbundle-mapkit"
+//    // 地图实现能力, flavor区分
+//    chinaImplementation 'com.thingclips.smart:thingsmart-amap:4.7.0-rc.1'
+//    chinaImplementation 'com.thingclips.smart:thingsmart-amaplocation:4.5.0-rc.1'
+//    internationalImplementation 'com.thingclips.smart:thingsmart-googlemap:4.7.0-rc.1'
+//    internationalImplementation 'com.thingclips.smart:thingsmart-googlelocation:4.5.0-rc.1'
+//
+//    // 多媒体扩展能力
+//    implementation "com.thingclips.smart:thingsmart-bizbundle-mediakit"
+}

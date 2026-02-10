@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_voice_home_title">首页</string>
+    <string name="ai_voice_mine_title">我的</string>
+    <string name="ai_voice_add">新增</string>
+    <string name="ai_voice_note_title">AI笔记</string>
+    <string name="ai_voice_note_subtitle">智能笔记助手</string>
+    <string name="ai_voice_translate_title">AI翻译</string>
+    <string name="ai_voice_translate_subtitle">多语言翻译工具</string>
+    <string name="ai_voice_action_record">录音</string>
+    <string name="ai_voice_action_simultaneous">同声传译</string>
+    <string name="ai_voice_action_transcribe">实时转写</string>
+    <string name="ai_voice_action_dialog">对话翻译</string>
+    <string name="ai_voice_device_title">我的设备</string>
+    <string name="ai_voice_device_entry">AI Buds Entry</string>
+    <string name="ai_voice_logout">退出登录</string>
+    <string name="ai_voice_user_name">用户</string>
+    <string name="ai_voice_user_phone">86-15005961707</string>
+    <string name="ai_voice_user_region">中国</string>
+    <string name="ai_voice_note_icon">AI笔记图标</string>
+    <string name="ai_voice_translate_icon">AI翻译图标</string>
+    <string name="ai_voice_device_icon">设备图标</string>
+    <string name="ai_voice_chevron">更多</string>
+    <string name="ai_voice_user_icon">用户头像</string>
+</resources>
