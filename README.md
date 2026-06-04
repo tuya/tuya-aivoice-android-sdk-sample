@@ -23,11 +23,11 @@ Add the following content to the `build.gradle` file in the root directory of yo
 buildscript {
     
     ext {
-        kotlin_version = '1.8.20'
-        hilt_version = '2.50'
-        sdk_version = '7.0.0-beta.2'
-        ipc_sdk_version = '6.11.1'
-        biz_bom_version = "6.11.1-feature-bizbundle-6.11.0.21"
+        kotlin_version = '2.1.0'
+        hilt_version = '2.58'
+        sdk_version = '7.5.6'
+        ipc_sdk_version = '7.5.2'
+        biz_bom_version = "7.5.0-aibuds-7.5.0.1"
         applicationId = "com.sample.sdk"
     }
     repositories {
