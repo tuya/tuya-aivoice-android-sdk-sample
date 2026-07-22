@@ -6,5 +6,11 @@
         <activity
             android:name=".ui.AiVoiceHomeActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.NativeRecordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.NativeRecordListActivity"
+            android:exported="false" />
     </application>
 </manifest>

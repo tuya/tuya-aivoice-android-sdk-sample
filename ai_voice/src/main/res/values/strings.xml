@@ -22,4 +22,91 @@
     <string name="ai_voice_device_icon">设备图标</string>
     <string name="ai_voice_chevron">更多</string>
     <string name="ai_voice_user_icon">用户头像</string>
+
+    <!-- Native 录音 -->
+    <string name="native_card_title">Native 能力</string>
+    <string name="native_card_subtitle">ThingAudioDetectManagerNative</string>
+    <string name="native_record_entry">Native 录音</string>
+    <string name="native_list_entry">录音列表</string>
+    <string name="native_record_title">Native 录音</string>
+    <string name="native_record_list_title">录音文件列表</string>
+    <string name="native_back">返回</string>
+    <string name="native_device_id">设备 ID（手机录音传 PHONE）</string>
+    <string name="native_template">场景模板</string>
+    <string name="native_tpl_meeting">会议</string>
+    <string name="native_tpl_phone">电话</string>
+    <string name="native_tpl_face">面对面</string>
+    <string name="native_tpl_s2t">同声传译</string>
+    <string name="native_opt_asr">实时转写</string>
+    <string name="native_opt_amplitude">振幅回调</string>
+    <string name="native_opt_translate">翻译</string>
+    <string name="native_source_lang">源语言</string>
+    <string name="native_target_lang">目标语言</string>
+    <string name="native_status">状态</string>
+    <string name="native_duration">时长</string>
+    <string name="native_start">开始</string>
+    <string name="native_pause">暂停</string>
+    <string name="native_resume">恢复</string>
+    <string name="native_stop">停止</string>
+    <string name="native_switch_channel">切换通道</string>
+    <string name="native_realtime">实时转写</string>
+    <string name="native_log">日志</string>
+    <string name="native_status_0">待开始</string>
+    <string name="native_status_1">录音中</string>
+    <string name="native_status_2">暂停</string>
+    <string name="native_status_3">结束</string>
+    <string name="native_status_unknown">未知</string>
+    <string name="native_channel_format">通道：%1$s</string>
+    <string name="native_record_type_format">类型：%1$s</string>
+    <string name="native_record_type_0">电话</string>
+    <string name="native_record_type_1">会议</string>
+    <string name="native_record_type_2">面对面</string>
+    <string name="native_record_type_3">面对面</string>
+    <string name="native_record_type_4">文本翻译</string>
+    <string name="native_record_type_5">音频导入</string>
+    <string name="native_transfer_0">未转写</string>
+    <string name="native_transfer_1">转写中</string>
+    <string name="native_transfer_2">已转写</string>
+    <string name="native_transfer_3">转写失败</string>
+    <string name="native_summary_1">未总结</string>
+    <string name="native_summary_2">总结中</string>
+    <string name="native_summary_3">已总结</string>
+    <string name="native_summary_4">总结失败</string>
+    <string name="native_list_empty">暂无录音文件</string>
+    <string name="native_list_loading">加载中…</string>
+    <string name="native_list_load_more">上拉加载更多</string>
+    <string name="native_list_no_more">没有更多了</string>
+    <string name="native_list_load_fail">加载失败，下拉重试</string>
+    <string name="native_source_0">app</string>
+    <string name="native_source_1">设备</string>
+    <string name="native_duration_format">%1$s / %2$s</string>
+
+    <!-- Native 录音：运行时文案 -->
+    <string name="native_log_lang">语言 src=%1$s tgt=%2$s</string>
+    <string name="native_log_audio_source_switch">音源切换 type=%1$d source=%2$d</string>
+    <string name="native_log_record_finish">录音结束 onRecordFinish</string>
+    <string name="native_log_record_error_finish">录音异常 code=%1$d %2$s</string>
+    <string name="native_log_record_task_exception">recordTransferTask 异常: %1$s</string>
+    <string name="native_log_get_home_devices_exception">getHomeDevices 异常: %1$s</string>
+    <string name="native_log_select_device">选择设备 %1$s devId=%2$s</string>
+    <string name="native_log_update_params_success">updateParams onSuccess（参数生效以 onRecordStatusUpdate 为准）</string>
+    <string name="native_log_start_fail">开始失败: %1$s</string>
+    <string name="native_record_error_toast">录音异常: %1$s</string>
+    <string name="native_toast_select_device">请选择设备</string>
+    <string name="native_toast_already_recording">已在录音中</string>
+    <string name="native_toast_param_incomplete">参数不完整：recordMode / audioSourceList 必填</string>
+    <string name="native_toast_need_source_lang">开启转写/翻译时必须选择源语言</string>
+    <string name="native_toast_need_target_lang">开启翻译时必须选择目标语言</string>
+    <string name="native_channel_bt">BT(耳机)</string>
+    <string name="native_channel_micro">Micro(手机麦)</string>
+    <string name="native_channel_unspecified">未指定</string>
+    <string name="native_device_phone">PHONE（手机）</string>
+    <string name="native_mode_meeting">会议录音</string>
+    <string name="native_category_pro_earphone">Pro 耳机</string>
+    <string name="native_category_card">录音卡片</string>
+    <string name="native_category_entry_earphone">入门耳机</string>
+    <string name="native_category_os_buds">OS 耳机</string>
+    <string name="native_summary_format">设备：%1$s  |  模式：%2$s\n源语言：%3$s  →  目标语言：%4$s</string>
+    <string name="native_device_name_with_category">%1$s（%2$s）</string>
+    <string name="native_unnamed">未命名</string>
 </resources>

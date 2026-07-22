@@ -21,13 +21,13 @@ Add the following content to the `build.gradle` file in the root directory of yo
 
 ```groovy
 buildscript {
-    
+
     ext {
         kotlin_version = '2.1.0'
         hilt_version = '2.58'
-        sdk_version = '7.5.6'
-        ipc_sdk_version = '7.5.2'
-        biz_bom_version = "7.5.0-aibuds-7.5.0.1"
+        sdk_version = '7.8.0'
+        ipc_sdk_version = '7.8.1'
+        biz_bom_version = "7.8.15"
         applicationId = "com.sample.sdk"
     }
     repositories {
@@ -44,7 +44,6 @@ buildscript {
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
     }
 }
-
 
 allprojects {
 
@@ -66,7 +65,10 @@ allprojects {
         resolutionStrategy.force 'com.squareup.okhttp3:okhttp-java-net-cookiejar:5.0.0-alpha.11'
         resolutionStrategy.force 'com.squareup.okhttp3:okhttp-urlconnection:5.0.0-alpha.11'
         resolutionStrategy.force 'com.squareup.okio:okio-jvm:3.2.0'
-        resolutionStrategy.force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.20'
+        resolutionStrategy.force "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+        resolutionStrategy.force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+        resolutionStrategy.force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+        resolutionStrategy.force "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
         exclude group: "com.umeng.umsdk", module: 'huawei-basetb'
     }
 }
@@ -74,6 +76,7 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
 ```
 
 ### Add Component Dependencies

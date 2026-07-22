@@ -16,14 +16,14 @@ android {
         Properties properties = new Properties()
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
         manifestPlaceholders = [
-                TUYA_SMART_APPKEY           : "${properties.getProperty("appKey")}",
-                TUYA_SMART_SECRET           : "${properties.getProperty("appSecret")}",
-                APP_SCHEME_NAME             : "${properties.getProperty("app_scheme")}",
-                INTERNAL_HOST               : "${properties.getProperty("app_scheme")}".concat('.app.tuya.com'),
-                ALEXA_AUTH_INTERNAL_HOST    : "${properties.getProperty("app_scheme")}".concat('.applink.smart321.com'),
-                ALEXA_AUTH_INTERNAL_HOST_NEW: "${properties.getProperty("app_scheme")}".toLowerCase(Locale.ENGLISH).concat('.applink.smart321.com'),
-                ALEXA_AUTH_INTERNAL_HOST_NEWER:"${properties.getProperty("app_scheme")}".toLowerCase(Locale.ENGLISH).concat('.applink.smart321.com'),
-                PACKAGE_NAME                : applicationId
+                TUYA_SMART_APPKEY             : "${properties.getProperty("appKey")}",
+                TUYA_SMART_SECRET             : "${properties.getProperty("appSecret")}",
+                APP_SCHEME_NAME               : "${properties.getProperty("app_scheme")}",
+                INTERNAL_HOST                 : "${properties.getProperty("app_scheme")}".concat('.app.tuya.com'),
+                ALEXA_AUTH_INTERNAL_HOST      : "${properties.getProperty("app_scheme")}".concat('.applink.smart321.com'),
+                ALEXA_AUTH_INTERNAL_HOST_NEW  : "${properties.getProperty("app_scheme")}".toLowerCase(Locale.ENGLISH).concat('.applink.smart321.com'),
+                ALEXA_AUTH_INTERNAL_HOST_NEWER: "${properties.getProperty("app_scheme")}".toLowerCase(Locale.ENGLISH).concat('.applink.smart321.com'),
+                PACKAGE_NAME                  : applicationId
         ]
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a"
@@ -32,7 +32,7 @@ android {
     }
 
     packagingOptions {
-        jniLibs.useLegacyPackaging=true
+        jniLibs.useLegacyPackaging = true
         exclude "AndroidManifest.xml"
         exclude "**/module-info.class"
         exclude 'META-INF/LICENSE.txt'
@@ -79,12 +79,13 @@ android {
 
 
 dependencies {
-    implementation fileTree(dir: "libs", include: ["*.jar","*.aar"])
+    implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
 
     implementation project(path: ':panel')
     implementation project(path: ':share')
     implementation project(":miniapp")
     implementation project(path: ':ai_voice')
+    implementation project(path: ':activator')
 
     implementation "com.thingclips.smart:thingsmart-theme-open:2.0.7"
     implementation "com.thingclips.smart:thingsmart-commonbiz-relation-api:4.5.0-rc.1"
@@ -137,7 +138,7 @@ thingOpenTheme {
     }
     // 深⾊模式配置
     blackTheme {
-        color{
+        color {
             // 背景⾊
             backgroundColor "#000000"
             // 主题⾊
@@ -153,7 +154,7 @@ thingOpenTheme {
             // 导航栏背景⾊配置
             navigationBarColor "#1A1A1A"
         }
-        colorAlpha{
+        colorAlpha {
             // 弹窗蒙层透明度
             alertMaskAlpha 0.8
         }

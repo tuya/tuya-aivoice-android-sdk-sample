@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_voice_home_title">Home</string>
+    <string name="ai_voice_mine_title">Mine</string>
+    <string name="ai_voice_add">Add</string>
+    <string name="ai_voice_note_title">AI Notes</string>
+    <string name="ai_voice_note_subtitle">Smart note assistant</string>
+    <string name="ai_voice_translate_title">AI Translate</string>
+    <string name="ai_voice_translate_subtitle">Multi-language translator</string>
+    <string name="ai_voice_action_record">Record</string>
+    <string name="ai_voice_action_simultaneous">Simultaneous</string>
+    <string name="ai_voice_action_transcribe">Transcribe</string>
+    <string name="ai_voice_action_dialog">Dialogue</string>
+    <string name="ai_voice_device_title">My Devices</string>
+    <string name="ai_voice_device_entry">AI Buds Entry</string>
+    <string name="ai_voice_logout">Log Out</string>
+    <string name="ai_voice_user_name">User</string>
+    <string name="ai_voice_user_phone">86-15005961707</string>
+    <string name="ai_voice_user_region">China</string>
+    <string name="ai_voice_note_icon">AI Notes icon</string>
+    <string name="ai_voice_translate_icon">AI Translate icon</string>
+    <string name="ai_voice_device_icon">Device icon</string>
+    <string name="ai_voice_chevron">More</string>
+    <string name="ai_voice_user_icon">User avatar</string>
+
+    <!-- Native Record -->
+    <string name="native_card_title">Native Capability</string>
+    <string name="native_card_subtitle">ThingAudioDetectManagerNative</string>
+    <string name="native_record_entry">Native Record</string>
+    <string name="native_list_entry">Record List</string>
+    <string name="native_record_title">Native Record</string>
+    <string name="native_record_list_title">Record Files</string>
+    <string name="native_back">Back</string>
+    <string name="native_device_id">Device ID (use PHONE for phone recording)</string>
+    <string name="native_template">Template</string>
+    <string name="native_tpl_meeting">Meeting</string>
+    <string name="native_tpl_phone">Phone</string>
+    <string name="native_tpl_face">Face to Face</string>
+    <string name="native_tpl_s2t">Simultaneous</string>
+    <string name="native_opt_asr">Real-time ASR</string>
+    <string name="native_opt_amplitude">Amplitude</string>
+    <string name="native_opt_translate">Translate</string>
+    <string name="native_source_lang">Source Lang</string>
+    <string name="native_target_lang">Target Lang</string>
+    <string name="native_status">Status</string>
+    <string name="native_duration">Duration</string>
+    <string name="native_start">Start</string>
+    <string name="native_pause">Pause</string>
+    <string name="native_resume">Resume</string>
+    <string name="native_stop">Stop</string>
+    <string name="native_switch_channel">Switch Channel</string>
+    <string name="native_realtime">Real-time Transcription</string>
+    <string name="native_log">Log</string>
+    <string name="native_status_0">Idle</string>
+    <string name="native_status_1">Recording</string>
+    <string name="native_status_2">Paused</string>
+    <string name="native_status_3">Stopped</string>
+    <string name="native_status_unknown">Unknown</string>
+    <string name="native_channel_format">Channel: %1$s</string>
+    <string name="native_record_type_format">Type: %1$s</string>
+    <string name="native_record_type_0">Phone</string>
+    <string name="native_record_type_1">Meeting</string>
+    <string name="native_record_type_2">Face to Face</string>
+    <string name="native_record_type_3">Face to Face</string>
+    <string name="native_record_type_4">Text Translate</string>
+    <string name="native_record_type_5">Audio Import</string>
+    <string name="native_transfer_0">Not transcribed</string>
+    <string name="native_transfer_1">Transcribing</string>
+    <string name="native_transfer_2">Transcribed</string>
+    <string name="native_transfer_3">Transcribe failed</string>
+    <string name="native_summary_1">No summary</string>
+    <string name="native_summary_2">Summarizing</string>
+    <string name="native_summary_3">Summarized</string>
+    <string name="native_summary_4">Summary failed</string>
+    <string name="native_list_empty">No recordings</string>
+    <string name="native_list_loading">Loading…</string>
+    <string name="native_list_load_more">Pull up to load more</string>
+    <string name="native_list_no_more">No more</string>
+    <string name="native_list_load_fail">Load failed, pull down to retry</string>
+    <string name="native_source_0">App</string>
+    <string name="native_source_1">Device</string>
+    <string name="native_duration_format">%1$s / %2$s</string>
+
+    <!-- Native Record: runtime messages -->
+    <string name="native_log_lang">Lang src=%1$s tgt=%2$s</string>
+    <string name="native_log_audio_source_switch">Audio source switch type=%1$d source=%2$d</string>
+    <string name="native_log_record_finish">Record finished onRecordFinish</string>
+    <string name="native_log_record_error_finish">Record error code=%1$d %2$s</string>
+    <string name="native_log_record_task_exception">recordTransferTask error: %1$s</string>
+    <string name="native_log_get_home_devices_exception">getHomeDevices error: %1$s</string>
+    <string name="native_log_select_device">Select device %1$s devId=%2$s</string>
+    <string name="native_log_update_params_success">updateParams onSuccess (takes effect per onRecordStatusUpdate)</string>
+    <string name="native_log_start_fail">Start failed: %1$s</string>
+    <string name="native_record_error_toast">Record error: %1$s</string>
+    <string name="native_toast_select_device">Please select a device</string>
+    <string name="native_toast_already_recording">Already recording</string>
+    <string name="native_toast_param_incomplete">Incomplete params: recordMode / audioSourceList required</string>
+    <string name="native_toast_need_source_lang">Source language is required when ASR/translate is on</string>
+    <string name="native_toast_need_target_lang">Target language is required when translate is on</string>
+    <string name="native_channel_bt">BT (earphone)</string>
+    <string name="native_channel_micro">Micro (phone mic)</string>
+    <string name="native_channel_unspecified">Unspecified</string>
+    <string name="native_device_phone">PHONE (phone)</string>
+    <string name="native_mode_meeting">Meeting</string>
+    <string name="native_category_pro_earphone">Pro Earphone</string>
+    <string name="native_category_card">Record Card</string>
+    <string name="native_category_entry_earphone">Entry Earphone</string>
+    <string name="native_category_os_buds">OS Buds</string>
+    <string name="native_summary_format">Device: %1$s  |  Mode: %2$s\nSource: %3$s  →  Target: %4$s</string>
+    <string name="native_device_name_with_category">%1$s (%2$s)</string>
+    <string name="native_unnamed">Unnamed</string>
+</resources>

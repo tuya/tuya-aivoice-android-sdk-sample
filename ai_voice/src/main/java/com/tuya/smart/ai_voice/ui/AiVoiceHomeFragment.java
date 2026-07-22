@@ -81,6 +81,11 @@ public class AiVoiceHomeFragment extends Fragment {
         view.findViewById(R.id.ai_voice_action_dialog_translate).setOnClickListener(v -> {
             UrlRouter.execute(getActivity(), "thingSmart://miniApp?url=godzilla%3A%2F%2Fty0u9m1s5ea1k71m2h%2Fpages%2FFaceToFace%2Findex");
         });
+        // Native 能力：录音实时流 / 录音文件列表
+        view.findViewById(R.id.ai_voice_native_record).setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), NativeRecordActivity.class)));
+        view.findViewById(R.id.ai_voice_native_list).setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), NativeRecordListActivity.class)));
     }
 
     public List<DeviceBean> getDeviceList() {

@@ -54,7 +54,7 @@ dependencies {
     api "com.thingclips.smart:thingsmart-ipcsdk:${ipc_sdk_version}"
     //按需依赖---start
     //IPC 面板相关依赖项
-    api "com.thingclips.smart:thingsmart-bizbundle-camera_panel"
+//    api "com.thingclips.smart:thingsmart-bizbundle-camera_panel"
 
     // 高德地图
     implementation 'com.amap.api:search:7.9.0'
