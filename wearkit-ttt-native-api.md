@@ -803,8 +803,3 @@ Delete input (for internal construction; `removeFileList` generates it automatic
 | `deleteType` | `DeleteTypeDef?` | Delete type (preferred) |
 
 ---
-
-## Related Documents
-
-- [wearkit-ttt-native-sop.md](./wearkit-ttt-native-sop.md) — Practical integration guide (with sequence diagrams and full examples)
-- [wearkit-ttt-native-api-zh.md](./wearkit-ttt-native-api-zh.md) — 中文版 API 参考（Chinese version）

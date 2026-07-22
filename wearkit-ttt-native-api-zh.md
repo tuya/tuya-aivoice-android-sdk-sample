@@ -803,8 +803,3 @@ TTS 输出配置。
 | `deleteType` | `DeleteTypeDef?` | 删除类型（优先使用） |
 
 ---
-
-## 相关文档
-
-- [wearkit-ttt-native-sop.md](./wearkit-ttt-native-sop.md) —— 实战调用指南（含时序图与完整示例）
-- [wearkit-ttt-native-api.md](./wearkit-ttt-native-api.md) —— 英文版 API 参考（English version）
