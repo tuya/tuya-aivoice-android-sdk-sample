@@ -25,9 +25,9 @@ import java.util.Map;
  * <b>接入必读：{@code startImport} 会拉起系统文件选择器，宿主 Activity 必须重写
  * {@code onActivityResult} 并调用 {@code handleImportActivityResult} 把结果回灌</b>，
  * 否则用户选完文件后毫无反应——见 {@link #onActivityResult(int, int, Intent)}。
- * 这一步是 Native 独有的：小程序侧由容器 bridge 代劳，因此小程序代码里看不到。
+ * 这一步是 Native 接入独有的，其他容器由宿主代为转交。
  * <p>
- * 完整流程（与 AI 笔记小程序一致）：
+ * 完整流程（与 AI 笔记一致）：
  * <ol>
  *     <li>进页 {@code getAudioImportStatus()} 同步取一次状态快照（可能为 null），补上进页前已发生的进度</li>
  *     <li>注册 {@link IFileImportStatusListener} 接收后续增量状态</li>
@@ -127,7 +127,6 @@ public class NativeAudioImportActivity extends NativeDemoBaseActivity {
     protected void registerListeners() {
         importStatusListener = event -> runOnUi(() -> renderStatus(event));
         manager.addFileImportStatusListener(importStatusListener);
-        appendLog("addFileImportStatusListener");
     }
 
     @Override
@@ -144,12 +143,10 @@ public class NativeAudioImportActivity extends NativeDemoBaseActivity {
     /**
      * 取一次导入状态快照。同步返回，可能为 {@code null}（从未导入过）。
      * <p>
-     * 只在进页调用一次，后续变化靠 {@link IFileImportStatusListener} 增量推送，与小程序一致。
+     * 只在进页调用一次，后续变化靠 {@link IFileImportStatusListener} 增量推送。
      */
     private void loadStatusSnapshot() {
         FileImportStatusEventApp snapshot = manager.getAudioImportStatus();
-        appendLog(getString(R.string.native_import_log_snapshot,
-                snapshot == null ? "null" : String.valueOf(snapshot.status)));
         renderStatus(snapshot);
     }
 
@@ -164,17 +161,14 @@ public class NativeAudioImportActivity extends NativeDemoBaseActivity {
             toast(getString(R.string.native_import_toast_importing));
             return;
         }
-        appendLog("startImport()");
         manager.startImport(new IAudioImportCallBack() {
             @Override
             public void onSuccess() {
-                runOnUi(() -> appendLog(getString(R.string.native_import_log_start_ok)));
             }
 
             @Override
             public void onError(Integer code, String error) {
                 runOnUi(() -> {
-                    appendLog(getString(R.string.native_import_log_start_fail, String.valueOf(code), error));
                     toast(getString(R.string.native_import_log_start_fail, String.valueOf(code), error));
                 });
             }
@@ -183,19 +177,16 @@ public class NativeAudioImportActivity extends NativeDemoBaseActivity {
 
     /** 取消进行中的导入任务。 */
     private void cancelImport() {
-        appendLog("cancelImport()");
         manager.cancelImport(simpleCallback("cancelImport"));
     }
 
     /** 重试导入失败的文件。同样会拉起文件选择器，结果需回灌。 */
     private void retryImport() {
-        appendLog("retryImport()");
         manager.retryImport(simpleCallback("retryImport"));
     }
 
     /** 放弃重试，清理失败列表。 */
     private void cancelRetry() {
-        appendLog("cancelRetry()");
         manager.cancelRetry(simpleCallback("cancelRetry"));
     }
 
@@ -209,12 +200,11 @@ public class NativeAudioImportActivity extends NativeDemoBaseActivity {
         return new IAudioImportCallBack() {
             @Override
             public void onSuccess() {
-                runOnUi(() -> appendLog(action + " onSuccess"));
             }
 
             @Override
             public void onError(Integer code, String error) {
-                runOnUi(() -> appendLog(action + " onError " + code + " " + error));
+                toastError(String.valueOf(code), error);
             }
         };
     }
@@ -233,7 +223,6 @@ public class NativeAudioImportActivity extends NativeDemoBaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        appendLog(getString(R.string.native_import_log_activity_result, requestCode, resultCode));
         manager.handleImportActivityResult(requestCode, resultCode, data);
     }
 
@@ -267,7 +256,6 @@ public class NativeAudioImportActivity extends NativeDemoBaseActivity {
                 errorCode == 0 ? "-" : taskErrorMessage(errorCode)));
 
         renderFailedFiles(event.failedFiles);
-        appendLog(getString(R.string.native_import_log_status, importStatusName(status)));
 
         if (status == SHARE_IMPORT_FAILED) {
             // 分享导入失败：由系统分享入口触发的导入，本 Demo 未注册分享入口，正常不会收到
@@ -325,7 +313,7 @@ public class NativeAudioImportActivity extends NativeDemoBaseActivity {
     /**
      * 单个文件的导入失败原因。
      * <p>
-     * 多个错误码归为同一原因，与小程序的分类一致——使用者只需要知道「为什么失败、能不能重试」。
+     * 多个错误码归为同一原因——使用者只需要知道「为什么失败、能不能重试」。
      *
      * @param errorCode {@code FailedFileInfo.errorCode}
      * @return 可读原因

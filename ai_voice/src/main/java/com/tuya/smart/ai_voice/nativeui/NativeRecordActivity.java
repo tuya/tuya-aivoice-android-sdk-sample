@@ -54,7 +54,7 @@ import java.util.Locale;
  * </ul>
  *
  * <h3>录音模式与参数组合</h3>
- * AI 笔记小程序有 4 种模式，参数组合各不相同，由 {@link RecordModeOption} 固化：
+ * AI 笔记有 4 种模式，参数组合各不相同，由 {@link RecordModeOption} 固化：
  * <pre>
  * 模式          recordMode  needAsr  needAmplitude  needTranslate
  * 现场录音          1        false       true          false
@@ -82,7 +82,7 @@ import java.util.Locale;
  * <p>
  * 面对面翻译（{@code recordMode=2} + {@code f2fChannel}）属于 AI Translate 业务，本页不实现。
  * {@code Audio3AConfig}、{@code autoRecognize}、{@code startLivingStatus} 三个字段
- * AI 笔记小程序未使用，本页也不做 UI，用法见 {@link #buildParams(boolean)} 注释。
+ * AI 笔记未使用，本页也不做 UI，用法见 {@link #buildParams(boolean)} 注释。
  */
 public class NativeRecordActivity extends NativeDemoBaseActivity {
 
@@ -230,7 +230,7 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
     // ===================== 模式与参数 =====================
 
     /**
-     * 录音模式与其默认参数组合。取自 AI 笔记小程序的 4 种模式。
+     * 录音模式与其默认参数组合。取自 AI 笔记的 4 种模式。
      */
     private enum RecordModeOption {
         /** 现场录音：只录音不转写。 */
@@ -274,8 +274,6 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 applyModeDefaults();
                 updateSummary();
-                appendLog(getString(R.string.native_log_mode_selected,
-                        getString(currentMode().labelRes)));
                 if (isRecordingOrPaused()) {
                     updateParams();
                 }
@@ -303,7 +301,7 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
         applyingModeDefaults = true;
         optAsrSwitch.setChecked(mode.needAsr);
         // 振幅回调各模式一律默认开启，便于观察波形。
-        // 小程序在实时转写 / 同声传译模式下关掉了它（needAmplitude=false）以省电，
+        // 实时转写 / 同声传译模式下建议关掉它（needAmplitude=false）以省电，
         // 生产环境若不画波形，建议照此关闭。
         optAmplitudeSwitch.setChecked(true);
         optTranslateSwitch.setChecked(mode.needTranslate);
@@ -326,7 +324,6 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 updateSummary();
-                appendLog(getString(R.string.native_log_lang, sourceLang(), targetLang()));
                 if (isRecordingOrPaused()) {
                     updateParams();
                 }
@@ -369,7 +366,7 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
     /**
      * 推导音源。<b>取错会直接录不出声。</b>
      * <p>
-     * 规则取自小程序 {@code getAudioSource(设备类型, recordType, isCall)}：
+     * 推导规则（设备类型 + 是否电话模式）：
      * 手机走系统 MIC；入门耳机与 OS 耳机走系统蓝牙；Pro 耳机按是否电话模式分现场 / 电话音源；
      * 录音卡片走卡片音源。
      *
@@ -399,7 +396,7 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
     /**
      * 构造录音参数。
      * <p>
-     * 未在 UI 中暴露、AI 笔记小程序也未使用的三个字段，用法如下：
+     * 未在 UI 中暴露、AI 笔记也未使用的三个字段，用法如下：
      * <ul>
      *     <li>{@code recordTransfer3AConfig} —— 降噪 / 自动增益 / 回声消除开关，
      *         默认由底层按设备能力决定，需要定制音频处理时才设置</li>
@@ -444,7 +441,7 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
     /**
      * 构造 TTS 输出配置：把译文合成语音后播回指定通道。
      * <p>
-     * 三处非直觉的取值规则，均取自小程序：
+     * 三处非直觉的取值规则：
      * <ul>
      *     <li>{@code devId} —— 输出到设备时才下发；手机 / 入门耳机 / 卡片走系统通道，必须传空</li>
      *     <li>{@code output} —— 由音源反推：系统 MIC 音源配 MIC 输出，系统蓝牙音源配 BT 输出，
@@ -499,8 +496,6 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
 
             @Override
             public void onRecordSwitchAudioSourceEvent(@NonNull String devId, int recordType, int audioSource) {
-                runOnUi(() -> appendLog(getString(
-                        R.string.native_log_audio_source_switch, recordType, audioSource)));
             }
 
             @Override
@@ -520,7 +515,6 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
             public void onBTConnectChange(BTConnectedStatus status) {
                 runOnUi(() -> {
                     btConnectedStatus = status == null ? -1 : status.getConnectedStatus();
-                    appendLog(getString(R.string.native_log_bt_change, btConnectedStatus));
                     refreshAbilityText();
                 });
             }
@@ -544,7 +538,6 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
             }
         };
         manager.addNativeAbilityListener(abilityListener);
-        appendLog("addRecordListener + addNativeAbilityListener");
 
         restoreExistingTask();
         queryBtStatus();
@@ -575,20 +568,18 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
             refreshAbilityText();
             return;
         }
-        appendLog("getEarPhoneBTConntectedStatus(" + deviceId + ")");
         manager.getEarPhoneBTConntectedStatus(deviceId, new IRecordCallBack<BTConnectedStatus>() {
             @Override
             public void onSuccess(BTConnectedStatus result) {
                 runOnUi(() -> {
                     btConnectedStatus = result == null ? -1 : result.getConnectedStatus();
-                    appendLog(getString(R.string.native_log_bt_query_ok, btConnectedStatus));
                     refreshAbilityText();
                 });
             }
 
             @Override
             public void onError(String code, String error) {
-                runOnUi(() -> appendLog(getString(R.string.native_log_bt_query_fail, code, error)));
+                toastRecordError(code);
             }
         });
     }
@@ -610,15 +601,13 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
      * 恢复进行中的录音任务。
      * <p>
      * {@code recordTransferTask} 同步返回当前任务，无任务时返回 null。
-     * 除了状态，<b>还要把已转写的历史句子补回来</b>——小程序在页面重进 / 从快捷方式进入时
+     * 除了状态，<b>还要把已转写的历史句子补回来</b>——页面重进 / 从快捷方式进入时
      * 也会调 {@code getRecordTransferRealTimeResult({recordId})} 回填，否则界面上是空白的。
      */
     private void restoreExistingTask() {
         String deviceId = currentDeviceId();
         try {
             RecordStatusBean bean = manager.recordTransferTask(deviceId);
-            appendLog("recordTransferTask(" + deviceId + ") -> "
-                    + (bean == null ? "null" : "status=" + bean.getStatus()));
             if (bean == null) return;
             onStatusUpdate(bean);
             if (bean.getStatus() == RecordStatusDef.RECORDING
@@ -626,7 +615,6 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
                 restoreRealtimeSentences(bean.getRecordId());
             }
         } catch (Exception e) {
-            appendLog(getString(R.string.native_log_record_task_exception, e.getMessage()));
         }
     }
 
@@ -637,7 +625,6 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
      */
     private void restoreRealtimeSentences(@Nullable String recordId) {
         if (TextUtils.isEmpty(recordId)) return;
-        appendLog(getString(R.string.native_log_restore_realtime, recordId));
         manager.getRecordTransferRealTimeResult(null, recordId, null,
                 new IRecordCallBack<List<RecordTransferRealTimeResult>>() {
                     @Override
@@ -652,15 +639,13 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
                                 finishedSentences.add(s);
                             }
                             renderRealtime();
-                            appendLog(getString(R.string.native_log_restore_realtime_ok, result.size()));
                         });
                     }
 
                     @Override
                     public void onError(String code, String error) {
-                        runOnUi(() -> appendLog(getString(
-                                R.string.native_log_restore_realtime_fail, code, error)));
-                    }
+                toastRecordError(code);
+            }
                 });
     }
 
@@ -710,12 +695,10 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
 
         String deviceId = currentDeviceId();
         lockControl();
-        appendLog("startAudioRecording(" + deviceId + ") params=" + describe(params));
         manager.startAudioRecording(deviceId, params, new IResultCallback() {
             @Override
             public void onSuccess() {
                 runOnUi(() -> {
-                    appendLog("startAudioRecording onSuccess");
                     status = RecordStatusDef.RECORDING;
                     statusText.setText(R.string.native_status_1);
                     statusText.setTextColor(getResources().getColor(
@@ -739,12 +722,10 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
         if (controlLocked) return;
         String deviceId = currentDeviceId();
         lockControl();
-        appendLog("pauseRecordTransfer(" + deviceId + ")");
         manager.pauseRecordTransfer(deviceId, new IResultCallback() {
             @Override
             public void onSuccess() {
                 runOnUi(() -> {
-                    appendLog("pause onSuccess");
                     status = RecordStatusDef.PAUSING;
                     statusText.setText(R.string.native_status_2);
                     stopTicking();
@@ -763,12 +744,10 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
         if (controlLocked) return;
         String deviceId = currentDeviceId();
         lockControl();
-        appendLog("resumeRecordTransfer(" + deviceId + ")");
         manager.resumeRecordTransfer(deviceId, new IResultCallback() {
             @Override
             public void onSuccess() {
                 runOnUi(() -> {
-                    appendLog("resume onSuccess");
                     status = RecordStatusDef.RECORDING;
                     statusText.setText(R.string.native_status_1);
                     startTicking();
@@ -783,12 +762,11 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
         });
     }
 
-    /** 停止录音。仅在录音中 / 暂停中允许，与小程序的前置判断一致。 */
+    /** 停止录音。仅在录音中 / 暂停中允许，其余状态直接忽略。 */
     private void stopRecord() {
         if (controlLocked || !isRecordingOrPaused()) return;
         String deviceId = currentDeviceId();
         lockControl();
-        appendLog("stopRecordTransfer(" + deviceId + ")");
         manager.stopRecordTransfer(deviceId, new IResultCallback() {
             @Override
             public void onSuccess() {
@@ -823,8 +801,22 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
     private void onControlError(String action, String code, String error) {
         controlLocked = false;
         refreshButtonState();
-        appendLog(action + " onError " + code + " " + error);
-        toast(RecordErrorCode.messageOf(this, code, currentMode().isCall()));
+        toastRecordError(code);
+    }
+
+    /**
+     * 按录音链路的错误码表给出可读提示。
+     * <p>
+     * 该链路的错误码语义细分很多，直接抛裸码或底层 errorMsg 对使用者没有意义。
+     * 注意 {@code 10061} 在<b>电话录音模式</b>下表示「尚未进入通话」，
+     * 与其余模式的「设备忙或异常」不是一回事，故映射时要带上当前模式。
+     * <p>
+     * SDK 回调可能在子线程，内部已切回主线程。
+     *
+     * @param code 错误码
+     */
+    private void toastRecordError(String code) {
+        runOnUi(() -> toast(RecordErrorCode.messageOf(this, code, currentMode().isCall())));
     }
 
     /**
@@ -836,16 +828,14 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
     private void updateParams() {
         String deviceId = currentDeviceId();
         RecordParamsV2 params = buildParams(false);
-        appendLog("updateParams(" + deviceId + ") params=" + describe(params));
         manager.updateParams(deviceId, params, new IResultCallback() {
             @Override
             public void onSuccess() {
-                runOnUi(() -> appendLog(getString(R.string.native_log_update_params_success)));
             }
 
             @Override
             public void onError(String code, String error) {
-                runOnUi(() -> appendLog("updateParams onError " + code + " " + error));
+                toastRecordError(code);
             }
         });
     }
@@ -854,16 +844,14 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
     private void switchChannel() {
         String deviceId = currentDeviceId();
         currentChannel = (currentChannel + 1) % CHANNEL_COUNT;
-        appendLog("switchRecordChannel(" + deviceId + ", " + currentChannel + ")");
         manager.switchRecordChannel(deviceId, currentChannel, new IResultCallback() {
             @Override
             public void onSuccess() {
-                runOnUi(() -> appendLog("switchChannel onSuccess -> " + channelName(currentChannel)));
             }
 
             @Override
             public void onError(String code, String error) {
-                runOnUi(() -> appendLog("switchChannel onError " + code + " " + error));
+                toastRecordError(code);
             }
         });
     }
@@ -924,8 +912,6 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
     }
 
     private void onRecordFinished(boolean success, int code, String msg) {
-        appendLog(success ? getString(R.string.native_log_record_finish)
-                : getString(R.string.native_log_record_error_finish, code, msg));
         status = RecordStatusDef.STOP;
         statusText.setText(R.string.native_status_3);
         statusText.setTextColor(getResources().getColor(
@@ -936,7 +922,7 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
         refreshButtonState();
         if (!success) {
             // 异常结束同样按错误码给可读提示
-            toast(RecordErrorCode.messageOf(this, String.valueOf(code), currentMode().isCall()));
+            toastRecordError(String.valueOf(code));
         }
     }
 
@@ -1141,7 +1127,6 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode != REQ_CODE_RECORD_AUDIO) return;
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            appendLog("RECORD_AUDIO granted");
             startRecord();
         } else {
             if (!ActivityCompat.shouldShowRequestPermissionRationale(this,
@@ -1150,7 +1135,6 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
             } else {
                 toast(getString(R.string.native_toast_record_permission_denied));
             }
-            appendLog("RECORD_AUDIO denied");
         }
     }
 }

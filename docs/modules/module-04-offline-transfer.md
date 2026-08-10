@@ -9,7 +9,15 @@
 
 ## 一、能力概述
 
-把设备（录音卡片 / 耳机）本地缓存的录音文件下载到手机。
+把**录音卡片**本地缓存的录音文件下载到手机。
+
+> ⚠️ **本模块只支持录音卡片。** 判据是产品配置里的 `product_type == "card"`
+> （即 `AudioDeviceCategory.CATEGORY_CARD`）。
+> 卡片没有屏幕也不常连手机，录下的音频先存在设备上、之后再回传；
+> 耳机类设备走实时链路，不产生设备侧缓存文件，手机本身更无从谈起。
+>
+> **建议在设备选择环节就把不支持的机型过滤掉**，而不是等用户选中后再提示
+> ——后者只会得到一个底层错误码，使用者无从判断是环境问题还是接入问题。
 
 设备离线时录下的音频先存在设备上，回到手机附近才回传。传输有两条通道：**BLE** 稳但慢，
 **AP（设备开热点、手机连上去）** 快但要建链，且建链期间手机会断开原有 Wi-Fi。
@@ -75,7 +83,7 @@ sequenceDiagram
 
 | 参数 | 类型 | 必填 | 说明 |
 |---|---|---|---|
-| `deviceId` | `String` | 是 | 设备 ID。**手机本身没有离线文件概念**，不要传 `"PHONE"` |
+| `deviceId` | `String` | 是 | **录音卡片**的设备 ID。手机与耳机没有离线文件概念，不要传 |
 | `callback` | `IRecordCallBack<DeviceOfflineFileStatus>` | 否 | 返回 [`DeviceOfflineFileStatus`](#deviceofflinefilestatus)，可能为 `null` |
 
 两个判据决定下一步：
@@ -201,11 +209,11 @@ manager.unRegisterFileProgressCallback(callback);   // 传同一实例
 `switchModeLoadOfflineFile(deviceId, 1)` 切回 BLE。
 
 **Demo 未实现这个拦截**，属于产品交互，各家 App 自行决定。同样未实现的还有
-建链失败重试计数（AI 笔记小程序的策略是最多重试 3 次切 AP，超限弹错误框）。
+建链失败重试计数（AI 笔记的策略是最多重试 3 次切 AP，超限弹错误框）。
 
 ### 自动化触发
 
-Demo 为便于逐步观察做成了三步手动。AI 笔记小程序里这一步是**全自动**的：
+Demo 为便于逐步观察做成了三步手动。AI 笔记里这一步是**全自动**的：
 录音结束或首页可见时遍历在线的卡片设备，逐个 `getDeviceOfflineFileStatus`，
 发现 `response.total > 0` 就直接以 `channel=1`、`sessionId=`（已有值或 `0`）发起下载，
 全程无用户操作，只在有文件可传时才在界面上露出进度条。
@@ -230,13 +238,15 @@ Demo 为便于逐步观察做成了三步手动。AI 笔记小程序里这一步
 
 ## 八、接入清单
 
-1. `registerFileProgressCallback` / `unRegisterFileProgressCallback` 成对调用，**传同一实例**；
+1. **先按 `product_type == "card"` 过滤设备**，本能力只支持录音卡片；
+   家庭内无卡片时应直接给出说明，而不是让用户点了才报错
+2. `registerFileProgressCallback` / `unRegisterFileProgressCallback` 成对调用，**传同一实例**；
    建议 App 级注册一次，而不是随页面进出
-2. 起传前先 `getDeviceOfflineFileStatus`，`total > 0` 才发起；
+3. 起传前先 `getDeviceOfflineFileStatus`，`total > 0` 才发起；
    `sessionId` 非 `0` 时传该值续传，传 `0` 会丢掉已传进度
-3. `loadOfflineFile` 传入的回调与全局回调进度重复，生产环境择一
-4. AP 建链状态只能从 `apConnectState` + `errorCode` 读，接口返回值里没有
-5. 「全部完成」看 `files_successed`，下载完还有一步转换
-6. `onProgress` 高频，刷 UI 前自行节流
-7. 退出前若仍在 AP 模式，切回 BLE，否则设备热点持续占用
-8. 传输错误码与调用失败的 `onError` 是两套，分开处理
+4. `loadOfflineFile` 传入的回调与全局回调进度重复，生产环境择一
+5. AP 建链状态只能从 `apConnectState` + `errorCode` 读，接口返回值里没有
+6. 「全部完成」看 `files_successed`，下载完还有一步转换
+7. `onProgress` 高频，刷 UI 前自行节流
+8. 退出前若仍在 AP 模式，切回 BLE，否则设备热点持续占用
+9. 传输错误码与调用失败的 `onError` 是两套，分开处理

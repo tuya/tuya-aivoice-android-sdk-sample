@@ -13,6 +13,7 @@ import com.thingclips.smart.api.service.RouteEventListener;
 import com.thingclips.smart.api.service.ServiceEventListener;
 import com.thingclips.smart.bizbundle.initializer.BizBundleInitializer;
 import com.thingclips.smart.commonbiz.bizbundle.family.api.AbsBizBundleFamilyService;
+import com.thingclips.smart.home.sdk.ThingHomeSdk;
 import com.thingclips.smart.thingpackconfig.PackConfig;
 
 import dagger.hilt.android.HiltAndroidApp;
@@ -83,6 +84,10 @@ public class TuyaSmartApp extends Application {
                 // }
             }
         });
+
+        ThingHomeSdk.setDebugMode(true);
+
+
     }
 
     @Override

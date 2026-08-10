@@ -70,11 +70,6 @@ public class NativeApiListActivity extends NativeDemoBaseActivity {
     }
 
     @Override
-    protected boolean enableLogPanel() {
-        return false;
-    }
-
-    @Override
     protected void onContentViewCreated() {
         LinearLayout container = findViewById(R.id.ll_entry_container);
         LayoutInflater inflater = LayoutInflater.from(this);

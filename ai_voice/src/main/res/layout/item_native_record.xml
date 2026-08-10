@@ -105,5 +105,18 @@
                 android:textColor="@color/ai_voice_text_secondary"
                 android:textSize="12sp" />
         </LinearLayout>
+
+        <!--
+          标签（RecordTransferResultBean.tags）。列表页只做扫读，
+          最多展示 3 个、其余折叠成 +N；无标签时整块 GONE。
+        -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/native_item_tags"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            app:chipSpacingHorizontal="6dp"
+            app:singleLine="true" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

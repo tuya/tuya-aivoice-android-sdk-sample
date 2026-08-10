@@ -154,7 +154,7 @@ void stopRecordTransfer(String deviceId, IResultCallback callback)
 | `recordChannel` | `int` | 是 | `0` 未指定 / `1` BT（耳机）/ `2` Micro（手机麦） |
 | `callback` | `IResultCallback` | 否 | 结果回调 |
 
-> AI 笔记小程序中定义了该接口却从未调用，流程未经业务验证。
+> 该接口在 AI 笔记业务中从未被调用，流程未经验证，不建议接入。
 
 ---
 
@@ -449,4 +449,4 @@ Pro / 卡片等设备音源配 `DEVICE`。
 | 能力 | 说明 |
 |---|---|
 | 面对面翻译（`recordMode=2` + `f2fChannel`） | 属于 AI Translate 业务，本 Demo 不实现 |
-| `Audio3AConfig` / `autoRecognize` / `startLivingStatus` | AI 笔记小程序未使用，字段说明见[第五节](#五数据结构) |
+| `Audio3AConfig` / `autoRecognize` / `startLivingStatus` | AI 笔记业务未使用，字段说明见[第五节](#五数据结构) |

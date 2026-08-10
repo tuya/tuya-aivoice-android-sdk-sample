@@ -16,7 +16,6 @@
     <string name="ai_voice_logout">Log Out</string>
     <string name="ai_voice_user_name">User</string>
     <string name="ai_voice_user_phone">86-15005961707</string>
-    <string name="ai_voice_user_region">China</string>
     <string name="ai_voice_note_icon">AI Notes icon</string>
     <string name="ai_voice_translate_icon">AI Translate icon</string>
     <string name="ai_voice_device_icon">Device icon</string>
@@ -32,36 +31,26 @@
     <string name="native_record_list_title">Record Files</string>
     <string name="native_back">Back</string>
     <string name="native_device_id">Device ID (use PHONE for phone recording)</string>
-    <string name="native_template">Template</string>
-    <string name="native_tpl_meeting">Meeting</string>
-    <string name="native_tpl_phone">Phone</string>
-    <string name="native_tpl_face">Face to Face</string>
-    <string name="native_tpl_s2t">Simultaneous</string>
     <string name="native_opt_asr">Real-time ASR</string>
     <string name="native_opt_amplitude">Amplitude</string>
     <string name="native_opt_translate">Translate</string>
     <string name="native_source_lang">Source Lang</string>
     <string name="native_target_lang">Target Lang</string>
-    <string name="native_status">Status</string>
-    <string name="native_duration">Duration</string>
     <string name="native_start">Start</string>
     <string name="native_pause">Pause</string>
     <string name="native_resume">Resume</string>
     <string name="native_stop">Stop</string>
     <string name="native_switch_channel">Switch Channel</string>
     <string name="native_realtime">Real-time Transcription</string>
-    <string name="native_log">Log</string>
     <string name="native_status_0">Idle</string>
     <string name="native_status_1">Recording</string>
     <string name="native_status_2">Paused</string>
     <string name="native_status_3">Stopped</string>
     <string name="native_status_unknown">Unknown</string>
-    <string name="native_channel_format">Channel: %1$s</string>
     <string name="native_record_type_format">Type: %1$s</string>
     <string name="native_record_type_0">Phone</string>
     <string name="native_record_type_1">Meeting</string>
     <string name="native_record_type_2">Face to Face</string>
-    <string name="native_record_type_3">Face to Face</string>
     <string name="native_record_type_4">Text Translate</string>
     <string name="native_record_type_5">Audio Import</string>
     <string name="native_transfer_0">Not transcribed</string>
@@ -74,8 +63,6 @@
     <string name="native_summary_4">Summary failed</string>
     <string name="native_list_empty">No recordings</string>
     <string name="native_list_loading">Loading…</string>
-    <string name="native_list_load_more">Pull up to load more</string>
-    <string name="native_list_no_more">No more</string>
     <string name="native_list_load_fail">Load failed, pull down to retry</string>
     <string name="native_list_delete_title">Delete Recording</string>
     <string name="native_list_delete_msg">"%1$s" — this action cannot be undone.</string>
@@ -86,22 +73,9 @@
     <string name="native_list_delete_no_id">recordTransferId is empty, cannot delete</string>
     <string name="native_source_0">App</string>
     <string name="native_source_1">Device</string>
-    <string name="native_duration_format">%1$s / %2$s</string>
 
     <!-- Native Record: runtime messages -->
-    <string name="native_log_lang">Lang src=%1$s tgt=%2$s</string>
-    <string name="native_log_audio_source_switch">Audio source switch type=%1$d source=%2$d</string>
-    <string name="native_log_record_finish">Record finished onRecordFinish</string>
-    <string name="native_log_record_error_finish">Record error code=%1$d %2$s</string>
-    <string name="native_log_record_task_exception">recordTransferTask error: %1$s</string>
-    <string name="native_log_get_home_devices_exception">getHomeDevices error: %1$s</string>
-    <string name="native_log_select_device">Select device %1$s devId=%2$s</string>
-    <string name="native_log_update_params_success">updateParams onSuccess (takes effect per onRecordStatusUpdate)</string>
-    <string name="native_log_start_fail">Start failed: %1$s</string>
-    <string name="native_record_error_toast">Record error: %1$s</string>
-    <string name="native_toast_select_device">Please select a device</string>
     <string name="native_toast_already_recording">Already recording</string>
-    <string name="native_toast_param_incomplete">Incomplete params: recordMode / audioSourceList required</string>
     <string name="native_toast_need_source_lang">Source language is required when ASR/translate is on</string>
     <string name="native_toast_need_target_lang">Target language is required when translate is on</string>
     <string name="native_toast_record_permission_rationale">Microphone permission is required to start recording. Please allow.</string>
@@ -111,7 +85,6 @@
     <string name="native_channel_micro">Micro (phone mic)</string>
     <string name="native_channel_unspecified">Unspecified</string>
     <string name="native_device_phone">PHONE (phone)</string>
-    <string name="native_mode_meeting">Meeting</string>
     <string name="native_category_pro_earphone">Pro Earphone</string>
     <string name="native_category_card">Record Card</string>
     <string name="native_category_entry_earphone">Entry Earphone</string>
@@ -125,7 +98,7 @@
     <string name="native_mode_realtime">Real-time transcription</string>
     <string name="native_mode_simultaneous">Simultaneous interpretation (ASR + translation)</string>
     <string name="native_advanced_section">Advanced (mode presets applied; override manually here)</string>
-    <string name="native_opt_tts">Play translated speech to earphone (translation only)</string>
+    <string name="native_opt_tts">Play translated speech (translation only)</string>
     <string name="native_duration_zero">00:00</string>
     <string name="native_ability_empty">Device ability: waiting for events…</string>
     <string name="native_ability_format">Earphone BT: %1$s　Battery: %2$s　SNR: %3$s</string>
@@ -161,14 +134,6 @@
     <string name="native_err_10083">The device is offline, please check it</string>
     <string name="native_err_ai_base">Service busy, please retry later</string>
     <string name="native_err_unknown">Operation failed, code %1$s</string>
-    <string name="native_toast_need_phone_call">Phone recording requires an active call (error 10061)</string>
-    <string name="native_log_mode_selected">Recording mode selected: %1$s</string>
-    <string name="native_log_bt_change">onBTConnectChange connectedStatus=%1$d</string>
-    <string name="native_log_bt_query_ok">getEarPhoneBTConntectedStatus onSuccess status=%1$d</string>
-    <string name="native_log_bt_query_fail">getEarPhoneBTConntectedStatus onError %1$s %2$s</string>
-    <string name="native_log_restore_realtime">Restoring sentences: getRecordTransferRealTimeResult(recordId=%1$s)</string>
-    <string name="native_log_restore_realtime_ok">Restored %1$d sentences</string>
-    <string name="native_log_restore_realtime_fail">Restore failed %1$s %2$s</string>
 
     <!-- Module 3 · filter / search / storage / delete semantics -->
     <string name="native_list_search_hint">Search titles, tags, summaries, transcripts</string>
@@ -183,17 +148,7 @@
     <string name="native_list_audio_size">Local audio: %1$s MB</string>
     <string name="native_list_delete_all">Delete permanently (local + cloud)</string>
     <string name="native_list_delete_audio_only">Delete local audio only (keep record)</string>
-    <string name="native_list_log_query">getRecordTransferResultList type=%1$s transfer=%2$s remove=false orderBy=%3$d pageSize=null</string>
-    <string name="native_list_log_query_fail">List query failed %1$s %2$s</string>
-    <string name="native_list_log_search">searchRecordTransferResult(%1$s)</string>
-    <string name="native_list_log_search_ok">Search finished, %1$d results</string>
     <string name="native_list_log_search_fail">Search failed %1$s %2$s</string>
-    <string name="native_list_log_size_fail">getAudioFilesSize onError %1$s %2$s</string>
-    <string name="native_list_log_remove">removeFileList([%1$d], isDeleteAll=%2$b)</string>
-    <string name="native_list_log_on_update">onUpdate partial change: %1$d items</string>
-    <string name="native_list_log_on_operate">onRecordOperate operate=%1$s %2$d items</string>
-    <string name="native_list_log_on_tags">onUpdateWitheTags tag change: %1$d items</string>
-    <string name="native_list_log_sync_success">onRecordListSyncSuccess cloud sync done, full refresh recommended</string>
     <string name="native_device_name_with_category">%1$s (%2$s)</string>
     <string name="native_unnamed">Unnamed</string>
 
@@ -207,18 +162,6 @@
     <string name="native_detail_meta_format">Duration %1$s  |  %2$s</string>
     <string name="native_detail_empty_transfer">No transcription. Tap "Generate Transcription" above.</string>
     <string name="native_detail_empty_summary">After transcription completes, tap "Generate Summary" above.</string>
-    <string name="native_detail_log_load_detail">getRecordTransferResultDetail(%1$s)</string>
-    <string name="native_detail_log_detail_ok">detail ok transfer=%1$s summary=%2$s rtid=%3$s</string>
-    <string name="native_detail_log_detail_fail">detail onError %1$s %2$s</string>
-    <string name="native_detail_log_load_transfer">getRecordTransferRecognizeResult(rtid=%1$s, from=0)</string>
-    <string name="native_detail_log_load_summary">getRecordTransferSummaryResult(rtid=%1$s, from=0)</string>
-    <string name="native_detail_log_result_ok">onSuccess len=%1$d</string>
-    <string name="native_detail_log_result_fail">onError %1$s %2$s</string>
-    <string name="native_detail_log_generate">processRecordTransferResult rtid=%1$s taskType=%2$d(%3$s) lang=%4$s</string>
-    <string name="native_detail_log_generate_ok">%1$s onSuccess</string>
-    <string name="native_detail_log_generate_fail">%1$s onError %2$s %3$s</string>
-    <string name="native_detail_log_event_update">onPartialRecordUpdate recordId=%1$s transfer=%2$s summary=%3$s</string>
-    <string name="native_detail_log_auto_reload">Status changed, auto reloading results</string>
     <string name="native_detail_toast_generating">Transcription request submitted. Results will refresh automatically.</string>
     <string name="native_detail_toast_summary_generating">Summary request submitted. Results will refresh automatically.</string>
     <string name="native_detail_toast_transfer_running">Transcribing, please wait.</string>
@@ -231,10 +174,6 @@
     <string name="native_detail_upload_waiting">Audio upload: waiting (audio must be uploaded before transcription when cloud sync is off)</string>
     <string name="native_detail_upload_progress">Uploading audio %1$d%%</string>
     <string name="native_detail_upload_done">Audio uploaded, transcription starting</string>
-    <string name="native_detail_log_upload">onRecordTransferFileUploadEvent progress=%1$d status=%2$d</string>
-    <string name="native_detail_log_load_realtime">getRecordTransferRealTimeResult(recordId=%1$s)</string>
-    <string name="native_detail_log_realtime_ok">Real-time transcript: %1$d sentences</string>
-    <string name="native_detail_param_section">Generation parameters (optional, blank uses defaults)</string>
     <string name="native_detail_hint_template">Summary template</string>
     <string name="native_detail_hint_summary_lang">Summary language</string>
     <string name="native_detail_enable_speaker">Enable speaker diarization</string>
@@ -243,16 +182,7 @@
     <string name="native_detail_edit_sentence">Edit this sentence</string>
     <string name="native_detail_toast_saved">Saved</string>
     <string name="native_detail_toast_no_sentence">No sentence available to edit</string>
-    <string name="native_detail_toast_realtime_edit_hint">Real-time transcripts are saved per sentence — long-press the text to pick one</string>
     <string name="native_detail_toast_downgrade">Not transcribed yet — a transcription task was dispatched instead</string>
-    <string name="native_detail_log_downgrade_to_transfer">transfer=0 (not transcribed), summary downgraded to transcription</string>
-    <string name="native_detail_log_generate_param">Params template=%1$s summaryLang=%2$s enableSpeaker=%3$b</string>
-    <string name="native_detail_log_save_transfer">saveRecordTransferRecognizeResult length=%1$d</string>
-    <string name="native_detail_log_save_summary">saveRecordTransferSummaryResult length=%1$d</string>
-    <string name="native_detail_log_save_sentence">saveRecordTransferRealTimeRecognizeResult asrId=%1$d</string>
-    <string name="native_detail_log_title_rename">Summary has title "%1$s", applying it as the file name</string>
-    <string name="native_detail_log_title_rename_ok">File name updated</string>
-    <string name="native_detail_log_title_rename_fail">Failed to update file name %1$s %2$s</string>
 
     <!-- Record actions -->
     <string name="native_action_share_on">Enable share link</string>
@@ -263,29 +193,9 @@
     <string name="native_action_remove_tag">Remove tag</string>
     <string name="native_action_delete">Delete recording (local + cloud, unrecoverable)</string>
     <string name="native_action_confirm">OK</string>
-    <string name="native_action_reorder_tag">Reorder tags</string>
     <string name="native_action_tag_hint">Separate multiple tags with commas</string>
-    <string name="native_action_tag_reorder_hint">List ALL tags in the new order, comma separated (omitted ones are dropped)</string>
-    <string name="native_action_log_share">operateRecordShareLink shareStatus=%1$d</string>
-    <string name="native_action_log_share_ok">Share link: %1$s</string>
-    <string name="native_action_log_share_fail">Share operation failed %1$s %2$s</string>
-    <string name="native_action_log_download">syncDownloadNoteAudio(fileId=%1$d, recordId=%2$s) dispatched; no callback, watch the cloud sync observer</string>
-    <string name="native_action_log_rename">Rename (local) updateRecordTransferResult name=%1$s</string>
-    <string name="native_action_log_rename_cloud">Rename (cloud) m.wearable.audio.record.add name=%1$s</string>
-    <string name="native_action_log_rename_cloud_ok">Cloud file name updated</string>
-    <string name="native_action_log_rename_cloud_fail">Cloud file name update failed %1$s %2$s (local already changed; the two sides differ)</string>
-    <string name="native_action_log_rename_no_home">Home ID unavailable, skipping cloud update (local already changed)</string>
-    <string name="native_detail_log_mark_read">Marking as read: visit %1$d → %2$d</string>
-    <string name="native_detail_log_mark_read_ok">Read state (local) updated</string>
-    <string name="native_detail_log_mark_read_fail">Read state (local) update failed %1$s %2$s</string>
-    <string name="native_detail_log_mark_read_cloud_ok">Read state (cloud) synced</string>
-    <string name="native_detail_log_mark_read_cloud_fail">Read state (cloud) sync failed %1$s (local unaffected, no action needed)</string>
-    <string name="native_action_log_delete">removeFileList([%1$d], isDeleteAll=true) permanent delete</string>
-    <string name="native_action_log_tag">updateRecordTagResult bizType=%1$d tags=%2$s</string>
 
     <!-- Demo scaffold -->
-    <string name="native_log_panel_title">Event log</string>
-    <string name="native_log_clear">Clear</string>
 
     <!-- More Native capabilities -->
     <string name="native_more_entry">More</string>
@@ -336,20 +246,9 @@
     <string name="native_offline_err_wifi_open">Failed to turn on Wi-Fi, check the system Wi-Fi switch</string>
     <string name="native_offline_err_ap_connect">Failed to connect to the device hotspot, move closer and retry</string>
     <string name="native_offline_err_other">Transfer error</string>
-    <string name="native_offline_toast_need_device">Offline transfer requires a real device; PHONE has no offline files</string>
     <string name="native_offline_toast_no_file">This device has no pending files</string>
-    <string name="native_offline_log_query_ok">getDeviceOfflineFileStatus onSuccess total=%1$d done=%2$d sessionId=%3$d</string>
-    <string name="native_offline_log_query_null">getDeviceOfflineFileStatus returned null</string>
     <string name="native_offline_log_query_fail">Query failed %1$s %2$s</string>
-    <string name="native_offline_log_load">loadOfflineFile(%1$s, channel=%2$s, sessionId=%3$d)</string>
-    <string name="native_offline_log_load_success">loadOfflineFile onSuccess sessionId=%1$d</string>
     <string name="native_offline_log_load_fail">loadOfflineFile onError %1$s %2$s</string>
-    <string name="native_offline_log_switch">switchModeLoadOfflineFile(%1$s, channel=%2$s)</string>
-    <string name="native_offline_log_switch_success">switchMode onSuccess sessionId=%1$d</string>
-    <string name="native_offline_log_switch_fail">switchMode onError %1$s %2$s</string>
-    <string name="native_offline_log_global_success">Global callback onSuccess sessionId=%1$d</string>
-    <string name="native_offline_log_global_error">Global callback onError %1$s %2$s</string>
-    <string name="native_offline_log_error_code">errorCode=%1$d %2$s</string>
 
     <!-- Module 5 · Audio import -->
     <string name="native_import_title">Module 5 · Audio import</string>
@@ -385,11 +284,7 @@
     <string name="native_import_state_failed">Import interrupted</string>
     <string name="native_import_state_share_failed">Share import failed</string>
     <string name="native_import_toast_importing">Import in progress, please wait</string>
-    <string name="native_import_log_snapshot">getAudioImportStatus() snapshot status=%1$s</string>
-    <string name="native_import_log_status">onStatusUpdate status=%1$s</string>
-    <string name="native_import_log_start_ok">startImport onSuccess (waiting for file selection)</string>
     <string name="native_import_log_start_fail">startImport onError %1$s %2$s</string>
-    <string name="native_import_log_activity_result">onActivityResult requestCode=%1$d resultCode=%2$d → handleImportActivityResult</string>
 
     <!-- Module 6 · Cloud sync -->
     <string name="native_cloud_title">Module 6 · Cloud sync</string>
@@ -426,28 +321,8 @@
     <string name="native_cloud_err_unknown">Sync error, code %1$d</string>
     <string name="native_cloud_toast_syncing">Sync in progress, please wait</string>
     <string name="native_cloud_toast_disabled">Cloud sync is off — turn the switch on first</string>
-    <string name="native_cloud_log_snapshot">Snapshot status=%1$s errorCode=%2$d lastSyncTime=%3$d</string>
-    <string name="native_cloud_log_save">Saving switch enabled=%1$b syncType=%2$s (full submit)</string>
-    <string name="native_cloud_log_save_ok">Switch saved (SDK-side state updates only after MQTT or a background pull)</string>
     <string name="native_cloud_log_save_fail">Switch save failed %1$s %2$s</string>
-    <string name="native_cloud_log_sync_already">syncNoteRecord returned 10213: a sync is already running — correcting local state to "Syncing"</string>
-    <string name="native_cloud_log_switch_event">Switch event type=%1$s enabled=%2$s</string>
-    <string name="native_cloud_log_switch_error">Switch query failed %1$s %2$s</string>
-    <string name="native_cloud_log_sync_ok">syncNoteRecord onSuccess (progress comes from SyncObserver)</string>
     <string name="native_cloud_log_sync_fail">syncNoteRecord onError %1$s %2$s</string>
-    <string name="native_cloud_log_upload_start">Upload onStart</string>
-    <string name="native_cloud_log_upload_pause">Upload onPause</string>
-    <string name="native_cloud_log_uploading">Uploading progress=%1$d</string>
-    <string name="native_cloud_log_upload_error">File upload failed %1$s %2$s</string>
-    <string name="native_cloud_log_upload_finish">Upload finished: %1$d succeeded, %2$d failed</string>
-    <string name="native_cloud_log_upload_global_error">Upload global error code=%1$s %2$s</string>
-    <string name="native_cloud_log_download_start">Download onStart</string>
-    <string name="native_cloud_log_download_pause">Download onPause</string>
-    <string name="native_cloud_log_download_task_ready">Download tasks ready: %1$d files</string>
-    <string name="native_cloud_log_downloading">Downloading %1$d/%2$d bytes %3$d%%</string>
-    <string name="native_cloud_log_download_error">File download failed (still means downloading) %1$s %2$s</string>
-    <string name="native_cloud_log_download_error_batch">Batch download failed: %1$d files, code=%2$d</string>
-    <string name="native_cloud_log_download_finish">Download finished: %1$d succeeded, %2$d failed</string>
 
     <!-- Module 8 · Merge recordings -->
     <string name="native_merge_title">Module 8 · Merge recordings</string>
@@ -471,7 +346,6 @@
     <string name="native_merge_toast_exceed_duration">Total duration cannot exceed %1$d hours</string>
     <string name="native_merge_toast_unsupported_type">The selection contains face-to-face / dialogue recordings, which cannot be merged</string>
     <string name="native_merge_toast_task_running">A merge task is still running</string>
-    <string name="native_merge_log_precheck_busy">getFileMergeStatus pre-check: a merge is already running, skipping</string>
     <string name="native_merge_err_20220">Invalid parameters, reselect the files and retry</string>
     <string name="native_merge_err_20221">Merge failed, please retry</string>
     <string name="native_merge_err_20222">Network unavailable, check the connection and retry</string>
@@ -490,15 +364,8 @@
     <string name="native_merge_sub_downloading">Downloading files</string>
     <string name="native_merge_sub_merging">Merging audio</string>
     <string name="native_merge_toast_finished">Merge finished, recordId=%1$s</string>
-    <string name="native_merge_log_snapshot">getFileMergeStatus() snapshot status=%1$s</string>
-    <string name="native_merge_log_load_list">getRecordTransferResultList(pageSize=%1$d, remove=false)</string>
     <string name="native_merge_log_load_fail">List load failed %1$s %2$s</string>
-    <string name="native_merge_log_list_ok">Loaded %1$d candidates</string>
-    <string name="native_merge_log_list_empty">List is empty, nothing to merge</string>
-    <string name="native_merge_log_merge">mergeRecordList([%1$s])</string>
-    <string name="native_merge_log_merge_ok">mergeRecordList onSuccess (progress comes from IMergeStatusListener)</string>
     <string name="native_merge_log_merge_fail">mergeRecordList onError %1$s %2$s</string>
-    <string name="native_merge_log_status">Merge status %1$s progress %2$d%%</string>
 
     <!-- Module 9 · Quick entries -->
     <string name="native_quick_title">Module 9 · Quick entries</string>
@@ -520,17 +387,21 @@
     <string name="native_quick_noop_hint">Both APIs are no-ops on Android Native. They return onSuccess immediately and exist only to keep parity with the mini program interface.</string>
     <string name="native_quick_btn_event_limit">operateEventLimit (no-op)</string>
     <string name="native_quick_btn_setup_channel">readyToSetupNativeChannel (no-op)</string>
-    <string name="native_quick_log_query_ok">getQuickEntryList onSuccess, %1$d items</string>
-    <string name="native_quick_log_query_fail">getQuickEntryList onError %1$s %2$s</string>
-    <string name="native_quick_log_empty">getQuickEntryList returned an empty list</string>
-    <string name="native_quick_log_set">setQuickEntryEnabled(type=%1$d, componentId=%2$d, enabled=%3$d)</string>
-    <string name="native_quick_log_set_ok">setQuickEntryEnabled onSuccess (result comes from IQuickEntryAddListener)</string>
-    <string name="native_quick_log_set_fail">setQuickEntryEnabled onError %1$s %2$s</string>
-    <string name="native_quick_log_add_result">onAddResult type=%1$d id=%2$d success=%3$b</string>
     <string name="native_quick_hint_manual_add">This system does not allow the app to trigger the add; the user must long-press an empty area on the home screen and add it manually</string>
     <string name="native_quick_toast_added">Added</string>
     <string name="native_quick_toast_add_failed">Failed to add</string>
     <string name="native_quick_toast_requested">Requested — check system permissions if nothing happens</string>
-    <string name="native_quick_log_event_limit">operateEventLimit(%1$s, true)</string>
-    <string name="native_quick_log_noop_ok">%1$s onSuccess (no-op, nothing happens)</string>
+    <string name="native_detail_tab_mindmap">Mind Map</string>
+    <string name="native_detail_mindmap_hint">This tab shares the same data as Summary; there is no dedicated SDK API.\nIt comes from the outline / question fields of the summary JSON (double-encoded strings that need one extra decode). A real product renders a mind map from them; this demo only shows the structured data.</string>
+    <string name="native_detail_mindmap_empty">No data yet. The outline structure appears here once a summary is generated.</string>
+    <string name="native_toast_api_failed">Request failed: %1$s %2$s</string>
+    <string name="native_action_share_link">Share link: %1$s</string>
+    <string name="native_action_rename_no_home">No home ID; the cloud-side name was not updated</string>
+    <string name="native_tag_more">+%1$d</string>
+    <string name="native_detail_transfer_edit_hint">Long-press the text to edit a single segment. The body is read-only because free-form edits cannot be mapped back to the original structure.</string>
+    <string name="native_action_toast_download_done">Audio downloaded</string>
+    <string name="native_action_toast_download_failed">Audio download failed</string>
+    <string name="native_action_toast_download_started">Download started; you will be notified when it finishes</string>
+    <string name="native_action_toast_local_audio_removed">Local audio deleted; the record is kept</string>
+    <string name="native_offline_no_card_device">No recording card in this home. Offline file transfer is only supported on recording cards; earphones and the phone do not keep device-side cached files.</string>
 </resources>

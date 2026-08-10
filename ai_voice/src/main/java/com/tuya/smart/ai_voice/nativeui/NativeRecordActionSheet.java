@@ -2,7 +2,10 @@ package com.tuya.smart.ai_voice.nativeui;
 
 import android.app.Activity;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,7 +35,8 @@ import java.util.List;
  *     <li>模块 9 · 分享链接 —— {@code operateRecordShareLink}，开启与关闭</li>
  *     <li>模块 6 · 按需下载音频 —— {@code syncDownloadNoteAudio}</li>
  *     <li>模块 3 · 重命名 —— {@code updateRecordTransferResult}</li>
- *     <li>模块 3 · 标签增删 —— {@code updateRecordTagResult}</li>
+ *     <li>模块 3 · 标签新增 / 删除 —— {@code updateRecordTagResult}</li>
+ *     <li>模块 3 · 仅删本地音频 —— {@code removeFileList(ids, isDeleteAll=false)}</li>
  *     <li>模块 3 · 彻底删除 —— {@code removeFileList(ids, isDeleteAll=true)}</li>
  * </ul>
  * 用系统 {@code AlertDialog} 承载，不引入额外布局，便于整段复制。
@@ -56,8 +60,6 @@ public final class NativeRecordActionSheet {
     private static final int TAG_BIZ_ADD = 0;
     /** 删除标签。 */
     private static final int TAG_BIZ_REMOVE = 1;
-    /** 重排标签顺序，{@code tags} 传完整的新顺序。 */
-    private static final int TAG_BIZ_REORDER = 2;
 
     /** {@code syncDownloadNoteAudio} 的 fileId 缺省值。 */
     private static final long FILE_ID_ABSENT = -1L;
@@ -69,16 +71,22 @@ public final class NativeRecordActionSheet {
     }
 
     /**
-     * 操作结果回调，供详情页刷新界面与打日志。
+     * 操作结果回调，供详情页刷新界面。
      */
     public interface Callback {
-        /**
-         * @param message 可直接展示给用户的结果描述
-         */
-        void onLog(String message);
-
         /** 数据已变更，调用方应重新拉取详情。 */
         void onDataChanged();
+
+        /**
+         * 文件名已改（本地已写入）。
+         * <p>
+         * 单独给一个回调而不是复用 {@link #onDataChanged()}，是因为改名还有一步收尾：
+         * 总结 JSON 里的 {@code title} 是文件名的另一个副本，必须一并更新，
+         * 否则下次加载总结会把名字覆盖回旧值。那份 JSON 由详情页持有，只能由它来写。
+         *
+         * @param newName 新文件名
+         */
+        void onRenamed(String newName);
 
         /** 录音已被彻底删除，详情已不存在，调用方应关闭页面。 */
         void onRecordDeleted();
@@ -103,7 +111,7 @@ public final class NativeRecordActionSheet {
                 activity.getString(R.string.native_action_rename),
                 activity.getString(R.string.native_action_add_tag),
                 activity.getString(R.string.native_action_remove_tag),
-                activity.getString(R.string.native_action_reorder_tag),
+                activity.getString(R.string.native_list_delete_audio_only),
                 activity.getString(R.string.native_action_delete),
         };
         new AlertDialog.Builder(activity)
@@ -112,11 +120,11 @@ public final class NativeRecordActionSheet {
                     switch (which) {
                         case 0: operateShare(activity, recordId, SHARE_STATUS_ON, callback); break;
                         case 1: operateShare(activity, recordId, SHARE_STATUS_OFF, callback); break;
-                        case 2: downloadAudio(activity, recordTransferId, recordId, callback); break;
+                        case 2: downloadAudio(activity, recordTransferId, recordId); break;
                         case 3: rename(activity, recordId, recordTransferId, currentName, callback); break;
                         case 4: editTag(activity, recordId, TAG_BIZ_ADD, callback); break;
                         case 5: editTag(activity, recordId, TAG_BIZ_REMOVE, callback); break;
-                        case 6: editTag(activity, recordId, TAG_BIZ_REORDER, callback); break;
+                        case 6: removeLocalAudio(activity, recordTransferId, callback); break;
                         case 7: deleteRecord(activity, recordTransferId, currentName, callback); break;
                         default: break;
                     }
@@ -137,24 +145,24 @@ public final class NativeRecordActionSheet {
     private static void operateShare(Activity activity, String recordId, int shareStatus,
                                      Callback callback) {
         long expireTime = System.currentTimeMillis() + SHARE_EXPIRE_MILLIS;
-        callback.onLog(activity.getString(R.string.native_action_log_share, shareStatus));
         ThingAudioDetectManagerNative.getInstance().operateRecordShareLink(
                 recordId, new ArrayList<>(SHARE_TYPE_LINK), expireTime, shareStatus, null,
                 new IOperateRecordShareLinkResult() {
                     @Override
                     public void onSuccess(String link) {
                         activity.runOnUiThread(() -> {
-                            callback.onLog(activity.getString(
-                                    R.string.native_action_log_share_ok,
-                                    TextUtils.isEmpty(link) ? "-" : link));
+                            // 开启分享时把链接给用户，关闭时 link 为空
+                            if (!TextUtils.isEmpty(link)) {
+                                toast(activity, activity.getString(
+                                        R.string.native_action_share_link, link));
+                            }
                             callback.onDataChanged();
                         });
                     }
 
                     @Override
                     public void onError(String code, String error) {
-                        activity.runOnUiThread(() -> callback.onLog(activity.getString(
-                                R.string.native_action_log_share_fail, code, error)));
+                        toastError(activity, code, error);
                     }
                 });
     }
@@ -164,17 +172,18 @@ public final class NativeRecordActionSheet {
     /**
      * 下载这条录音的云端音频到本地。
      * <p>
-     * <b>该接口同步返回且无回调</b>——下载进度要通过云同步的 {@code SyncObserver}
-     * 观察（见 {@link NativeCloudSyncActivity}），单条状态变化则由
-     * {@code IRecordFileUpdateCallback} 的 {@code cloudSyncStatus} 反映。
+     * <b>该接口同步返回且无回调</b>，所以这里只能提示「已发起」。
+     * 真正的下载结束由 {@code SyncObserver} 的 {@code DownloadListener.onFinish} 推送，
+     * 详情页注册了它并按 {@code recordId} 过滤出本条后再提示结果，
+     * 见 {@code NativeRecordDetailActivity.AudioDownloadListener}。
+     * 单条的同步状态变化另由 {@code IRecordFileUpdateCallback} 的 {@code cloudSyncStatus} 反映。
      *
      * @param recordTransferId 文件 ID；无效时按接口约定传 -1
      */
-    private static void downloadAudio(Activity activity, long recordTransferId, String recordId,
-                                      Callback callback) {
+    private static void downloadAudio(Activity activity, long recordTransferId, String recordId) {
         long fileId = recordTransferId > 0 ? recordTransferId : FILE_ID_ABSENT;
         ThingAudioDetectManagerNative.getInstance().syncDownloadNoteAudio(fileId, recordId);
-        callback.onLog(activity.getString(R.string.native_action_log_download, fileId, recordId));
+        toast(activity, activity.getString(R.string.native_action_toast_download_started));
     }
 
     // ===================== 模块 3 · 元信息更新 =====================
@@ -192,31 +201,30 @@ public final class NativeRecordActionSheet {
      */
     private static void rename(Activity activity, String recordId, long recordTransferId,
                                @Nullable String currentName, Callback callback) {
-        EditText input = new EditText(activity);
+        View inputView = createInputView(activity);
+        EditText input = inputView.findViewById(R.id.native_dialog_input);
         input.setText(currentName == null ? "" : currentName);
         new AlertDialog.Builder(activity)
                 .setTitle(R.string.native_action_rename)
-                .setView(input)
+                .setView(inputView)
                 .setPositiveButton(R.string.native_action_confirm, (d, w) -> {
                     String name = input.getText().toString().trim();
                     if (TextUtils.isEmpty(name)) return;
-                    callback.onLog(activity.getString(R.string.native_action_log_rename, name));
                     ThingAudioDetectManagerNative.getInstance().updateRecordTransferResult(
                             recordTransferId, name, null, null, null, null, null, null,
                             new IResultCallback() {
                                 @Override
                                 public void onSuccess() {
                                     activity.runOnUiThread(() -> {
-                                        callback.onLog("updateRecordTransferResult onSuccess");
-                                        callback.onDataChanged();
-                                        renameOnCloud(activity, recordId, name, callback);
+                                        renameOnCloud(activity, recordId, name);
+                                        // 交给详情页收尾：同步总结里的 title，再刷新
+                                        callback.onRenamed(name);
                                     });
                                 }
 
                                 @Override
                                 public void onError(String code, String error) {
-                                    activity.runOnUiThread(() -> callback.onLog(
-                                            "updateRecordTransferResult onError " + code + " " + error));
+                                    toastError(activity, code, error);
                                 }
                             });
                 })
@@ -230,28 +238,25 @@ public final class NativeRecordActionSheet {
      * @param recordId 业务录音 ID
      * @param name     新文件名
      */
-    private static void renameOnCloud(Activity activity, String recordId, String name,
-                                      Callback callback) {
+    private static void renameOnCloud(Activity activity, String recordId, String name) {
         long homeId = currentHomeId();
         if (homeId <= 0) {
-            callback.onLog(activity.getString(R.string.native_action_log_rename_no_home));
+            toast(activity, activity.getString(R.string.native_action_rename_no_home));
             return;
         }
-        callback.onLog(activity.getString(R.string.native_action_log_rename_cloud, name));
         CONTENT_BUSINESS.updateFileName(recordId, name, homeId,
                 new Business.ResultListener<Boolean>() {
                     @Override
                     public void onSuccess(BusinessResponse response, Boolean result, String apiName) {
-                        activity.runOnUiThread(() -> callback.onLog(
-                                activity.getString(R.string.native_action_log_rename_cloud_ok)));
+                        // 云端改名成功，界面已在本地写入时刷新过，此处无需再动
                     }
 
                     @Override
                     public void onFailure(BusinessResponse response, Boolean result, String apiName) {
                         String code = response == null ? "-" : response.getErrorCode();
                         String msg = response == null ? "" : response.getErrorMsg();
-                        activity.runOnUiThread(() -> callback.onLog(activity.getString(
-                                R.string.native_action_log_rename_cloud_fail, code, msg)));
+                        // 云端失败不回滚本地，但要让使用者看见「本地已改、云端未同步」
+                        toastError(activity, code, msg);
                     }
                 });
     }
@@ -270,6 +275,37 @@ public final class NativeRecordActionSheet {
     }
 
     /**
+     * 只删本地音频：{@code removeFileList([id], isDeleteAll=false)}。
+     * <p>
+     * <b>与彻底删除是同一个接口，靠 {@code isDeleteAll} 区分</b>：这里录音记录、转写与总结
+     * 全部保留，删掉的只是占空间的音频文件，之后还能用
+     * {@code syncDownloadNoteAudio} 重新下回来。
+     * <p>
+     * 因为可恢复，所以<b>不做二次确认</b>——与 {@link #deleteRecord} 的强确认形成对照。
+     * 记录还在，详情页不必关闭，只通知调用方刷新。
+     */
+    private static void removeLocalAudio(Activity activity, long recordTransferId,
+                                         Callback callback) {
+        ThingAudioDetectManagerNative.getInstance().removeFileList(
+                Collections.singletonList(recordTransferId), false,
+                new IResultCallback() {
+                    @Override
+                    public void onSuccess() {
+                        activity.runOnUiThread(() -> {
+                            toast(activity, activity.getString(
+                                    R.string.native_action_toast_local_audio_removed));
+                            callback.onDataChanged();
+                        });
+                    }
+
+                    @Override
+                    public void onError(String code, String error) {
+                        toastError(activity, code, error);
+                    }
+                });
+    }
+
+    /**
      * 彻底删除这条录音：{@code removeFileList([id], isDeleteAll=true)}，本地与云端都会删掉，不可恢复。
      * <p>
      * 删除后详情已不存在，通过 {@link Callback#onRecordDeleted()} 通知调用方关闭页面。
@@ -282,23 +318,17 @@ public final class NativeRecordActionSheet {
                 .setTitle(R.string.native_list_delete_title)
                 .setMessage(activity.getString(R.string.native_list_delete_msg, name))
                 .setPositiveButton(R.string.native_list_delete_confirm, (d, w) -> {
-                    callback.onLog(activity.getString(
-                            R.string.native_action_log_delete, recordTransferId));
                     ThingAudioDetectManagerNative.getInstance().removeFileList(
                             Collections.singletonList(recordTransferId), true,
                             new IResultCallback() {
                                 @Override
                                 public void onSuccess() {
-                                    activity.runOnUiThread(() -> {
-                                        callback.onLog("removeFileList onSuccess");
-                                        callback.onRecordDeleted();
-                                    });
+                                    activity.runOnUiThread(callback::onRecordDeleted);
                                 }
 
                                 @Override
                                 public void onError(String code, String error) {
-                                    activity.runOnUiThread(() -> callback.onLog(
-                                            "removeFileList onError " + code + " " + error));
+                                    toastError(activity, code, error);
                                 }
                             });
                 })
@@ -307,31 +337,31 @@ public final class NativeRecordActionSheet {
     }
 
     /**
-     * 标签增删改。三种 {@code bizType} 的入参含义不同：
+     * 标签新增 / 删除。两种 {@code bizType} 的 {@code tags} 含义不同：
      * <ul>
      *     <li>{@link #TAG_BIZ_ADD} —— {@code tags} 是要新增的标签</li>
      *     <li>{@link #TAG_BIZ_REMOVE} —— {@code tags} 是要删除的标签</li>
-     *     <li>{@link #TAG_BIZ_REORDER} —— {@code tags} 必须是<b>完整的新顺序</b>，
-     *         而不是被移动的那几个；漏传会导致缺失的标签被丢弃</li>
      * </ul>
+     * 接口还支持 {@code bizType=2} 重排顺序，要求传<b>完整的新顺序</b>、漏传即丢弃，
+     * 靠输入框难以可靠操作（应配合可拖拽列表），<b>本 Demo 不演示</b>。
      *
      * @param bizType 操作类型
      */
-    private static void editTag(Activity activity, String recordId, int bizType, Callback callback) {
-        EditText input = new EditText(activity);
-        input.setHint(bizType == TAG_BIZ_REORDER
-                ? R.string.native_action_tag_reorder_hint : R.string.native_action_tag_hint);
+    private static void editTag(Activity activity, String recordId, int bizType,
+                                Callback callback) {
+        View inputView = createInputView(activity);
+        EditText input = inputView.findViewById(R.id.native_dialog_input);
+        input.setHint(R.string.native_action_tag_hint);
         new AlertDialog.Builder(activity)
                 .setTitle(tagDialogTitle(bizType))
-                .setView(input)
+                .setView(inputView)
                 .setPositiveButton(R.string.native_action_confirm, (d, w) -> {
                     String tag = input.getText().toString().trim();
                     if (TextUtils.isEmpty(tag)) return;
                     UpdateRecordTagResultParams param = new UpdateRecordTagResultParams(
                             recordId, bizType, new ArrayList<>(Arrays.asList(tag.split(","))));
-                    callback.onLog(activity.getString(R.string.native_action_log_tag, bizType, tag));
                     ThingAudioDetectManagerNative.getInstance().updateRecordTagResult(param,
-                            resultCallback(activity, callback, "updateRecordTagResult"));
+                            resultCallback(activity, callback));
                 })
                 .setNegativeButton(R.string.native_list_delete_cancel, null)
                 .show();
@@ -342,35 +372,53 @@ public final class NativeRecordActionSheet {
      * @return 弹窗标题资源 ID
      */
     private static int tagDialogTitle(int bizType) {
-        switch (bizType) {
-            case TAG_BIZ_REMOVE: return R.string.native_action_remove_tag;
-            case TAG_BIZ_REORDER: return R.string.native_action_reorder_tag;
-            case TAG_BIZ_ADD:
-            default: return R.string.native_action_add_tag;
-        }
+        return bizType == TAG_BIZ_REMOVE
+                ? R.string.native_action_remove_tag : R.string.native_action_add_tag;
     }
 
     /**
-     * 构造统一的结果回调：成功打日志并通知刷新，失败只打日志。
-     *
-     * @param action 动作名，用于日志区分
+     * 构造统一的结果回调：成功通知刷新，失败提示使用者。
      */
-    private static IResultCallback resultCallback(Activity activity, Callback callback,
-                                                  String action) {
+    private static IResultCallback resultCallback(Activity activity, Callback callback) {
         return new IResultCallback() {
             @Override
             public void onSuccess() {
-                activity.runOnUiThread(() -> {
-                    callback.onLog(action + " onSuccess");
-                    callback.onDataChanged();
-                });
+                activity.runOnUiThread(callback::onDataChanged);
             }
 
             @Override
             public void onError(String code, String error) {
-                activity.runOnUiThread(() ->
-                        callback.onLog(action + " onError " + code + " " + error));
+                toastError(activity, code, error);
             }
         };
+    }
+
+    /**
+     * 创建对话框用的输入区。
+     * <p>
+     * 用布局而非裸 {@code new EditText(context)}：后者没有背景与内边距，
+     * 空输入时在对话框里几乎看不见，hint 也会跟着主题走色，标签这类<b>靠 hint 说明输入格式</b>
+     * 的场景会直接变成不可用。取值用 {@code findViewById(R.id.native_dialog_input)}。
+     *
+     * @param activity 宿主
+     * @return 输入区根视图
+     */
+    private static View createInputView(Activity activity) {
+        return LayoutInflater.from(activity).inflate(R.layout.dialog_native_input, null);
+    }
+
+    /**
+     * 提示接口调用失败。SDK 回调可能在子线程，内部已切回主线程。
+     *
+     * @param code  错误码
+     * @param error 错误消息
+     */
+    private static void toastError(Activity activity, String code, String error) {
+        toast(activity, activity.getString(R.string.native_toast_api_failed, code, error));
+    }
+
+    private static void toast(Activity activity, String message) {
+        activity.runOnUiThread(() ->
+                Toast.makeText(activity, message, Toast.LENGTH_SHORT).show());
     }
 }

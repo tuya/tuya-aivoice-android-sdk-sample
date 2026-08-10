@@ -10,7 +10,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,9 +29,7 @@ import com.thingclips.smart.plugin.tuniaudiodetectmanager.ThingAudioDetectManage
 import com.thingclips.smart.sdk.bean.DeviceBean;
 import com.tuya.smart.ai_voice.R;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -42,8 +39,8 @@ import java.util.Map;
  * <p>
  * 提供四样东西：
  * <ol>
- *     <li>统一布局：顶部栏 + 内容容器 + 可选事件日志区（{@link #enableLogPanel()} 控制）</li>
- *     <li>{@link #appendLog(String)} / {@link #toast(String)} / {@link #runOnUi(Runnable)}
+ *     <li>统一布局：顶部栏 + 内容容器</li>
+ *     <li>{@link #toast(String)} / {@link #runOnUi(Runnable)}
  *         —— SDK 回调一律在子线程，更新 UI 必须切回主线程</li>
  *     <li>{@link #registerListeners()} / {@link #unregisterListeners()} 抽象方法，
  *         分别在 {@code onCreate} / {@code onDestroy} 自动调用。
@@ -60,17 +57,12 @@ public abstract class NativeDemoBaseActivity extends AppCompatActivity {
     /** 音频类设备的产品配置 meta key，用于从 configMetas 中解析 product_type。 */
     private static final String AUDIO_PRODUCT_META_KEY = "tyabiw4jrd";
 
-    private static final String LOG_TIME_PATTERN = "HH:mm:ss.SSS";
-
     /** SDK 单例入口，接入者只需面向它编程。 */
     protected final ThingAudioDetectManagerNative manager =
             ThingAudioDetectManagerNative.getInstance();
 
     /** 主线程 Handler，供 {@link #runOnUi(Runnable)} 使用。 */
     protected final Handler main = new Handler(Looper.getMainLooper());
-
-    private TextView logText;
-    private ScrollView logScroll;
 
     /** 设备下拉数据源：index 0 固定为 PHONE，其余为过滤后的家庭音频设备。 */
     protected final List<DeviceItem> deviceItems = new ArrayList<>();
@@ -107,15 +99,6 @@ public abstract class NativeDemoBaseActivity extends AppCompatActivity {
     protected abstract void unregisterListeners();
 
     /**
-     * 是否显示底部事件日志区。纯展示型页面可返回 {@code false}。
-     *
-     * @return true 显示（默认）
-     */
-    protected boolean enableLogPanel() {
-        return true;
-    }
-
-    /**
      * 内容区是否需要基类提供的滚动容器。
      * <p>
      * 表单型页面返回 {@code true}（默认）；内部已有 RecyclerView 等滚动控件的页面
@@ -147,21 +130,12 @@ public abstract class NativeDemoBaseActivity extends AppCompatActivity {
             inflater.inflate(getContentLayoutId(), contentRoot, true);
         }
 
-        View logPanel = findViewById(R.id.ll_log_panel);
-        if (enableLogPanel()) {
-            logText = findViewById(R.id.tv_log);
-            logScroll = findViewById(R.id.sv_log);
-            findViewById(R.id.tv_log_clear).setOnClickListener(v -> logText.setText(""));
-        } else {
-            logPanel.setVisibility(View.GONE);
-        }
-
         onContentViewCreated();
         registerListeners();
     }
 
     /**
-     * 内容区布局已注入、日志区已就绪时回调，子类在此绑定 View 与初始化数据。
+     * 内容区布局已注入时回调，子类在此绑定 View 与初始化数据。
      * <p>
      * 此时 {@link #registerListeners()} 尚未调用，可安全初始化监听所依赖的字段。
      */
@@ -177,20 +151,6 @@ public abstract class NativeDemoBaseActivity extends AppCompatActivity {
     // ===================== 通用工具 =====================
 
     /**
-     * 追加一条事件日志并滚动到底部。仅在 {@link #enableLogPanel()} 为 true 时生效。
-     * <p>
-     * 必须在主线程调用。
-     *
-     * @param msg 日志内容
-     */
-    protected void appendLog(String msg) {
-        if (logText == null) return;
-        String time = new SimpleDateFormat(LOG_TIME_PATTERN, Locale.getDefault()).format(new Date());
-        logText.append("[" + time + "] " + msg + "\n\n");
-        logScroll.post(() -> logScroll.fullScroll(ScrollView.FOCUS_DOWN));
-    }
-
-    /**
      * 切回主线程执行。SDK 回调可能在子线程，更新 UI 前一律走这里。
      *
      * @param r 待执行任务
@@ -201,6 +161,19 @@ public abstract class NativeDemoBaseActivity extends AppCompatActivity {
 
     protected void toast(String s) {
         Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * 提示接口调用失败。SDK 回调可能在子线程，内部已切回主线程，调用方直接用即可。
+     * <p>
+     * 错误码是底层透传、无固定枚举，故原样展示而不做分支映射；
+     * 录音链路有专属码表的场景请改用 {@code RecordErrorCode.messageOf}。
+     *
+     * @param code  错误码
+     * @param error 错误消息
+     */
+    protected void toastError(String code, String error) {
+        runOnUi(() -> toast(getString(R.string.native_toast_api_failed, code, error)));
     }
 
     // ===================== 设备下拉 =====================
@@ -217,14 +190,17 @@ public abstract class NativeDemoBaseActivity extends AppCompatActivity {
     protected void setupDeviceSpinner(@NonNull Spinner spinner) {
         this.deviceSpinner = spinner;
         deviceItems.clear();
-        deviceItems.add(new DeviceItem(
-                DEVICE_ID_PHONE, getString(R.string.native_device_phone), null, true));
+        if (includePhoneDevice()) {
+            deviceItems.add(new DeviceItem(
+                    DEVICE_ID_PHONE, getString(R.string.native_device_phone), null, true));
+        }
 
         List<DeviceBean> homeDevices = getHomeDevices();
         if (homeDevices != null) {
             for (DeviceBean dev : homeDevices) {
                 String productType = getAudioProductType(dev);
                 if (productType == null) continue;
+                if (!acceptDevice(productType)) continue;
                 String name = TextUtils.isEmpty(dev.getName()) ? dev.getDevId() : dev.getName();
                 String display = getString(R.string.native_device_name_with_category,
                         name, categoryName(productType));
@@ -254,12 +230,46 @@ public abstract class NativeDemoBaseActivity extends AppCompatActivity {
     }
 
     /**
+     * 设备下拉是否包含「手机本地录音」这一项。
+     * <p>
+     * 只作用于真实设备的能力（如离线文件传输）应返回 {@code false}——
+     * 手机上不存在设备侧缓存，列出来只会让人误选。
+     *
+     * @return true 包含（默认）
+     */
+    protected boolean includePhoneDevice() {
+        return true;
+    }
+
+    /**
+     * 是否把该类型的设备放进下拉。
+     * <p>
+     * 默认接受全部音频设备。<b>能力只支持部分机型时应覆写</b>，把不支持的直接过滤掉，
+     * 比给出「该设备不支持」的事后提示更省事——用户根本选不到。
+     *
+     * @param productType {@code DeviceItem.TYPE_*} 之一
+     * @return true 放进下拉（默认）
+     */
+    protected boolean acceptDevice(@NonNull String productType) {
+        return true;
+    }
+
+    /**
+     * @return 设备下拉是否为空（不含手机项）。为空说明当前家庭没有该能力支持的设备
+     */
+    protected boolean hasNoUsableDevice() {
+        for (DeviceItem item : deviceItems) {
+            if (!item.isPhone()) return false;
+        }
+        return true;
+    }
+
+    /**
      * 设备下拉选中项变化。默认打日志，子类可覆写做联动。
      *
      * @param item 选中的设备
      */
     protected void onDeviceSelected(@NonNull DeviceItem item) {
-        appendLog(getString(R.string.native_log_select_device, item.displayName, item.devId));
     }
 
     /**
@@ -303,7 +313,6 @@ public abstract class NativeDemoBaseActivity extends AppCompatActivity {
             return ThingHomeSdk.newHomeInstance(familyService.getCurrentHomeId())
                     .getHomeBean().getDeviceList();
         } catch (Exception e) {
-            appendLog(getString(R.string.native_log_get_home_devices_exception, e.getMessage()));
             return null;
         }
     }

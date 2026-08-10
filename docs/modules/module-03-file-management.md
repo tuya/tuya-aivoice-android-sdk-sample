@@ -148,7 +148,7 @@ void updateRecordTransferResult(long recordTransferId, String name, Integer stat
 | `storageKey` | `String` | 否 | 云端存储 key；`null` 不修改 |
 | `callback` | `IResultCallback` | 否 | 结果回调 |
 
-> ⚠️ **本接口只改本地库，不写云端。** 需要跨端一致时见[重命名要写两处](#重命名要写两处)。
+> ⚠️ **本接口只改本地库，不写云端。** 需要跨端一致时见[重命名要写三处](#重命名要写三处)。
 
 ---
 
@@ -195,7 +195,7 @@ void updateRecordTransferResult(long recordTransferId, String name, Integer stat
 | `audioPath` | `String` | 是 | earphone 目录下的音频文件地址 |
 | `callback` | `IRecordCallBack<String>` | 否 | 返回可访问路径 |
 
-> 该接口是为小程序容器提供合规路径的桥接能力。Native 直接持有 `filePath` 即可播放，
+> 该接口是为跨容器场景提供合规路径的桥接能力。Native 直接持有 `filePath` 即可播放，
 > 通常无需调用，**本 Demo 未实现**。
 
 ---
@@ -392,35 +392,56 @@ manager.removeFileRecordUpdateListener(callback);
 把记录移入回收站，之后可用 `FilesParam.remove=true` 查回并还原。
 **本 Demo 不演示回收站**，列表固定按「未删除」查询。
 
-### 重命名要写两处
+### 重命名要写三处
 
-文件名在**本地库**和**云端**各存一份，SDK 只管本地，云端要自己调 atop：
+文件名一共存了**三份**，漏掉任何一份都会出问题：
 
-| 写入 | 接口 | 效果 |
+| 写入 | 接口 | 漏掉的后果 |
 |---|---|---|
-| 本地 | `updateRecordTransferResult(recordTransferId, name, ...)` | 界面立刻显示新名字，云端仍是旧值 |
-| 云端 | atop `m.wearable.audio.record.add` | 其他端与重装后能看到，本地库不会自动跟着变 |
+| 本地库 | `updateRecordTransferResult(recordTransferId, name, ...)` | 界面不变 |
+| 云端 | atop `m.wearable.audio.record.add` | 其他端与重装后仍是旧名 |
+| **总结 JSON 的 `title`** | `saveRecordTransferSummaryResult` + atop `m.wearable.audio.summary.edit` | **改完的名字会自己变回去**，见下 |
 
-只写其中一处就会两端不一致。云端接口的入参形态要注意：业务字段先拼成 JSON 字符串，
+云端接口的入参形态要注意：业务字段先拼成 JSON 字符串，
 再整体放进 `audioRecordRequest` 一个字段，而不是平铺成多个 post 参数。
 
 ```
 audioRecordRequest = {"recordId":"xxx","name":"新名字","ownerId":<当前家庭ID>}
 ```
 
-Demo 里有**两条**改名路径，都走这套双写：
+#### 为什么总结里的 title 也要改
 
-| 触发 | 位置 |
-|---|---|
-| 用户手动改名 | 详情页「更多操作」→ 重命名 |
-| 总结完成后用 AI 提炼的标题自动改名 | 详情页 `applySummaryTitle()` |
+总结结果 JSON 里的 `title` 是 AI 为这条录音提炼的标题，**它是文件名的另一个副本**。
+业务上的惯例是：加载总结后若 `title` 与当前文件名不同，就用 `title` 回写文件名
+（这样录音刚生成时的时间戳默认名会被自动替换成有意义的标题）。
+
+于是只改文件名、不改 `title` 就会形成拉锯：
+
+```
+用户改名「周会」→ 本地 + 云端文件名已是「周会」
+  → 刷新详情 → 加载总结 → title 仍是旧值
+  → 自动改名逻辑发现两者不同 → 把文件名改回旧值
+```
+
+表现就是「刚改完名字，一刷新又变回去了」。
+
+顺序也有讲究：**先写 `title`，再刷新详情**。反过来的话，刷新触发的总结加载会读到旧
+`title`，同样会把名字改回去。
+
+**两个方向都要保持一致**：自动改名是 `title` → 文件名，手动改名就得反过来把文件名写进 `title`。
+
+#### Demo 的两条改名路径
+
+| 触发 | 位置 | 要写的地方 |
+|---|---|---|
+| 用户手动改名 | 「更多操作」→ 重命名 | 三处都写 |
+| 总结完成后用 AI 标题自动改名 | `applySummaryTitle()` | 只写本地 + 云端文件名（`title` 本就是源头，无需回写） |
 
 云端写入统一封装在 `AudioContentBusiness`，接口名与入参形态只在这一个类里定义。
-两条路径都是本地成功后再写云端，云端失败时记录日志但**不回滚本地**，
-让「本地已改、云端未同步」这个中间态可见。
+云端失败时**不回滚本地**，让「本地已改、云端未同步」这个中间态可见。
 
-> 小程序在自动改名这条路径上带的 `updateCloud: false`，指的是**不重写云端的总结内容**，
-> 与文件名是否同步到云端无关，别据此以为文件名不用写云端。
+> 自动改名这条路径无需重写云端的总结内容——`title` 本来就是从总结里读出来的。
+> 但**文件名仍要写云端**，两者是不同的事。
 
 ### 已读 / 未读
 
@@ -459,6 +480,31 @@ Demo 里有**两条**改名路径，都走这套双写：
 
 `bizType=2` 漏传标签会导致缺失的那些被丢弃，这是最容易出错的一处。
 
+> **Demo 只演示了 `0` 新增与 `1` 删除。** 重排要求传完整的新顺序，
+> 靠一个输入框让用户手敲全部标签几乎必然出错——真实产品应配合**可拖拽列表**，
+> 提交时把列表的当前顺序整体传回，用户没有机会漏填。这属于交互实现，与接口无关，故不在 Demo 范围内。
+
+### 标签变更该刷新到什么粒度
+
+标签展示的数据源是列表 / 详情返回的 `RecordTransferResultBean.tags`，
+变更事件则走 `IRecordFileUpdateCallback` 的 **`onUpdateWitheTags`**。
+
+它与 `onUpdate` 的区别正是**变更粒度**：`onUpdate` 说明转写、总结等状态变了，
+需要重新取详情与正文；`onUpdateWitheTags` 只说明标签变了，且
+**事件里的 `RecordUpdateInfo.tags` 已经是最新值**，直接拿来渲染即可。
+收到它还去重拉详情，等于把这个回调当 `onUpdate` 用，白白多一次接口调用。
+
+两种粒度按页面职责选：
+
+| 页面 | 策略 | 理由 |
+|---|---|---|
+| 详情页 | 用事件里的 `tags` **局部刷新** | 只有一条记录，粒度天然细 |
+| 列表页 | **全量重拉** | 列表要跟着当前筛选条件走，重拉最不容易出错 |
+
+Demo 两种都演示了：[`NativeRecordDetailActivity.handleTagsUpdate`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordDetailActivity.java)
+局部刷新，[`NativeRecordListActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordListActivity.java)
+全量重拉，渲染共用 [`RecordTagBinder`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/widget/RecordTagBinder.java)。
+
 ---
 
 ## 七、错误码
@@ -486,8 +532,11 @@ Demo 里有**两条**改名路径，都走这套双写：
 5. `removeFileList` 的三种语义按入参组合区分，彻底删除前应二次确认
 6. `updateRecordTransferResult` 的可选参数传 `null` 表示「不修改该字段」，
    只填要改的那个
-7. `updateRecordTagResult` 的 `bizType=2` 必须传完整新顺序
+7. `updateRecordTagResult` 的 `bizType=2` 必须传完整新顺序，
+   交互上应配合可拖拽列表整体提交，不要让用户手输
 8. 四个数据变更回调各有语义：`onUpdate` 状态变更、`onRecordOperate` 增删改、
    `onUpdateWitheTags` 标签变更、`onRecordListSyncSuccess` 云同步完成，
    按需决定局部刷新还是全量重拉
 9. 改名与已读都要写云端，否则跨端不一致
+10. 改名还要同步**总结 JSON 里的 `title`**，且要先写 `title` 再刷新，
+    否则名字会被自动改名逻辑覆盖回旧值

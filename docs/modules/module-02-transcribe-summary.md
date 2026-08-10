@@ -138,7 +138,26 @@ sequenceDiagram
 
 ### `saveRecordTransferSummaryResult(long recordTransferId, String text, IResultCallback callback)`
 
-保存总结正文，整份覆盖。参数形态与 `saveRecordTransferRecognizeResult` 相同。
+保存总结正文，**整份覆盖**。参数形态与 `saveRecordTransferRecognizeResult` 相同。
+
+> ⚠️ **不要把界面上的展示文本直接存回去。** 总结是一个 JSON 对象
+> （`summary` / `outline` / `question` / `title`），而界面上通常展示的是把这几段拼起来的
+> 可读文本。整份覆盖会把除正文外的字段全部抹掉，下次解析只能退化成纯文本，
+> 思维导图、AI 标题这些依赖 `outline` / `title` 的功能一并失效。
+
+正确做法是**只让用户编辑 `summary` 字段**，保存时写回原 JSON：
+
+```java
+// 展示：只取 summary 正文
+String body = JSON.parseObject(rawJson).getString("summary");
+
+// 保存：写回原 JSON，其余字段原样保留
+JSONObject obj = JSON.parseObject(rawJson);
+obj.put("summary", editedBody);
+manager.saveRecordTransferSummaryResult(recordTransferId, obj.toJSONString(), callback);
+```
+
+Demo 中的实现见 [`TransferTextParser.parseSummaryBody` / `writeSummaryBody`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/widget/TransferTextParser.java)。
 
 ---
 
@@ -269,12 +288,51 @@ manager.removeTransferListener(listener);
 ### `save*` 只写本地，跨端可见要另调云端
 
 三个 `save*` 接口写的都是**本地**。人工纠错要跨端可见，还得再调一次业务云的编辑接口——
-这部分不是 SDK 能力，**Demo 未实现**，接入方需自行补上。
+这部分不是 SDK 能力，需接入方自行补上。**这是接入时最容易漏的一环**：
+本地存成功了、界面也刷新了，换台设备打开却还是旧内容。
 
-| atop 接口 | 用途 | 入参 |
-|---|---|---|
-| `m.wearable.audio.content.edit` | 转写正文编辑 | `devId`、`key`（= `recordId`）、`content` |
-| `m.wearable.audio.summary.edit` | 总结正文编辑 | `key`（= `recordId`）、`content` |
+| atop 接口 | 用途 | 入参 | Demo |
+|---|---|---|---|
+| `m.wearable.audio.summary.edit` | 总结正文编辑 | `key`（= `recordId`）、`content` | ✔ 已实现 |
+| `m.wearable.audio.content.edit` | 转写正文编辑 | `devId`、`key`（= `recordId`）、`content` | ✔ 已实现 |
+
+两点注意：
+
+- **`content` 必须与写本地时是同一份 JSON 字符串**，不能是界面上的展示文案，
+  否则云端结构会被破坏（同[上一节](#saverecordtransfersummaryresultlong-recordtransferid-string-text-iresultcallback-callback)的道理）
+- 定位用的是业务 `recordId`，但参数名叫 **`key`**
+
+失败处理建议**不回滚本地**：本地已经改好，回滚等于丢掉用户的编辑；
+提示一句「云端未同步」比悄悄还原更诚实。
+
+总结、转写、文件名三者都应本地 + 云端**双写**，Demo 已全部对齐
+（另含已读状态），实现见
+[`AudioContentBusiness`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/business/AudioContentBusiness.java)。
+
+### 编辑正文必须留一份原始结构
+
+`saveRecordTransferRecognizeResult` 是**整份覆盖**写入，而界面上展示的通常是
+把 JSON 拼成的可读文案（时间戳、说话人、译文）。**那份文案无法反解回结构**——
+直接存回去，`timeOffset` / `speaker` / `translation` 全部丢失。
+
+正确做法是取数时另留一份原始数组，编辑只改对应段落的 `transcript`，再整份提交：
+
+```java
+// 取数：展示用可读文案，另存一份原始数组
+JSONArray origin = JSON.parseArray(text);
+textView.setText(renderReadable(origin));
+
+// 保存：只替换该段的 transcript，其余字段与其余段落原样保留
+origin.getJSONObject(index).put("transcript", newText);
+manager.saveRecordTransferRecognizeResult(recordTransferId, origin.toJSONString(), cb);
+```
+
+这也决定了**交互形态**：编辑必须以「段」为单位（点某段 → 改这一段），
+不能给一个大输入框让用户自由编辑整篇 —— 一旦增删了行，段落数就与原数组对不上，
+按序号映射即告失效。
+
+同理，总结的 `summary` 字段可以整块编辑，是因为它本来就是单个字符串字段，
+不存在分段映射问题。
 
 调用范式参考 Demo 里已有的
 [`AudioContentBusiness`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/business/AudioContentBusiness.java)
@@ -383,7 +441,12 @@ sequenceDiagram
 5. 转写与总结的状态取值不对齐，「进行中」分别是 `1` 和 `2`
 6. `getRecordTransferRecognizeResult` / `getRecordTransferSummaryResult` 返回的都是
    **JSON 字符串**，需自行解析；总结 JSON 里的 `outline` / `question` 还是二次编码的字符串
-7. `save*` 只写本地，跨端可见需另调 atop 编辑接口
+7. `save*` 只写本地，跨端可见需另调 atop 编辑接口，
+   且**云端写入的内容必须与写本地的是同一份 JSON**；失败不回滚本地，提示即可
+8. 转写正文的编辑必须**逐段进行**，且取数时要留一份原始数组当保存模板；
+   不要让用户自由编辑整篇可读文案
+9. 保存总结时**只编辑 `summary` 字段并写回原 JSON**，
+   直接存展示文本会抹掉 `outline` / `question` / `title`
 
 ---
 

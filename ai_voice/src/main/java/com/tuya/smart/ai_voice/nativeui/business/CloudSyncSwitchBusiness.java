@@ -6,23 +6,18 @@ import com.thingclips.smart.android.network.Business;
 /**
  * 云同步开关写入业务类。
  * <p>
- * <b>这不是 TTT SDK 能力。</b> 整体架构上，AI 笔记小程序自己实现一小部分功能（直调 atop 云接口），
- * 其余通过 wearkit 桥映射到 Native 方法——云同步开关的<b>写入</b>正属于前者，
- * 因此 {@code ThingAudioDetectManagerNative} <b>只有查询没有写入</b>。
- * Native 接入者要开关云同步，必须像本类这样自行调用 atop 接口。
+ * <b>这不是 TTT SDK 能力。</b> 云同步开关的<b>写入</b>属于业务云，
+ * {@code ThingAudioDetectManagerNative} <b>只有查询没有写入</b>，
+ * 接入方要开关云同步必须像本类这样自行调用 atop 接口。
  * <p>
- * 调用范式取自 {@code earphone-enhance} 组件的 {@code CloudSyncBusiness.kt}：
- * {@code Business} + {@code ApiParams} + {@code asyncRequest}，需要登录态故 {@code isSessionRequire = true}。
+ * 调用范式：{@code Business} + {@code ApiParams} + {@code asyncRequest}，
+ * 需要登录态故 {@code isSessionRequire = true}。
  * <p>
  * <b>接口是全量提交</b>：{@code enabled} 与 {@code syncType} 每次都必须一起传，
  * 只想改其中一个也要把另一个的当前值带上，否则会被覆盖成默认值。
  * <p>
- * ⚠️ 接口名在不同代码位置存在出入，本类采用小程序生产环境实际调用的那个：
- * <ul>
- *     <li>小程序 {@code api/common.ts}：{@code m.wearable.sync.switch.save}（本类采用）</li>
- *     <li>{@code CloudSyncSwitchData.kt} 注释：{@code m.wearable.cloud.sync.switch.save}</li>
- *     <li>{@code CloudSyncBusiness.kt} 常量名为 SAVE、值却是 {@code m.wearable.sync.switch.get}</li>
- * </ul>
+ * ⚠️ 该接口名存在多个版本（{@code m.wearable.cloud.sync.switch.save} 等），
+ * 本类采用生产环境实际在用的 {@code m.wearable.sync.switch.save}。
  * 接入时请以自家云端网关的实际配置为准。
  */
 public class CloudSyncSwitchBusiness extends Business {

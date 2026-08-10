@@ -10,7 +10,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.thingclips.smart.earphone.enhance.api.bean.RecordTransferResultBean;
+import com.google.android.material.chip.ChipGroup;
 import com.tuya.smart.ai_voice.R;
+import com.tuya.smart.ai_voice.nativeui.widget.RecordTagBinder;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -104,6 +106,8 @@ public class NativeRecordListAdapter
         holder.time.setText(b.recordTime == null ? "" : dateFmt.format(new Date(b.recordTime * 1000L)));
         holder.summary.setText(summaryText(ctx, b.summary));
         holder.unread.setVisibility(isUnread(b.visit) ? View.VISIBLE : View.GONE);
+        // 标签只做扫读，超出 3 个折叠为 +N；无标签时整块隐藏
+        RecordTagBinder.bind(holder.tags, b.tags, RecordTagBinder.LIMIT_LIST);
 
         holder.itemView.setOnClickListener(v -> {
             if (clickListener != null) {
@@ -201,6 +205,7 @@ public class NativeRecordListAdapter
         final TextView duration;
         final TextView time;
         final TextView summary;
+        final ChipGroup tags;
 
         ItemVh(@NonNull View v) {
             super(v);
@@ -212,6 +217,7 @@ public class NativeRecordListAdapter
             duration = v.findViewById(R.id.native_item_duration);
             time = v.findViewById(R.id.native_item_time);
             summary = v.findViewById(R.id.native_item_summary);
+            tags = v.findViewById(R.id.native_item_tags);
         }
     }
 }

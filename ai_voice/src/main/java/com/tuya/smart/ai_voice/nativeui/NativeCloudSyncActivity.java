@@ -64,8 +64,7 @@ import java.util.Map;
  * 甚至根本不下——要等用户点播放才按需拉（{@code syncDownloadNoteAudio}）。
  *
  * <h3>开关写入不是 SDK 能力</h3>
- * 架构上小程序自己实现一小部分功能（直调 atop 云接口），其余通过 wearkit 桥映射到 Native。
- * 云同步开关的<b>写入</b>属于前者，故 SDK 只有查询没有写入，需自行调 atop，
+ * SDK <b>只有查询没有写入</b>——开关的写入属于业务云能力，需自行调 atop，
  * 见 {@link CloudSyncSwitchBusiness}。
  *
  * <h3>错误码</h3>
@@ -190,9 +189,6 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
             public void onRefreshSwitchState(CloudSyncSwitchParam param, Long time,
                                              CloudSyncRefreshType type) {
                 runOnUi(() -> {
-                    appendLog(getString(R.string.native_cloud_log_switch_event,
-                            String.valueOf(type),
-                            param == null ? "null" : String.valueOf(param.getEnabled())));
                     renderSwitchState(param, time);
                     // 开关一旦关闭，聚合状态立即置「未开启」，不等上传回调
                     if (param != null && !param.getEnabled()) {
@@ -204,14 +200,13 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
 
             @Override
             public void onError(String code, String error) {
-                runOnUi(() -> appendLog(getString(R.string.native_cloud_log_switch_error, code, error)));
+                toastError(code, error);
             }
         };
         manager.addCloudSwitchListener(switchListener);
 
         syncObserver = new SyncObserver(new AggregatingDownloadListener(), new AggregatingUploadListener());
         manager.addAudioSyncObserver(syncObserver);
-        appendLog("addCloudSwitchListener + addAudioSyncObserver");
     }
 
     @Override
@@ -236,7 +231,6 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
      * 不取快照就无法知道「进页那一刻是否正在同步」。
      */
     private void querySwitchStatus() {
-        appendLog("getCloudSyncSwitchStatus()");
         manager.getCloudSyncSwitchStatus(
                 new ICloudSyncSwitchCallBack<CloudSyncSwitchParam, CloudSyncStatusInfo>() {
                     @Override
@@ -249,9 +243,8 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
 
                     @Override
                     public void onError(String code, String error) {
-                        runOnUi(() -> appendLog(getString(
-                                R.string.native_cloud_log_switch_error, code, error)));
-                    }
+                toastError(code, error);
+            }
                 });
     }
 
@@ -264,8 +257,6 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
         if (statusInfo == null) return;
         lastSyncTime = statusInfo.modifyTime;
         aggregator.applySnapshot(statusInfo.status, statusInfo.errorCode);
-        appendLog(getString(R.string.native_cloud_log_snapshot,
-                syncStatusName(statusInfo.status), statusInfo.errorCode, statusInfo.modifyTime));
         renderSyncStatus();
     }
 
@@ -325,12 +316,12 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
     /**
      * 用户切换云同步总开关，直接保存，不做二次确认。
      * <p>
-     * 与小程序的两处差异：
+     * 与 AI 笔记的两处差异，都是 Demo 为了少绕弯路做的简化：
      * <ul>
-     *     <li>小程序关闭时会弹确认框提示「卸载 App 后录音丢失」，本页直接保存。
-     *         生产环境建议保留该提示，关闭云同步的后果对用户不可见</li>
-     *     <li>小程序开启时会强制把 {@code syncType} 设为「仅 Wi-Fi」，
-     *         本页保留用户当前选择，避免两个开关互相干扰</li>
+     *     <li>关闭时不弹确认框。<b>生产环境建议保留提示</b>——关闭云同步后
+     *         「卸载 App 会丢录音」这个后果对用户不可见</li>
+     *     <li>开启时不强制把 {@code syncType} 设为「仅 Wi-Fi」，
+     *         保留用户当前选择，避免两个开关互相干扰</li>
      * </ul>
      *
      * @param checked 目标状态
@@ -358,12 +349,10 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
         String syncType = wifiOnly
                 ? CloudSyncSwitchBusiness.SYNC_TYPE_WIFI
                 : CloudSyncSwitchBusiness.SYNC_TYPE_ALL;
-        appendLog(getString(R.string.native_cloud_log_save, enabled, syncType));
         switchBusiness.saveCloudSyncSwitch(enabled, syncType, new Business.ResultListener<Boolean>() {
             @Override
             public void onSuccess(BusinessResponse response, Boolean result, String apiName) {
                 runOnUi(() -> {
-                    appendLog(getString(R.string.native_cloud_log_save_ok));
                     knownEnabled = enabled;
                     knownWifiOnly = wifiOnly;
                     if (!enabled) {
@@ -380,7 +369,6 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
                 runOnUi(() -> {
                     String code = response == null ? "-" : response.getErrorCode();
                     String msg = response == null ? "" : response.getErrorMsg();
-                    appendLog(getString(R.string.native_cloud_log_save_fail, code, msg));
                     toast(getString(R.string.native_cloud_log_save_fail, code, msg));
                     // 保存失败，回滚到上一次已知的 SDK 状态
                     applySwitchUi(knownEnabled, knownWifiOnly);
@@ -417,11 +405,9 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
             toast(getString(R.string.native_cloud_toast_syncing));
             return;
         }
-        appendLog("syncNoteRecord()");
         manager.syncNoteRecord(new IResultCallback() {
             @Override
             public void onSuccess() {
-                runOnUi(() -> appendLog(getString(R.string.native_cloud_log_sync_ok)));
             }
 
             @Override
@@ -429,13 +415,11 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
                 runOnUi(() -> {
                     if (CODE_ALREADY_SYNCING.equals(code)) {
                         // 底层已在同步，纠正本地状态而非报错
-                        appendLog(getString(R.string.native_cloud_log_sync_already));
                         aggregator.markSyncing();
                         renderSyncStatus();
                         toast(getString(R.string.native_cloud_toast_syncing));
                         return;
                     }
-                    appendLog(getString(R.string.native_cloud_log_sync_fail, code, error));
                     toast(getString(R.string.native_cloud_log_sync_fail, code, error));
                 });
             }
@@ -586,21 +570,18 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
             runOnUi(() -> {
                 aggregator.resetCounters();
                 aggregator.markSyncing();
-                appendLog(getString(R.string.native_cloud_log_upload_start));
                 renderSyncStatus();
             });
         }
 
         @Override
         public void onPause() {
-            runOnUi(() -> appendLog(getString(R.string.native_cloud_log_upload_pause)));
         }
 
         @Override
         public void uploading(@NonNull RecordFile recordFile, int progress) {
             runOnUi(() -> {
                 aggregator.markSyncing();
-                appendLog(getString(R.string.native_cloud_log_uploading, progress));
                 renderSyncStatus();
             });
         }
@@ -610,7 +591,6 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
                                 @NonNull String errorMsg) {
             runOnUi(() -> {
                 aggregator.uploadFailedCount++;
-                appendLog(getString(R.string.native_cloud_log_upload_error, errorCode, errorMsg));
                 renderSyncStatus();
             });
         }
@@ -629,8 +609,6 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
             runOnUi(() -> {
                 aggregator.markFinished();
                 lastSyncTime = System.currentTimeMillis();
-                appendLog(getString(R.string.native_cloud_log_upload_finish,
-                        succeedRecords.size(), failedRecords.size()));
                 renderSyncStatus();
             });
         }
@@ -639,8 +617,6 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
         public void onError(@Nullable Integer errorCode, @Nullable String errorMsg) {
             runOnUi(() -> {
                 aggregator.markError(errorCode);
-                appendLog(getString(R.string.native_cloud_log_upload_global_error,
-                        String.valueOf(errorCode), errorMsg == null ? "" : errorMsg));
                 renderSyncStatus();
             });
         }
@@ -656,25 +632,19 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
 
         @Override
         public void onStart() {
-            runOnUi(() -> appendLog(getString(R.string.native_cloud_log_download_start)));
         }
 
         @Override
         public void onDownloadTaskSizeMapReady(@NonNull Map<String, Long> taskSizeMap) {
-            runOnUi(() -> appendLog(getString(R.string.native_cloud_log_download_task_ready,
-                    taskSizeMap.size())));
         }
 
         @Override
         public void onPause() {
-            runOnUi(() -> appendLog(getString(R.string.native_cloud_log_download_pause)));
         }
 
         @Override
         public void downloading(@NonNull RecordFile recordFile, long downloadedBytes,
                                 long totalBytes, int progressPercent) {
-            runOnUi(() -> appendLog(getString(R.string.native_cloud_log_downloading,
-                    downloadedBytes, totalBytes, progressPercent)));
         }
 
         @Override
@@ -682,7 +652,6 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
                                   @NonNull String errorMsg) {
             runOnUi(() -> {
                 aggregator.downloadFailedCount++;
-                appendLog(getString(R.string.native_cloud_log_download_error, errorCode, errorMsg));
                 renderSyncStatus();
             });
         }
@@ -692,8 +661,6 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
                                        @NonNull String errorMsg) {
             runOnUi(() -> {
                 aggregator.downloadFailedCount += recordFiles.size();
-                appendLog(getString(R.string.native_cloud_log_download_error_batch,
-                        recordFiles.size(), errorCode));
                 renderSyncStatus();
             });
         }
@@ -709,8 +676,6 @@ public class NativeCloudSyncActivity extends NativeDemoBaseActivity {
         @Override
         public void onFinish(@NonNull List<RecordFile> succeedRecords,
                              @NonNull List<RecordFile> failedRecords) {
-            runOnUi(() -> appendLog(getString(R.string.native_cloud_log_download_finish,
-                    succeedRecords.size(), failedRecords.size())));
         }
     }
 }

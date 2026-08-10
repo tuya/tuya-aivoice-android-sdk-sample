@@ -21,20 +21,25 @@ import java.util.List;
 /**
  * 模块 4 · 离线文件传输演示页。
  * <p>
- * 把设备（录音卡片 / 耳机）本地缓存的录音文件下载到手机，支持 BLE 与 AP（Wi-Fi 快传）两种通道。
+ * 把<b>录音卡片</b>本地缓存的录音文件下载到手机，支持 BLE 与 AP（Wi-Fi 快传）两种通道。
+ * <p>
+ * <b>本模块只支持录音卡片</b>（{@code product_type == "card"}，即
+ * {@code AudioDeviceCategory.CATEGORY_CARD}）：卡片没有屏幕也不常连手机，
+ * 录下的音频先存在设备上、之后再回传；耳机类设备走实时链路，不产生设备侧缓存文件。
+ * 故本页的设备下拉<b>已过滤掉手机与耳机</b>，见 {@link #acceptDevice(String)}。
  * 页面按三步手动串联，便于逐步观察：
  * <ol>
  *     <li>选设备 → {@link #queryStatus()} 调 {@code getDeviceOfflineFileStatus} 查看待传文件数与会话</li>
  *     <li>{@link #loadOfflineFile()} 调 {@code loadOfflineFile} 发起或续传（{@code sessionId} 非 0 即续传）</li>
  *     <li>{@link #switchChannel(int)} 调 {@code switchModeLoadOfflineFile} 在 AP / BLE 间切换</li>
  * </ol>
- * <b>AI 笔记小程序中这一步是自动的</b>：录音结束或首页可见时遍历在线卡片设备，
+ * <b>AI 笔记中这一步是自动的</b>：录音结束或首页可见时遍历在线卡片设备，
  * 逐个 {@code getDeviceOfflineFileStatus}，发现 {@code response.total > 0} 就直接以
  * {@code channel=BLE、sessionId=已有值或 0} 发起下载，全程无用户操作。
  * <p>
  * <b>进度回调有两条路径，本页两条都演示：</b>
  * <ul>
- *     <li>{@code registerFileProgressCallback} 注册的全局回调 —— 主用。小程序也是在 App 级注册一次，
+ *     <li>{@code registerFileProgressCallback} 注册的全局回调 —— 主用。建议在 App 级注册一次，
  *         页面进出不影响，避免切页丢进度</li>
  *     <li>{@code loadOfflineFile} / {@code switchModeLoadOfflineFile} 传入的回调 —— 只用来接
  *         {@code onSuccess(sessionId)} / {@code onError} 的调用结果</li>
@@ -47,8 +52,8 @@ import java.util.List;
  * <p>
  * 本页有意<b>不</b>实现的两点（属于产品交互，各家 App 自行决定）：
  * <ul>
- *     <li>建链失败重试计数 —— 小程序策略是最多重试 3 次 {@code switchMode(AP)}，超限弹错误框</li>
- *     <li>退出拦截 —— 小程序在建链中 / AP 快传中返回时会弹确认框，确认后 {@code switchMode(BLE)}。
+ *     <li>建链失败重试计数 —— AI 笔记的策略是最多重试 3 次 {@code switchMode(AP)}，超限弹错误框</li>
+ *     <li>退出拦截 —— 建链中 / AP 快传中返回时应弹确认框，确认后 {@code switchMode(BLE)}。
  *         生产环境若停留在 AP 模式，建议退出前切回 BLE，否则设备热点会一直占用</li>
  * </ul>
  */
@@ -81,7 +86,7 @@ public class NativeOfflineFileActivity extends NativeDemoBaseActivity {
     /** 手机已连上设备热点，可以走 AP 快传。 */
     private static final int AP_CONNECTED = 2;
 
-    // ===== AP 建链错误码（取自小程序 EstablishChannel 的分类）=====
+    // ===== AP 建链错误码 =====
     /** Wi-Fi 打开失败。 */
     private static final int ERR_WIFI_OPEN = 10091;
     /** 热点连接失败类错误码。 */
@@ -112,6 +117,31 @@ public class NativeOfflineFileActivity extends NativeDemoBaseActivity {
         return R.string.native_offline_title;
     }
 
+    /**
+     * 不列出「手机」。手机上不存在设备侧缓存，本模块对它无意义。
+     */
+    @Override
+    protected boolean includePhoneDevice() {
+        return false;
+    }
+
+    /**
+     * <b>只列出录音卡片。</b>
+     * <p>
+     * 离线文件传输是卡片类设备独有的能力——它没有屏幕也不常连手机，录下的音频先存在本机，
+     * 之后再回传；耳机类设备走的是实时链路，不产生设备侧缓存文件。
+     * <p>
+     * 判据是产品配置里的 {@code product_type == "card"}，与
+     * {@code AudioDeviceCategory.CATEGORY_CARD} 一致，解析逻辑见基类
+     * {@code getAudioProductType}。
+     * <p>
+     * 直接过滤而不是选中后再提示「该设备不支持」——用户根本选不到，少一次试错。
+     */
+    @Override
+    protected boolean acceptDevice(@NonNull String productType) {
+        return DeviceItem.TYPE_CARD.equals(productType);
+    }
+
     @Override
     protected void onContentViewCreated() {
         statusText = findViewById(R.id.tv_status);
@@ -125,6 +155,24 @@ public class NativeOfflineFileActivity extends NativeDemoBaseActivity {
         btnLoad.setOnClickListener(v -> loadOfflineFile());
         findViewById(R.id.btn_switch_ap).setOnClickListener(v -> switchChannel(CHANNEL_AP));
         findViewById(R.id.btn_switch_ble).setOnClickListener(v -> switchChannel(CHANNEL_BLE));
+
+        applyNoDeviceState();
+    }
+
+    /**
+     * 当前家庭没有录音卡片时，禁用全部操作并给出说明。
+     * <p>
+     * 不这么做的话，按钮点下去只会得到一个底层错误码，使用者无从判断是环境问题还是接入问题。
+     */
+    private void applyNoDeviceState() {
+        if (!hasNoUsableDevice()) {
+            return;
+        }
+        statusText.setText(R.string.native_offline_no_card_device);
+        findViewById(R.id.btn_query_status).setEnabled(false);
+        btnLoad.setEnabled(false);
+        findViewById(R.id.btn_switch_ap).setEnabled(false);
+        findViewById(R.id.btn_switch_ble).setEnabled(false);
     }
 
     // ===================== 事件监听 =====================
@@ -139,16 +187,14 @@ public class NativeOfflineFileActivity extends NativeDemoBaseActivity {
 
             @Override
             public void onSuccess(long sessionId) {
-                runOnUi(() -> appendLog(getString(R.string.native_offline_log_global_success, sessionId)));
             }
 
             @Override
             public void onError(String code, String error) {
-                runOnUi(() -> appendLog(getString(R.string.native_offline_log_global_error, code, error)));
+                toastError(code, error);
             }
         };
         manager.registerFileProgressCallback(globalProgressCallback);
-        appendLog("registerFileProgressCallback");
     }
 
     @Override
@@ -168,12 +214,11 @@ public class NativeOfflineFileActivity extends NativeDemoBaseActivity {
      * {@code status == 1} 表示已有任务在跑，此时应续传而非新建。
      */
     private void queryStatus() {
-        String deviceId = currentDeviceId();
-        if (DEVICE_ID_PHONE.equals(deviceId)) {
-            toast(getString(R.string.native_offline_toast_need_device));
+        if (hasNoUsableDevice()) {
+            toast(getString(R.string.native_offline_no_card_device));
             return;
         }
-        appendLog("getDeviceOfflineFileStatus(" + deviceId + ")");
+        String deviceId = currentDeviceId();
         manager.getDeviceOfflineFileStatus(deviceId, new IRecordCallBack<DeviceOfflineFileStatus>() {
             @Override
             public void onSuccess(DeviceOfflineFileStatus result) {
@@ -183,7 +228,6 @@ public class NativeOfflineFileActivity extends NativeDemoBaseActivity {
             @Override
             public void onError(String code, String error) {
                 runOnUi(() -> {
-                    appendLog(getString(R.string.native_offline_log_query_fail, code, error));
                     toast(getString(R.string.native_offline_log_query_fail, code, error));
                 });
             }
@@ -198,7 +242,6 @@ public class NativeOfflineFileActivity extends NativeDemoBaseActivity {
     private void renderStatus(@Nullable DeviceOfflineFileStatus result) {
         if (result == null) {
             statusText.setText(R.string.native_offline_status_empty);
-            appendLog(getString(R.string.native_offline_log_query_null));
             return;
         }
         sessionId = result.sessionId == null ? SESSION_ID_NEW_TASK : result.sessionId;
@@ -213,9 +256,8 @@ public class NativeOfflineFileActivity extends NativeDemoBaseActivity {
                 done,
                 result.errorCode == null ? 0 : result.errorCode);
         statusText.setText(text);
-        appendLog(getString(R.string.native_offline_log_query_ok, total, done, sessionId));
 
-        // total > 0 才有东西可传；小程序的自动流程正是以此为触发条件
+        // total > 0 才有东西可传；自动流程正是以此为触发条件
         btnLoad.setEnabled(total > 0);
         if (total == 0) {
             toast(getString(R.string.native_offline_toast_no_file));
@@ -232,8 +274,6 @@ public class NativeOfflineFileActivity extends NativeDemoBaseActivity {
      */
     private void loadOfflineFile() {
         String deviceId = currentDeviceId();
-        appendLog(getString(R.string.native_offline_log_load,
-                deviceId, channelName(CHANNEL_BLE), sessionId));
         manager.loadOfflineFile(deviceId, CHANNEL_BLE, sessionId, new IOfflineFilesProgress() {
             @Override
             public void onProgress(DeviceOfflineFileStatus status) {
@@ -244,14 +284,12 @@ public class NativeOfflineFileActivity extends NativeDemoBaseActivity {
             public void onSuccess(long newSessionId) {
                 runOnUi(() -> {
                     sessionId = newSessionId;
-                    appendLog(getString(R.string.native_offline_log_load_success, newSessionId));
                 });
             }
 
             @Override
             public void onError(String code, String error) {
                 runOnUi(() -> {
-                    appendLog(getString(R.string.native_offline_log_load_fail, code, error));
                     toast(getString(R.string.native_offline_log_load_fail, code, error));
                 });
             }
@@ -268,7 +306,6 @@ public class NativeOfflineFileActivity extends NativeDemoBaseActivity {
      */
     private void switchChannel(int channel) {
         String deviceId = currentDeviceId();
-        appendLog(getString(R.string.native_offline_log_switch, deviceId, channelName(channel)));
         manager.switchModeLoadOfflineFile(deviceId, channel, new IOfflineFilesProgress() {
             @Override
             public void onProgress(DeviceOfflineFileStatus status) {
@@ -277,12 +314,11 @@ public class NativeOfflineFileActivity extends NativeDemoBaseActivity {
 
             @Override
             public void onSuccess(long newSessionId) {
-                runOnUi(() -> appendLog(getString(R.string.native_offline_log_switch_success, newSessionId)));
             }
 
             @Override
             public void onError(String code, String error) {
-                runOnUi(() -> appendLog(getString(R.string.native_offline_log_switch_fail, code, error)));
+                toastError(code, error);
             }
         });
     }
@@ -323,13 +359,11 @@ public class NativeOfflineFileActivity extends NativeDemoBaseActivity {
                 failedCount(resp)));
 
         if (errorCode != 0) {
-            appendLog(getString(R.string.native_offline_log_error_code,
-                    errorCode, apErrorHint(errorCode)));
         }
     }
 
     /**
-     * AP 建链错误码归类。分类依据取自小程序：Wi-Fi 打开失败与热点连接失败要给不同引导。
+     * AP 建链错误码归类：Wi-Fi 打开失败与热点连接失败要给不同引导。
      *
      * @param errorCode 错误码
      * @return 可读提示

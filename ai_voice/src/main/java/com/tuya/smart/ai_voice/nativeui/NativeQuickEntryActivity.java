@@ -83,7 +83,6 @@ public class NativeQuickEntryActivity extends NativeDemoBaseActivity {
     @Override
     protected void registerListeners() {
         quickEntryAddListener = (type, id, success) -> runOnUi(() -> {
-            appendLog(getString(R.string.native_quick_log_add_result, type, id, success));
             // 点击锁到此释放：结果已回来，可以再次操作
             clickLocked = false;
             // 只有桌面小组件会走到这个回调；快捷方式 / 磁贴由系统直接处理，不回调
@@ -97,7 +96,6 @@ public class NativeQuickEntryActivity extends NativeDemoBaseActivity {
             queryEntryList();
         });
         manager.addQuickEntryAddListener(quickEntryAddListener);
-        appendLog("addQuickEntryAddListener");
     }
 
     @Override
@@ -113,7 +111,6 @@ public class NativeQuickEntryActivity extends NativeDemoBaseActivity {
 
     /** 查询各快捷入口的添加状态。 */
     private void queryEntryList() {
-        appendLog("getQuickEntryList()");
         manager.getQuickEntryList(new IRecordCallBack<List<LauncherStateBean>>() {
             @Override
             public void onSuccess(List<LauncherStateBean> result) {
@@ -122,7 +119,7 @@ public class NativeQuickEntryActivity extends NativeDemoBaseActivity {
 
             @Override
             public void onError(String code, String error) {
-                runOnUi(() -> appendLog(getString(R.string.native_quick_log_query_fail, code, error)));
+                toastError(code, error);
             }
         });
     }
@@ -140,14 +137,12 @@ public class NativeQuickEntryActivity extends NativeDemoBaseActivity {
             empty.setTextSize(12f);
             empty.setPadding(0, 12, 0, 12);
             entryContainer.addView(empty);
-            appendLog(getString(R.string.native_quick_log_empty));
             return;
         }
         LayoutInflater inflater = LayoutInflater.from(this);
         for (LauncherStateBean bean : result) {
             entryContainer.addView(createEntryView(inflater, bean));
         }
-        appendLog(getString(R.string.native_quick_log_query_ok, result.size()));
     }
 
     /**
@@ -207,12 +202,10 @@ public class NativeQuickEntryActivity extends NativeDemoBaseActivity {
         clickLocked = true;
         main.postDelayed(() -> clickLocked = false, CLICK_LOCK_MS);
 
-        appendLog(getString(R.string.native_quick_log_set, type, componentId, enabled));
         manager.setQuickEntryEnabled(type, componentId, enabled, new IResultCallback() {
             @Override
             public void onSuccess() {
                 runOnUi(() -> {
-                    appendLog(getString(R.string.native_quick_log_set_ok));
                     if (type == TYPE_WIDGET && enabled == ENABLED) {
                         // 小组件的最终结果由 IQuickEntryAddListener 给出，这里不下结论
                         return;
@@ -227,7 +220,6 @@ public class NativeQuickEntryActivity extends NativeDemoBaseActivity {
             public void onError(String code, String error) {
                 runOnUi(() -> {
                     clickLocked = false;
-                    appendLog(getString(R.string.native_quick_log_set_fail, code, error));
                     toast(getString(R.string.native_quick_toast_add_failed));
                 });
             }
@@ -260,19 +252,17 @@ public class NativeQuickEntryActivity extends NativeDemoBaseActivity {
 
     /**
      * 事件流控。<b>Native 版为 no-op</b>：不做任何节流，直接回 {@code onSuccess}，
-     * 仅为与小程序接口对齐而保留。小程序侧用它在页面不可见时降低事件频率。
+     * 仅为接口对齐而保留，原用于在页面不可见时降低事件频率。
      */
     private void callEventLimit() {
-        appendLog(getString(R.string.native_quick_log_event_limit, SAMPLE_EVENT_NAME));
         manager.operateEventLimit(SAMPLE_EVENT_NAME, true, new IResultCallback() {
             @Override
             public void onSuccess() {
-                runOnUi(() -> appendLog(getString(R.string.native_quick_log_noop_ok, "operateEventLimit")));
             }
 
             @Override
             public void onError(String code, String error) {
-                runOnUi(() -> appendLog("operateEventLimit onError " + code + " " + error));
+                toastError(code, error);
             }
         });
     }
@@ -281,16 +271,14 @@ public class NativeQuickEntryActivity extends NativeDemoBaseActivity {
      * 建立原生通道。<b>Android 侧为 no-op</b>（仅 iOS 需要），直接回 {@code onSuccess}。
      */
     private void callSetupChannel() {
-        appendLog("readyToSetupNativeChannel()");
         manager.readyToSetupNativeChannel(new IResultCallback() {
             @Override
             public void onSuccess() {
-                runOnUi(() -> appendLog(getString(R.string.native_quick_log_noop_ok, "readyToSetupNativeChannel")));
             }
 
             @Override
             public void onError(String code, String error) {
-                runOnUi(() -> appendLog("readyToSetupNativeChannel onError " + code + " " + error));
+                toastError(code, error);
             }
         });
     }

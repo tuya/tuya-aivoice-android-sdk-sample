@@ -125,7 +125,7 @@ sequenceDiagram
 
 ### `handleImportActivityResult(int requestCode, int resultCode, Intent data)`
 
-把系统文件选择器的结果回灌给 SDK。**Native 接入必接**，小程序侧由容器 bridge 代为转交。
+把系统文件选择器的结果回灌给 SDK。**Native 接入必接**。
 
 | 参数 | 类型 | 必填 | 说明 |
 |---|---|---|---|

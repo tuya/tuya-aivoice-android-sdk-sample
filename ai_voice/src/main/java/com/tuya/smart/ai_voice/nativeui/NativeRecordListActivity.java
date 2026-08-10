@@ -44,8 +44,17 @@ import java.util.Locale;
  *     <li>筛选 —— {@code FilesParam} 的 {@code recordType} / {@code transfer} / {@code orderBy}</li>
  *     <li>搜索 —— {@code searchRecordTransferResult}，命中片段带 {@code <em>} 标记，需转成富文本高亮</li>
  *     <li>空间统计 —— {@code getAudioFilesSize}，返回本地音频占用字节数</li>
+ *     <li>标签 —— {@code RecordTransferResultBean.tags}，只读展示，最多 3 个、其余折叠为 +N</li>
  *     <li>数据变更 —— {@link IRecordFileUpdateCallback} 的四个回调，分别对应局部刷新与全量刷新</li>
  * </ul>
+ *
+ * <h3>下拉刷新会顺带发起云同步</h3>
+ * 只重拉本地列表拿不到别的设备新增的录音，因此下拉时同时调 {@code syncNoteRecord}
+ * （模块 6）。两件事互不等待：云端记录落到本地库后 SDK 会推
+ * {@code onRecordListSyncSuccess}，列表在那里再全量重拉一次。
+ * <p>
+ * 这也是 {@code syncNoteRecord} 的推荐调用时机之一（另一个是首页首次加载），
+ * 不必给用户一个「立即同步」按钮。
  *
  * <h3>删除语义</h3>
  * <pre>
@@ -94,6 +103,9 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
     /** 加载中标志，防止筛选连续切换时并发请求。 */
     private boolean loading = false;
 
+    /** {@code syncNoteRecord} 是否在途，防止连续下拉重复发起。 */
+    private boolean syncing = false;
+
     /** 数据变更监听，用字段持有，remove 时传同一引用。 */
     private IRecordFileUpdateCallback<List<RecordUpdateInfo>> updateCallback;
 
@@ -133,7 +145,7 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
-        refreshLayout.setOnRefreshListener(this::loadList);
+        refreshLayout.setOnRefreshListener(this::onPullToRefresh);
 
         findViewById(R.id.btn_search).setOnClickListener(v -> search());
 
@@ -239,7 +251,6 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
             public void onUpdate(List<RecordUpdateInfo> infos) {
                 // 状态变更（如转写完成）：条目内容已变，按当前筛选条件重拉
                 runOnUi(() -> {
-                    appendLog(getString(R.string.native_list_log_on_update, size(infos)));
                     loadList();
                 });
             }
@@ -247,7 +258,6 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
             @Override
             public void onRecordOperate(@NonNull String operate, List<RecordUpdateInfo> infos) {
                 runOnUi(() -> {
-                    appendLog(getString(R.string.native_list_log_on_operate, operate, size(infos)));
                     // 新增会改变列表长度，必须全量刷新；改/删同样重拉以保证与筛选条件一致
                     loadList();
                 });
@@ -260,21 +270,21 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
                 // 也不是 SyncObserver 的下载回调（那管的是音频文件字节流）。
                 // 本地数据可能大批变化，全量刷新
                 runOnUi(() -> {
-                    appendLog(getString(R.string.native_list_log_sync_success));
                     loadList();
                 });
             }
 
             @Override
             public void onUpdateWitheTags(List<RecordUpdateInfo> infos) {
-                runOnUi(() -> {
-                    appendLog(getString(R.string.native_list_log_on_tags, size(infos)));
-                    loadList();
-                });
+                // 本页对四个变更回调统一采取全量重拉：列表始终跟着当前筛选条件走，
+                // 重拉最简单也最不容易出错。
+                // 事件里其实带了最新的 tags，够做局部刷新——
+                // NativeRecordDetailActivity 就是那么做的（只有一条记录，粒度天然更细）。
+                // 两种粒度都成立，按页面职责选即可。
+                runOnUi(() -> loadList());
             }
         };
         manager.addFileRecordUpdateListener(updateCallback);
-        appendLog("addFileRecordUpdateListener");
     }
 
     @Override
@@ -287,6 +297,51 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
 
     private int size(@Nullable List<RecordUpdateInfo> infos) {
         return infos == null ? 0 : infos.size();
+    }
+
+    // ===================== 下拉刷新 =====================
+
+    /**
+     * 下拉刷新：<b>发起一次云同步 + 重拉本地列表</b>，两件事互不等待。
+     * <p>
+     * 用户下拉的语义是「给我最新数据」，只重拉本地只能拿到本机已有的记录，
+     * 别的设备新增的录音要靠 {@code syncNoteRecord} 才会下来。
+     * <p>
+     * 云端数据什么时候到、要不要再刷一次列表，<b>不由这里决定</b>——
+     * 记录落到本地库时 SDK 会推 {@code onRecordListSyncSuccess}，
+     * 列表在那里再全量重拉一次。所以此处不必等同步结果。
+     */
+    private void onPullToRefresh() {
+        syncNoteRecord();
+        loadList();
+    }
+
+    /**
+     * 发起云同步。
+     * <p>
+     * 两道防重：本地 {@link #syncing} 标志拦住连续下拉；即便漏过，底层也会以
+     * {@code onError("10213")} 拒绝——那个码<b>不是失败</b>，而是「正在同步中」的确定信号。
+     * <p>
+     * 同步是后台行为、用户没有显式发起，因此<b>失败一律不提示</b>，
+     * 避免下拉刷新时弹出用户看不懂的错误。
+     */
+    private void syncNoteRecord() {
+        if (syncing) return;
+        syncing = true;
+        manager.syncNoteRecord(new IResultCallback() {
+            @Override
+            public void onSuccess() {
+                // 仅表示任务已启动；云端记录到位后走 onRecordListSyncSuccess
+                runOnUi(() -> syncing = false);
+            }
+
+            @Override
+            public void onError(String code, String error) {
+                // 常见的是 10213「底层已在同步中」——它不是失败，只说明这次不必再发一遍。
+                // 其余错误（网络等）也一样不提示：用户只是下拉刷新，不该看到同步的报错。
+                runOnUi(() -> syncing = false);
+            }
+        });
     }
 
     // ===================== 列表加载 =====================
@@ -317,9 +372,6 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
                 ORDER_DESC,
                 null,                                   // lastFileId：不分页
                 null);                                  // pageSize：为空即查询全部
-        appendLog(getString(R.string.native_list_log_query,
-                String.valueOf(selectedRecordType()), String.valueOf(selectedTransfer()),
-                selectedOrderBy()));
 
         manager.getRecordTransferResultList(param, new IRecordCallBack<List<RecordTransferResultBean>>() {
             @Override
@@ -332,7 +384,6 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
                 runOnUi(() -> {
                     loading = false;
                     refreshLayout.setRefreshing(false);
-                    appendLog(getString(R.string.native_list_log_query_fail, code, error));
                     if (dataList.isEmpty()) {
                         showTip(getString(R.string.native_list_load_fail), false);
                     } else {
@@ -379,7 +430,6 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
         // keyword 是保留字段，实际检索只看 content
         AudioSearchMixParams param = new AudioSearchMixParams(
                 null, keyword, SEARCH_FIRST_PAGE, SEARCH_PAGE_SIZE);
-        appendLog(getString(R.string.native_list_log_search, keyword));
         manager.searchRecordTransferResult(param, new IRecordCallBack<ArrayList<AudioSearchMixItem>>() {
             @Override
             public void onSuccess(ArrayList<AudioSearchMixItem> result) {
@@ -389,7 +439,6 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
             @Override
             public void onError(String code, String error) {
                 runOnUi(() -> {
-                    appendLog(getString(R.string.native_list_log_search_fail, code, error));
                     toast(getString(R.string.native_list_log_search_fail, code, error));
                 });
             }
@@ -399,7 +448,6 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
     private void showSearchResult(@Nullable List<AudioSearchMixItem> result) {
         if (result == null || result.isEmpty()) {
             toast(getString(R.string.native_list_search_empty));
-            appendLog(getString(R.string.native_list_search_empty));
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -419,7 +467,6 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
                 .setMessage(Html.fromHtml(sb.toString(), Html.FROM_HTML_MODE_COMPACT))
                 .setPositiveButton(R.string.native_list_delete_cancel, null)
                 .show();
-        appendLog(getString(R.string.native_list_log_search_ok, result.size()));
     }
 
     private String nullToDash(@Nullable String s) {
@@ -442,7 +489,7 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
 
             @Override
             public void onError(String code, String error) {
-                runOnUi(() -> appendLog(getString(R.string.native_list_log_size_fail, code, error)));
+                toastError(code, error);
             }
         });
     }
@@ -495,7 +542,6 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
      * @param deleteAll        true 彻底删除（本地 + 云端）；false 只删本地音频，记录保留
      */
     private void deleteFile(long recordTransferId, boolean deleteAll) {
-        appendLog(getString(R.string.native_list_log_remove, recordTransferId, deleteAll));
         manager.removeFileList(Collections.singletonList(recordTransferId), deleteAll,
                 new IResultCallback() {
                     @Override
@@ -519,7 +565,7 @@ public class NativeRecordListActivity extends NativeDemoBaseActivity {
                 });
     }
 
-    /** 彻底删除成功后就地移除，不重拉列表（对齐小程序行为）。 */
+    /** 彻底删除成功后就地移除，不重拉列表。 */
     private void removeFromLocalList(long recordTransferId) {
         Iterator<RecordTransferResultBean> it = dataList.iterator();
         while (it.hasNext()) {

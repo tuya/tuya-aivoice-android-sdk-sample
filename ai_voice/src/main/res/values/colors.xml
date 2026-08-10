@@ -15,7 +15,6 @@
     <color name="ai_voice_wave_track_alt">#3EC176</color>
     <color name="ai_voice_divider">#ECECEF</color>
     <color name="ai_voice_btn_disable">#C9CDD4</color>
-    <color name="ai_voice_log_bg">#1A000000</color>
     <color name="ai_voice_status_recording">#E45B5B</color>
     <color name="ai_voice_tag_bg">#EEF2FF</color>
 </resources>

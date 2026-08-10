@@ -15,7 +15,7 @@ import java.util.Locale;
  * {@code getRecordTransferSummaryResult} 的 {@code text} 字段）。本类将其解析为可读多行文本，
  * 供详情页 TextView 直接展示。解析失败一律降级为原样返回，保证内容不丢。
  * <p>
- * 字段结构参考小程序 {@code useTransferResult} / {@code useSummaryResult} 的解析逻辑：
+ * 字段结构：
  * <ul>
  *     <li>转写：JSON 数组，元素 {@code {transcript, translation, timeOffset, speaker}}。
  *         {@code timeOffset} 形如 "1000"(毫秒) 或 "1s"(秒)。</li>
@@ -100,6 +100,175 @@ public final class TransferTextParser {
         try {
             JSONObject obj = JSON.parseObject(text);
             return obj == null ? null : obj.getString("title");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 把转写结果解析成原始 JSON 数组，供编辑保存时当模板用。
+     * <p>
+     * {@link #parseTranscript} 产出的是给人看的文案，<b>不能反解回结构</b>；
+     * 要保存就必须另留一份原始数组，改完再整份提交。
+     *
+     * @param text SDK 返回的转写 JSON 字符串
+     * @return 原始数组；解析失败或无内容时返回 {@code null}
+     */
+    public static JSONArray parseTranscriptArray(String text) {
+        if (TextUtils.isEmpty(text)) return null;
+        try {
+            JSONArray arr = JSON.parseArray(text);
+            return arr == null || arr.isEmpty() ? null : arr;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 取某一段的 {@code transcript}。
+     *
+     * @param list  原始转写数组
+     * @param index 段落序号
+     * @return 该段文案；越界或字段缺失时返回空串
+     */
+    public static String segmentTranscript(JSONArray list, int index) {
+        if (list == null || index < 0 || index >= list.size()) return "";
+        JSONObject seg = list.getJSONObject(index);
+        if (seg == null) return "";
+        String transcript = seg.getString("transcript");
+        return transcript == null ? "" : transcript;
+    }
+
+    /**
+     * 把某段的新文案写回数组并整份序列化。
+     * <p>
+     * <b>只替换这一段的 {@code transcript}</b>，{@code timeOffset} / {@code speaker} /
+     * {@code translation} 以及其余段落全部原样保留——
+     * {@code saveRecordTransferRecognizeResult} 是整份覆盖写入，
+     * 提交残缺的数组会把时间轴与说话人信息一并抹掉。
+     *
+     * @param list    原始转写数组，<b>会被就地修改</b>
+     * @param index   段落序号
+     * @param newText 编辑后的文案
+     * @return 可直接写回 SDK 与云端的 JSON 字符串
+     */
+    public static String writeSegmentTranscript(JSONArray list, int index, String newText) {
+        if (list == null || index < 0 || index >= list.size()) return "";
+        JSONObject seg = list.getJSONObject(index);
+        if (seg != null) {
+            seg.put("transcript", newText);
+        }
+        return list.toJSONString();
+    }
+
+    /**
+     * 只取总结 JSON 里的 {@code summary} 正文，不含大纲与待办。
+     * <p>
+     * 供<b>可编辑</b>的总结正文使用：编辑后要能原样写回 {@code summary} 字段，
+     * 所以展示的必须是纯正文，不能混入 {@link #parseSummary} 那种拼接文案。
+     *
+     * @param text 总结结果 JSON 字符串
+     * @return 总结正文；解析失败时原样返回入参
+     */
+    public static String parseSummaryBody(String text) {
+        if (TextUtils.isEmpty(text)) return "";
+        try {
+            JSONObject obj = JSON.parseObject(text);
+            if (obj == null) return text;
+            String summary = obj.getString("summary");
+            return summary == null ? "" : summary;
+        } catch (Exception e) {
+            return text;
+        }
+    }
+
+    /**
+     * 把编辑后的正文写回总结 JSON 的 {@code summary} 字段，其余字段原样保留。
+     * <p>
+     * <b>不这么做会破坏数据</b>：{@code saveRecordTransferSummaryResult} 是整份覆盖写入，
+     * 直接把界面上的文本存回去，云端下发的 JSON 结构（{@code outline} / {@code question} /
+     * {@code title}）就全丢了，下次解析只能退化成纯文本。
+     *
+     * @param rawJson 原始总结 JSON；为空或非 JSON 时直接返回 {@code newBody}
+     * @param newBody 编辑后的正文
+     * @return 可直接写回 SDK 的 JSON 字符串
+     */
+    public static String writeSummaryBody(String rawJson, String newBody) {
+        if (TextUtils.isEmpty(rawJson)) return newBody;
+        try {
+            JSONObject obj = JSON.parseObject(rawJson);
+            if (obj == null) return newBody;
+            obj.put("summary", newBody);
+            return obj.toJSONString();
+        } catch (Exception e) {
+            return newBody;
+        }
+    }
+
+    /**
+     * 把文件名写回总结 JSON 的 {@code title} 字段，其余字段原样保留。
+     * <p>
+     * <b>手动改名后必须调一次。</b> 总结里的 {@code title} 是文件名的另一个副本，
+     * 加载总结时会用它回写文件名（见调用方的 {@code applySummaryTitle}）——
+     * 只改文件名不改这里，下次加载总结就会把名字覆盖回旧值，
+     * 表现为「刚改完名字又自己变回去了」。
+     *
+     * @param rawJson  原始总结 JSON；为空时返回 {@code null}，表示无总结可写
+     * @param newTitle 新文件名
+     * @return 可写回 SDK 与云端的 JSON 字符串；无总结时为 {@code null}
+     */
+    public static String writeSummaryTitle(String rawJson, String newTitle) {
+        if (TextUtils.isEmpty(rawJson)) return null;
+        try {
+            JSONObject obj = JSON.parseObject(rawJson);
+            if (obj == null) return null;
+            obj.put("title", newTitle);
+            return obj.toJSONString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 取出总结 JSON 里的 {@code outline} 与 {@code question}，解一层编码后格式化输出。
+     * <p>
+     * 这两个字段是思维导图的数据源：{@code outline} 是层级大纲，真实产品据此渲染成图。
+     * 它们在原始 JSON 里是<b>二次编码的字符串</b>，必须先解一层才能看到数组结构。
+     *
+     * @param text 总结结果 JSON 字符串
+     * @return 格式化后的 JSON 文本；无数据时返回空串
+     */
+    public static String parseSummaryOutlineJson(String text) {
+        if (TextUtils.isEmpty(text)) return "";
+        try {
+            JSONObject obj = JSON.parseObject(text);
+            if (obj == null) return "";
+            JSONObject result = new JSONObject(true);
+            Object outline = decodeNestedJson(obj.getString("outline"));
+            if (outline != null) {
+                result.put("outline", outline);
+            }
+            Object question = decodeNestedJson(obj.getString("question"));
+            if (question != null) {
+                result.put("question", question);
+            }
+            return result.isEmpty() ? "" : JSON.toJSONString(result, true);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * 把二次编码的 JSON 字符串解成对象，便于格式化输出。
+     *
+     * @param jsonArrayStr JSON 编码的字符串
+     * @return 解析后的数组；无内容或解析失败返回 {@code null}
+     */
+    private static Object decodeNestedJson(String jsonArrayStr) {
+        if (TextUtils.isEmpty(jsonArrayStr)) return null;
+        try {
+            JSONArray list = JSON.parseArray(jsonArrayStr);
+            return list == null || list.isEmpty() ? null : list;
         } catch (Exception e) {
             return null;
         }

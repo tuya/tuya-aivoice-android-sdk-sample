@@ -28,18 +28,18 @@ import java.util.Map;
 /**
  * 模块 8 · 合并录音演示页。
  * <p>
- * 把多条录音按选定顺序合并为一条新录音。完整流程与 AI 笔记小程序一致：
+ * 把多条录音按选定顺序合并为一条新录音。完整流程与 AI 笔记一致：
  * <ol>
- *     <li>拉一页录音列表作为候选（小程序是在首页列表里多选）</li>
+ *     <li>拉一页录音列表作为候选（真实产品通常在首页列表里多选）</li>
  *     <li>勾选并调整顺序 —— <b>{@code recordIds} 的数组顺序就是音频拼接次序</b>，
- *         小程序用拖拽排序，本页用上移/下移按钮，语义相同</li>
+ *         真实产品用拖拽排序，本页用上移/下移按钮，语义相同</li>
  *     <li>{@code mergeRecordList(recordIds)} 发起，进度由 {@link IMergeStatusListener} 推送</li>
  *     <li>进行中可 {@code cancelMergeRecordList()} 取消</li>
  * </ol>
  * <b>注意传的是业务 {@code recordId}（String），不是 {@code recordTransferId}（Long）</b>——
  * 与删除接口 {@code removeFileList} 用的 ID 类型不同，容易搞混。
  * <p>
- * 进度条映射沿用小程序的做法：下载阶段（subStatus=10）最多显示到 90%，
+ * 进度条这样映射：下载阶段（subStatus=10）最多显示到 90%，
  * 合并阶段（subStatus=20）直接锁定 90%，完成后才到 100%，避免进度条在合并阶段长时间不动。
  */
 public class NativeMergeRecordActivity extends NativeDemoBaseActivity {
@@ -165,7 +165,6 @@ public class NativeMergeRecordActivity extends NativeDemoBaseActivity {
     protected void registerListeners() {
         mergeStatusListener = event -> runOnUi(() -> renderMergeStatus(event));
         manager.addMergeStatusListener(mergeStatusListener);
-        appendLog("addMergeStatusListener");
     }
 
     @Override
@@ -183,8 +182,6 @@ public class NativeMergeRecordActivity extends NativeDemoBaseActivity {
      */
     private void loadStatusSnapshot() {
         MergeStatusEvent snapshot = manager.getFileMergeStatus();
-        appendLog(getString(R.string.native_merge_log_snapshot,
-                snapshot == null ? "null" : String.valueOf(snapshot.getStatus())));
         renderMergeStatus(snapshot);
     }
 
@@ -207,7 +204,6 @@ public class NativeMergeRecordActivity extends NativeDemoBaseActivity {
                 ORDER_DESC,
                 null,                       // lastFileId：首页
                 CANDIDATE_PAGE_SIZE);
-        appendLog(getString(R.string.native_merge_log_load_list, CANDIDATE_PAGE_SIZE));
         manager.getRecordTransferResultList(param, new IRecordCallBack<List<RecordTransferResultBean>>() {
             @Override
             public void onSuccess(List<RecordTransferResultBean> result) {
@@ -217,7 +213,6 @@ public class NativeMergeRecordActivity extends NativeDemoBaseActivity {
             @Override
             public void onError(String code, String error) {
                 runOnUi(() -> {
-                    appendLog(getString(R.string.native_merge_log_load_fail, code, error));
                     toast(getString(R.string.native_merge_log_load_fail, code, error));
                 });
             }
@@ -236,7 +231,6 @@ public class NativeMergeRecordActivity extends NativeDemoBaseActivity {
         renderSelected();
 
         if (result == null || result.isEmpty()) {
-            appendLog(getString(R.string.native_merge_log_list_empty));
             return;
         }
         LayoutInflater inflater = LayoutInflater.from(this);
@@ -249,7 +243,6 @@ public class NativeMergeRecordActivity extends NativeDemoBaseActivity {
             candidates.put(bean.recordId, candidate);
             candidateContainer.addView(createCandidateView(inflater, bean.recordId, candidate));
         }
-        appendLog(getString(R.string.native_merge_log_list_ok, candidates.size()));
     }
 
     private View createCandidateView(LayoutInflater inflater, String recordId, Candidate candidate) {
@@ -364,7 +357,6 @@ public class NativeMergeRecordActivity extends NativeDemoBaseActivity {
         MergeStatusEvent running = manager.getFileMergeStatus();
         if (running != null && running.getStatus() == MergeStatusEvent.STATUS_IN_PROGRESS) {
             toast(getString(R.string.native_merge_toast_task_running));
-            appendLog(getString(R.string.native_merge_log_precheck_busy));
             return;
         }
         doMerge();
@@ -395,17 +387,14 @@ public class NativeMergeRecordActivity extends NativeDemoBaseActivity {
 
     /** 校验通过后真正下发合并。 */
     private void doMerge() {
-        appendLog(getString(R.string.native_merge_log_merge, TextUtils.join(", ", selectedIds)));
         manager.mergeRecordList(new ArrayList<>(selectedIds), new IResultCallback() {
             @Override
             public void onSuccess() {
-                runOnUi(() -> appendLog(getString(R.string.native_merge_log_merge_ok)));
             }
 
             @Override
             public void onError(String code, String error) {
                 runOnUi(() -> {
-                    appendLog(getString(R.string.native_merge_log_merge_fail, code, error));
                     toast(getString(R.string.native_merge_log_merge_fail, code, error));
                 });
             }
@@ -414,16 +403,14 @@ public class NativeMergeRecordActivity extends NativeDemoBaseActivity {
 
     /** 取消进行中的合并任务。 */
     private void cancelMerge() {
-        appendLog("cancelMergeRecordList()");
         manager.cancelMergeRecordList(new IResultCallback() {
             @Override
             public void onSuccess() {
-                runOnUi(() -> appendLog("cancelMergeRecordList onSuccess"));
             }
 
             @Override
             public void onError(String code, String error) {
-                runOnUi(() -> appendLog("cancelMergeRecordList onError " + code + " " + error));
+                toastError(code, error);
             }
         });
     }
@@ -454,8 +441,6 @@ public class NativeMergeRecordActivity extends NativeDemoBaseActivity {
                 errorCode == 0 ? "-" : mergeErrorMessage(errorCode),
                 TextUtils.isEmpty(event.getRecordId()) ? "-" : event.getRecordId()));
 
-        appendLog(getString(R.string.native_merge_log_status,
-                mergeStatusName(status), shownProgress));
 
         if (status == MergeStatusEvent.STATUS_FINISHED) {
             mergedRecordId = event.getRecordId();

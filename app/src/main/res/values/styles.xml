@@ -29,11 +29,17 @@
         <item name="status_bg_color_90">@color/status_bg_color_90</item>
     </style>
 
-    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <!--
+      Bridge 主题：继承自 AppCompat，只补充 Material 组件所需的主题属性
+      （colorSurface / colorOnSurface 等），不改变已有控件的外观。
+      Material 的 Chip 等组件会在构造时校验主题，缺这些属性会直接抛异常。
+    -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar.Bridge">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:textColorPrimary">@color/textColorPrimary</item>
+        <item name="android:textColorPrimary">@color/ai_voice_text_primary</item>
+        <item name="android:textColorSecondary">@color/ai_voice_text_secondary</item>
         <item name="android:colorForeground">@color/thing_theme_color_m1</item>
         <item name="android:windowBackground">@color/white</item>
     </style>

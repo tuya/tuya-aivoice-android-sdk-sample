@@ -117,15 +117,21 @@ sequenceDiagram
 | 时机 | 前置条件 | 说明 |
 |---|---|---|
 | 首页首次加载 | 无 | 进页无条件调一次，早于 `getCloudSyncSwitchStatus` |
-| 录音列表下拉刷新 | 当前状态 ≠「同步中」**且** 上一次调用未在进行中 | 用户的下拉手势即「我要最新数据」 |
+| 录音列表下拉刷新 | 上一次调用未在进行中 | 用户的下拉手势即「我要最新数据」 |
 
-两道前置条件都要判：`CloudSyncStatusInfo.status == 1` 时说明底层已在同步，
-再发一次只会拿到 `10213`；本地也要记一个 in-flight 标志，
-避免连续下拉把请求叠起来。
+下拉刷新时**不必等同步结果再刷列表**，两件事并行即可：云端记录落到本地库后
+SDK 会推 `onRecordListSyncSuccess`，列表在那里再全量重拉一次。
+
+防重只需一个本地 in-flight 标志，避免连续下拉把请求叠起来；
+即便漏过，底层也会以 `10213` 拒绝——那不是失败，见[第七节](#七错误码)。
+如果手上已有 `CloudSyncStatusInfo`，也可以顺便判 `status == 1`（同步中）跳过本次，
+但这不是必需的。
 
 失败**不必弹提示**——同步是后台行为，用户没有显式发起，报错反而是打扰。
 
-> Demo 页面把它做成了一个手动按钮，只是为了便于逐步观察，不代表推荐的交互。
+> Demo 里两种都有：云同步页的「立即同步」按钮只为便于逐步观察，**不代表推荐的交互**；
+> 录音列表页的下拉刷新才是推荐做法，见
+> [`NativeRecordListActivity.onPullToRefresh`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordListActivity.java)。
 
 #### 怎么知道云端数据到手了
 
