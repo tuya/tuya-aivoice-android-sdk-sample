@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 模块 9 · 快捷入口：查询添加状态 + 开关，另附两个 no-op 接口 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_quick_hint" />
+
+    <Button
+        android:id="@+id/btn_query_entry"
+        style="@style/NativeActionButton"
+        android:text="@string/native_quick_btn_query" />
+
+    <LinearLayout
+        android:id="@+id/ll_entry_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_quick_noop_section" />
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_quick_noop_hint" />
+
+    <Button
+        android:id="@+id/btn_event_limit"
+        style="@style/NativeActionButton"
+        android:text="@string/native_quick_btn_event_limit" />
+
+    <Button
+        android:id="@+id/btn_setup_channel"
+        style="@style/NativeActionButton"
+        android:text="@string/native_quick_btn_setup_channel" />
+</LinearLayout>

@@ -77,6 +77,38 @@
     <string name="native_list_load_more">上拉加载更多</string>
     <string name="native_list_no_more">没有更多了</string>
     <string name="native_list_load_fail">加载失败，下拉重试</string>
+    <string name="native_list_delete_title">删除录音</string>
+    <string name="native_list_delete_msg">「%1$s」操作不可恢复。</string>
+    <string name="native_list_delete_confirm">删除</string>
+    <string name="native_list_delete_cancel">取消</string>
+    <string name="native_list_delete_success">已删除</string>
+    <string name="native_list_delete_fail">删除失败：%1$s</string>
+    <string name="native_list_delete_no_id">recordTransferId 为空，无法删除</string>
+    <!-- 模块 3 · 筛选 / 搜索 / 空间 / 删除语义 -->
+    <string name="native_list_search_hint">搜索标题、标签、摘要、转写正文</string>
+    <string name="native_list_search">搜索</string>
+    <string name="native_list_search_empty">没有匹配的结果</string>
+    <string name="native_list_search_result_title">搜索结果（%1$d 条）</string>
+    <string name="native_list_filter_type_all">全部类型</string>
+    <string name="native_list_filter_transfer_all">全部转写状态</string>
+    <string name="native_list_order_record_time">按录音时间</string>
+    <string name="native_list_order_file_id">按文件 ID</string>
+    <string name="native_list_order_update_at">按更新时间</string>
+    <string name="native_list_audio_size">本地音频占用 %1$s MB</string>
+    <string name="native_list_delete_all">彻底删除（本地 + 云端，不可恢复）</string>
+    <string name="native_list_delete_audio_only">仅删除本地音频（记录保留）</string>
+    <string name="native_list_log_query">getRecordTransferResultList type=%1$s transfer=%2$s remove=false orderBy=%3$d pageSize=null</string>
+    <string name="native_list_log_query_fail">列表查询失败 %1$s %2$s</string>
+    <string name="native_list_log_search">searchRecordTransferResult(%1$s)</string>
+    <string name="native_list_log_search_ok">搜索完成，共 %1$d 条</string>
+    <string name="native_list_log_search_fail">搜索失败 %1$s %2$s</string>
+    <string name="native_list_log_size_fail">getAudioFilesSize onError %1$s %2$s</string>
+    <string name="native_list_log_remove">removeFileList([%1$d], isDeleteAll=%2$b)</string>
+    <string name="native_list_log_on_update">onUpdate 局部状态变更 %1$d 条</string>
+    <string name="native_list_log_on_operate">onRecordOperate operate=%1$s %2$d 条</string>
+    <string name="native_list_log_on_tags">onUpdateWitheTags 标签变更 %1$d 条</string>
+    <string name="native_list_log_sync_success">onRecordListSyncSuccess 云同步完成，建议全量刷新</string>
+
     <string name="native_source_0">app</string>
     <string name="native_source_1">设备</string>
     <string name="native_duration_format">%1$s / %2$s</string>
@@ -97,6 +129,9 @@
     <string name="native_toast_param_incomplete">参数不完整：recordMode / audioSourceList 必填</string>
     <string name="native_toast_need_source_lang">开启转写/翻译时必须选择源语言</string>
     <string name="native_toast_need_target_lang">开启翻译时必须选择目标语言</string>
+    <string name="native_toast_record_permission_rationale">需要录音权限才能开始录音，请允许</string>
+    <string name="native_toast_record_permission_denied">已拒绝录音权限，无法开始录音</string>
+    <string name="native_toast_record_permission_never_ask">录音权限已被永久拒绝，请到系统设置-权限中手动开启</string>
     <string name="native_channel_bt">BT(耳机)</string>
     <string name="native_channel_micro">Micro(手机麦)</string>
     <string name="native_channel_unspecified">未指定</string>
@@ -106,7 +141,396 @@
     <string name="native_category_card">录音卡片</string>
     <string name="native_category_entry_earphone">入门耳机</string>
     <string name="native_category_os_buds">OS 耳机</string>
-    <string name="native_summary_format">设备：%1$s  |  模式：%2$s\n源语言：%3$s  →  目标语言：%4$s</string>
+    <string name="native_summary_format">设备：%1$s　模式：%2$s\n推导 audioSource：%3$d\n源语言：%4$s　→　目标语言：%5$s</string>
+
+    <!-- 模块 1 · 录音模式与设备能力 -->
+    <string name="native_record_mode">录音模式（决定参数组合）</string>
+    <string name="native_mode_live">现场录音（只录音，不转写）</string>
+    <string name="native_mode_phone">电话录音（需处于通话中）</string>
+    <string name="native_mode_realtime">实时转写</string>
+    <string name="native_mode_simultaneous">同声传译（转写 + 翻译）</string>
+    <string name="native_advanced_section">高级（模式已给出默认组合，可手动覆盖）</string>
+    <string name="native_opt_tts">TTS 播报译文到耳机（仅翻译时可用）</string>
+    <string name="native_duration_zero">00:00</string>
+    <string name="native_ability_empty">设备能力：等待事件…</string>
+    <string name="native_ability_format">耳机蓝牙：%1$s　电量：%2$s　信噪比：%3$s</string>
+    <string name="native_bt_connected">已连接</string>
+    <string name="native_bt_disconnected">未连接</string>
+    <string name="native_bt_unknown">未知</string>
+    <string name="native_toast_bt_disconnected">耳机蓝牙未连接，无法开始录音</string>
+    <string name="native_toast_device_offline">设备连接断开，无法开始录音</string>
+
+    <!-- 录音错误码 -->
+    <string name="native_err_9006">当前网络不可用，请检查网络连接后重试</string>
+    <string name="native_err_10001">服务繁忙，请稍后重试</string>
+    <string name="native_err_10002">设备不支持这个操作</string>
+    <string name="native_err_10011">网络连接异常，请检查网络设置</string>
+    <string name="native_err_10021">服务超时，录音已暂停，请稍后重试</string>
+    <string name="native_err_10031">无法创建文件，请检查存储空间或权限</string>
+    <string name="native_err_10033">删除失败，请稍后重试</string>
+    <string name="native_err_10041">操作未成功，请重试</string>
+    <string name="native_err_10042">已经在录音了</string>
+    <string name="native_err_10043">已经暂停录音了</string>
+    <string name="native_err_10044">已经恢复录音了</string>
+    <string name="native_err_10045">已经停止录音了</string>
+    <string name="native_err_10046">正在处理中，请稍候</string>
+    <string name="native_err_10049">恢复录音失败，请稍后重试</string>
+    <string name="native_err_10050">当前手机处于通话中，无法录音</string>
+    <string name="native_err_10061">当前设备在录音或者异常状态，请确认并重新开启</string>
+    <string name="native_err_10061_call_mode">电话录音需先进入通话，请确认后重新开启</string>
+    <string name="native_err_10062">当前设备不支持录音控制</string>
+    <string name="native_err_10064">部分设备未连接，请检查后重试</string>
+    <string name="native_err_10071">录音失败，请稍后重试</string>
+    <string name="native_err_10081">余额不足，请购买流量包或订阅</string>
+    <string name="native_err_10082">蓝牙连接失败，请重试</string>
+    <string name="native_err_10083">设备已离线，请检查设备</string>
+    <string name="native_err_ai_base">服务繁忙，请稍后重试</string>
+    <string name="native_err_unknown">操作失败，错误码 %1$s</string>
+    <string name="native_toast_need_phone_call">电话录音需在通话中开启（错误码 10061）</string>
+    <string name="native_log_mode_selected">选择录音模式：%1$s</string>
+    <string name="native_log_bt_change">onBTConnectChange connectedStatus=%1$d</string>
+    <string name="native_log_bt_query_ok">getEarPhoneBTConntectedStatus onSuccess status=%1$d</string>
+    <string name="native_log_bt_query_fail">getEarPhoneBTConntectedStatus onError %1$s %2$s</string>
+    <string name="native_log_restore_realtime">恢复历史句子 getRecordTransferRealTimeResult(recordId=%1$s)</string>
+    <string name="native_log_restore_realtime_ok">历史句子回填完成，共 %1$d 句</string>
+    <string name="native_log_restore_realtime_fail">历史句子回填失败 %1$s %2$s</string>
     <string name="native_device_name_with_category">%1$s（%2$s）</string>
     <string name="native_unnamed">未命名</string>
+
+    <!-- Native 详情页 -->
+    <string name="native_detail_title">录音详情</string>
+    <string name="native_detail_gen_transfer">生成转写</string>
+    <string name="native_detail_gen_summary">生成总结</string>
+    <string name="native_detail_refresh">刷新</string>
+    <string name="native_detail_transfer">转写</string>
+    <string name="native_detail_summary">总结</string>
+    <string name="native_detail_meta_format">时长 %1$s　|　%2$s</string>
+    <string name="native_detail_empty_transfer">暂无转写，点上方「生成转写」</string>
+    <string name="native_detail_empty_summary">转写完成后，点上方「生成总结」</string>
+    <string name="native_detail_log_load_detail">getRecordTransferResultDetail(%1$s)</string>
+    <string name="native_detail_log_detail_ok">detail ok transfer=%1$s summary=%2$s rtid=%3$s</string>
+    <string name="native_detail_log_detail_fail">detail onError %1$s %2$s</string>
+    <string name="native_detail_log_load_transfer">getRecordTransferRecognizeResult(rtid=%1$s, from=0)</string>
+    <string name="native_detail_log_load_summary">getRecordTransferSummaryResult(rtid=%1$s, from=0)</string>
+    <string name="native_detail_log_result_ok">onSuccess len=%1$d</string>
+    <string name="native_detail_log_result_fail">onError %1$s %2$s</string>
+    <string name="native_detail_log_generate">processRecordTransferResult rtid=%1$s taskType=%2$d(%3$s) lang=%4$s</string>
+    <string name="native_detail_log_generate_ok">%1$s onSuccess</string>
+    <string name="native_detail_log_generate_fail">%1$s onError %2$s %3$s</string>
+    <string name="native_detail_log_event_update">onPartialRecordUpdate recordId=%1$s transfer=%2$s summary=%3$s</string>
+    <string name="native_detail_log_auto_reload">状态变更，自动重拉结果</string>
+    <string name="native_detail_toast_generating">转写请求已提交，结果到达后会自动刷新</string>
+    <string name="native_detail_toast_summary_generating">总结请求已提交，结果到达后会自动刷新</string>
+    <string name="native_detail_toast_transfer_running">转写中，请等待完成</string>
+    <string name="native_detail_toast_summary_running">总结中，请等待完成</string>
+    <string name="native_detail_toast_no_record_id">recordId 为空，无法加载详情</string>
+    <string name="native_detail_task_transcription">转写</string>
+    <string name="native_detail_task_summary">总结</string>
+    <string name="native_detail_more">更多</string>
+    <string name="native_detail_upload_idle">音频上传：未开始</string>
+    <string name="native_detail_upload_waiting">音频上传：等待中（未开启云同步时，转写前需先上传音频）</string>
+    <string name="native_detail_upload_progress">音频上传中 %1$d%%</string>
+    <string name="native_detail_upload_done">音频上传完成，即将开始转写</string>
+    <string name="native_detail_log_upload">onRecordTransferFileUploadEvent progress=%1$d status=%2$d</string>
+    <string name="native_detail_log_load_realtime">getRecordTransferRealTimeResult(recordId=%1$s)</string>
+    <string name="native_detail_log_realtime_ok">实时转写句子 %1$d 句</string>
+    <string name="native_detail_param_section">生成参数（可选，留空即用默认）</string>
+    <string name="native_detail_hint_template">总结模板</string>
+    <string name="native_detail_hint_summary_lang">总结语言</string>
+    <string name="native_detail_enable_speaker">开启说话人分离</string>
+    <string name="native_detail_save">保存</string>
+    <string name="native_detail_pick_sentence">选择要编辑的句子</string>
+    <string name="native_detail_edit_sentence">编辑该句转写</string>
+    <string name="native_detail_toast_saved">已保存</string>
+    <string name="native_detail_toast_no_sentence">当前没有可编辑的句子</string>
+    <string name="native_detail_toast_realtime_edit_hint">实时转写需逐句保存，请长按正文选择句子</string>
+    <string name="native_detail_toast_downgrade">尚未转写，已改为下发转写任务</string>
+    <string name="native_detail_log_downgrade_to_transfer">transfer=0 未转写，总结降级为转写任务</string>
+    <string name="native_detail_log_generate_param">生成参数 template=%1$s summaryLang=%2$s enableSpeaker=%3$b</string>
+    <string name="native_detail_log_save_transfer">saveRecordTransferRecognizeResult 长度=%1$d</string>
+    <string name="native_detail_log_save_summary">saveRecordTransferSummaryResult 长度=%1$d</string>
+    <string name="native_detail_log_save_sentence">saveRecordTransferRealTimeRecognizeResult asrId=%1$d</string>
+    <string name="native_detail_log_title_rename">总结带标题「%1$s」，回写为文件名</string>
+    <string name="native_detail_log_title_rename_ok">文件名已更新</string>
+    <string name="native_detail_log_title_rename_fail">文件名更新失败 %1$s %2$s</string>
+
+    <!-- 录音更多操作 -->
+    <string name="native_action_share_on">开启分享链接</string>
+    <string name="native_action_share_off">关闭分享链接</string>
+    <string name="native_action_download_audio">下载云端音频到本地</string>
+    <string name="native_action_rename">重命名</string>
+    <string name="native_action_add_tag">添加标签</string>
+    <string name="native_action_remove_tag">删除标签</string>
+    <string name="native_action_delete">删除录音（本地 + 云端，不可恢复）</string>
+    <string name="native_action_confirm">确定</string>
+    <string name="native_action_reorder_tag">重排标签顺序</string>
+    <string name="native_action_tag_hint">多个标签用英文逗号分隔</string>
+    <string name="native_action_tag_reorder_hint">按新顺序填写全部标签，逗号分隔（漏填会被丢弃）</string>
+    <string name="native_action_log_share">operateRecordShareLink shareStatus=%1$d</string>
+    <string name="native_action_log_share_ok">分享链接：%1$s</string>
+    <string name="native_action_log_share_fail">分享操作失败 %1$s %2$s</string>
+    <string name="native_action_log_download">syncDownloadNoteAudio(fileId=%1$d, recordId=%2$s) 已下发，无回调，进度见云同步观察者</string>
+    <string name="native_action_log_rename">重命名（本地）updateRecordTransferResult name=%1$s</string>
+    <string name="native_action_log_rename_cloud">重命名（云端）m.wearable.audio.record.add name=%1$s</string>
+    <string name="native_action_log_rename_cloud_ok">云端文件名更新成功</string>
+    <string name="native_action_log_rename_cloud_fail">云端文件名更新失败 %1$s %2$s　（本地已改，两端暂不一致）</string>
+    <string name="native_action_log_rename_no_home">家庭 ID 不可用，跳过云端更新（本地已改）</string>
+    <string name="native_detail_log_mark_read">标记已读 visit %1$d → %2$d</string>
+    <string name="native_detail_log_mark_read_ok">已读状态（本地）更新成功</string>
+    <string name="native_detail_log_mark_read_fail">已读状态（本地）更新失败 %1$s %2$s</string>
+    <string name="native_detail_log_mark_read_cloud_ok">已读状态（云端）同步成功</string>
+    <string name="native_detail_log_mark_read_cloud_fail">已读状态（云端）同步失败 %1$s（不影响本地，无需处理）</string>
+    <string name="native_action_log_delete">removeFileList([%1$d], isDeleteAll=true) 彻底删除</string>
+    <string name="native_action_log_tag">updateRecordTagResult bizType=%1$d tags=%2$s</string>
+
+    <!-- Native 演示页脚手架 -->
+    <string name="native_log_panel_title">事件日志</string>
+    <string name="native_log_clear">清空</string>
+
+    <!-- 更多 Native 能力清单 -->
+    <string name="native_more_entry">更多能力</string>
+    <string name="native_api_list_title">更多 Native 能力</string>
+    <string name="native_api_list_hint">以下页面按 wearkit-ttt-native-api.md 的模块划分，每页独立演示一个模块的完整流程（含事件监听的注册与注销）。录音控制、设备能力见「Native 录音」，文件管理与转写总结见「录音列表」。</string>
+    <string name="native_api_entry_offline_title">模块 4 · 离线文件传输</string>
+    <string name="native_api_entry_offline_desc">把设备本地缓存的录音传到手机，支持 BLE 与 AP 快传两种通道</string>
+    <string name="native_api_entry_offline_api">getDeviceOfflineFileStatus / loadOfflineFile / switchModeLoadOfflineFile / registerFileProgressCallback</string>
+    <string name="native_api_entry_import_title">模块 5 · 音频导入</string>
+    <string name="native_api_entry_import_desc">导入手机本地音频为录音记录，需在 onActivityResult 中回灌选择器结果</string>
+    <string name="native_api_entry_import_api">startImport / retryImport / cancelImport / cancelRetry / handleImportActivityResult</string>
+    <string name="native_api_entry_cloud_title">模块 6 · 云同步</string>
+    <string name="native_api_entry_cloud_desc">云同步开关与上传下载聚合状态，Native 需自行聚合 SyncObserver 回调</string>
+    <string name="native_api_entry_cloud_api">getCloudSyncSwitchStatus / syncNoteRecord / addAudioSyncObserver / addCloudSwitchListener</string>
+    <string name="native_api_entry_merge_title">模块 8 · 合并录音</string>
+    <string name="native_api_entry_merge_desc">按选定顺序把多条录音合并为一条，顺序决定音频拼接次序</string>
+    <string name="native_api_entry_merge_api">mergeRecordList / cancelMergeRecordList / getFileMergeStatus / addMergeStatusListener</string>
+    <string name="native_api_entry_quick_title">模块 9 · 快捷入口</string>
+    <string name="native_api_entry_quick_desc">桌面小组件 / 快捷方式 / 磁贴的添加状态查询与开关</string>
+    <string name="native_api_entry_quick_api">getQuickEntryList / setQuickEntryEnabled / addQuickEntryAddListener</string>
+    <string name="native_api_entry_translate_title">模块 10 · 文本翻译（未实现）</string>
+    <string name="native_api_entry_translate_desc">该模块属于 AI Translate 业务（businessType=1），AI 笔记小程序未使用，本 Demo 不实现</string>
+    <string name="native_api_entry_translate_api">startTranslate / getTranslateFileList / sendToNote / batchRemoveTranslationFiles</string>
+
+    <!-- 模块 4 · 离线文件传输 -->
+    <string name="native_offline_title">模块 4 · 离线文件传输</string>
+    <string name="native_offline_hint">把录音卡片 / 耳机本地缓存的录音下载到手机。小程序中这一步是自动的：录音结束后遍历在线卡片设备，发现待传文件（total &gt; 0）即以 BLE 通道发起下载。本页拆成手动三步便于观察。</string>
+    <string name="native_offline_device">设备（离线传输需选择真实设备）</string>
+    <string name="native_offline_btn_query">① 查询离线文件状态</string>
+    <string name="native_offline_btn_load">② 开始 / 续传下载</string>
+    <string name="native_offline_channel_section">③ 传输通道</string>
+    <string name="native_offline_btn_switch_ap">切到 AP 快传</string>
+    <string name="native_offline_btn_switch_ble">切回 BLE</string>
+    <string name="native_offline_status_empty">尚未查询</string>
+    <string name="native_offline_progress_empty">等待进度事件…</string>
+    <string name="native_offline_status_format">下载状态：%1$s\n会话 sessionId：%2$d（非 0 表示可续传）\n待传文件总数：%3$d　已完成：%4$d\n错误码：%5$d</string>
+    <string name="native_offline_progress_format">状态：%1$s\n已完成 / 总数：%2$d / %3$d\n当前文件：%4$s（%5$.1f%%）\n速度：%6$.1f KB/s　剩余：%7$d 秒\n等待中：%8$d　失败：%9$d</string>
+    <string name="native_offline_channel_format">当前通道：%1$s　热点状态：%2$s</string>
+    <string name="native_offline_channel_ble">BLE 蓝牙</string>
+    <string name="native_offline_channel_ap">AP 快传</string>
+    <string name="native_offline_ap_pending">未开启</string>
+    <string name="native_offline_ap_opened">设备热点已开启</string>
+    <string name="native_offline_ap_connected">已连接</string>
+    <string name="native_offline_state_not_started">未开始</string>
+    <string name="native_offline_state_downloading">下载中</string>
+    <string name="native_offline_state_finished">已结束</string>
+    <string name="native_offline_no_current_file">无</string>
+    <string name="native_offline_err_wifi_open">Wi-Fi 打开失败，请检查系统 Wi-Fi 开关</string>
+    <string name="native_offline_err_ap_connect">连接设备热点失败，请靠近设备后重试</string>
+    <string name="native_offline_err_other">传输异常</string>
+    <string name="native_offline_toast_need_device">离线文件传输需选择真实设备，PHONE 无离线文件</string>
+    <string name="native_offline_toast_no_file">该设备没有待传文件</string>
+    <string name="native_offline_log_query_ok">getDeviceOfflineFileStatus onSuccess total=%1$d done=%2$d sessionId=%3$d</string>
+    <string name="native_offline_log_query_null">getDeviceOfflineFileStatus 返回 null</string>
+    <string name="native_offline_log_query_fail">查询失败 %1$s %2$s</string>
+    <string name="native_offline_log_load">loadOfflineFile(%1$s, channel=%2$s, sessionId=%3$d)</string>
+    <string name="native_offline_log_load_success">loadOfflineFile onSuccess sessionId=%1$d</string>
+    <string name="native_offline_log_load_fail">loadOfflineFile onError %1$s %2$s</string>
+    <string name="native_offline_log_switch">switchModeLoadOfflineFile(%1$s, channel=%2$s)</string>
+    <string name="native_offline_log_switch_success">switchMode onSuccess sessionId=%1$d</string>
+    <string name="native_offline_log_switch_fail">switchMode onError %1$s %2$s</string>
+    <string name="native_offline_log_global_success">全局回调 onSuccess sessionId=%1$d</string>
+    <string name="native_offline_log_global_error">全局回调 onError %1$s %2$s</string>
+    <string name="native_offline_log_error_code">errorCode=%1$d %2$s</string>
+
+    <!-- 模块 5 · 音频导入 -->
+    <string name="native_import_title">模块 5 · 音频导入</string>
+    <string name="native_import_hint">startImport 会拉起系统文件选择器，宿主 Activity 必须重写 onActivityResult 并调用 handleImportActivityResult 回灌结果，否则选完文件后不会有任何状态事件。这一步是 Native 独有的，小程序侧由容器代劳。</string>
+    <string name="native_import_status_empty">尚未导入</string>
+    <string name="native_import_btn_start">发起导入（拉起文件选择器）</string>
+    <string name="native_import_btn_cancel">取消导入</string>
+    <string name="native_import_retry_section">失败重试</string>
+    <string name="native_import_retry_hint">导入完成后若存在失败文件，可重试或放弃。retryImport 同样会拉起文件选择器。</string>
+    <string name="native_import_btn_retry">重试导入</string>
+    <string name="native_import_btn_cancel_retry">取消重试</string>
+    <string name="native_import_failed_section">失败文件</string>
+    <string name="native_import_failed_empty">无失败文件</string>
+    <string name="native_import_status_format">状态：%1$s\n文件总数：%2$d　成功：%3$d　进度：%4$d%%\n错误码：%5$d　%6$s</string>
+    <string name="native_import_failed_count">%1$d 个文件导入失败</string>
+    <string name="native_import_err_format">格式不支持或文件损坏</string>
+    <string name="native_import_err_file_not_found">文件不存在</string>
+    <string name="native_import_err_attr_changed">文件已被修改或移动</string>
+    <string name="native_import_err_too_long">文件时长过长</string>
+    <string name="native_import_err_interrupted">导入中断</string>
+    <string name="native_import_err_busy">系统繁忙</string>
+    <string name="native_import_err_file_limit">文件数量超出上限</string>
+    <string name="native_import_err_file_too_large">单个文件过大</string>
+    <string name="native_import_err_no_space">手机存储空间不足</string>
+    <string name="native_import_err_already_importing">导入已经开始，无法重复导入</string>
+    <string name="native_import_err_recording">录音已经开始，无法导入</string>
+    <string name="native_import_err_resumable">存在可恢复的导入任务，无法重复导入</string>
+    <string name="native_import_err_share_failed">导入异常</string>
+    <string name="native_import_err_unknown">导入异常，错误码 %1$d</string>
+    <string name="native_import_state_not_started">未开始</string>
+    <string name="native_import_state_importing">导入中</string>
+    <string name="native_import_state_imported">导入完成</string>
+    <string name="native_import_state_failed">导入中断</string>
+    <string name="native_import_state_share_failed">分享导入异常</string>
+    <string name="native_import_toast_importing">正在导入中，请等待完成</string>
+    <string name="native_import_log_snapshot">getAudioImportStatus() 快照 status=%1$s</string>
+    <string name="native_import_log_status">onStatusUpdate 状态=%1$s</string>
+    <string name="native_import_log_start_ok">startImport onSuccess（等待用户选择文件）</string>
+    <string name="native_import_log_start_fail">startImport onError %1$s %2$s</string>
+    <string name="native_import_log_activity_result">onActivityResult requestCode=%1$d resultCode=%2$d → handleImportActivityResult</string>
+
+    <!-- 模块 6 · 云同步 -->
+    <string name="native_cloud_title">模块 6 · 云同步</string>
+    <string name="native_cloud_hint">状态有两个来源：进页用 getCloudSyncSwitchStatus 取一次快照，之后靠 SyncObserver 增量更新。小程序的 onFileListUpdateStatusEvent 由容器合成，Native 无此事件通道，故快照随开关查询一并返回、增量需自行聚合。</string>
+    <string name="native_cloud_switch_section">云同步开关</string>
+    <string name="native_cloud_switch_hint">开关的「写入」不属于 TTT SDK 能力：小程序自己直调 atop 云接口 m.wearable.sync.switch.save，SDK 只提供查询。接口为全量提交，enabled 与 syncType 每次都要一起传。</string>
+    <string name="native_cloud_switch_enabled">开启云同步</string>
+    <string name="native_cloud_switch_wifi_only">仅在 Wi-Fi 下同步</string>
+    <string name="native_cloud_switch_empty">尚未查询</string>
+    <string name="native_cloud_btn_query_switch">查询开关状态与同步快照</string>
+    <string name="native_cloud_aggregate_section">同步聚合状态</string>
+    <string name="native_cloud_aggregate_hint">状态只由上传决定，下载不参与计算（与底层一致），仅计数展示。底层 IDLE（从未同步）也归入「同步成功」。注意 downloadError / downloadSuccess 语义仍是「下载中」，只有 onFinish 才是真结束。</string>
+    <string name="native_cloud_sync_empty">等待同步事件…</string>
+    <string name="native_cloud_btn_sync">立即同步（syncNoteRecord）</string>
+    <string name="native_cloud_switch_format">开关：%1$s　同步类型：%2$s\n开关更新时间：%3$s\n最近同步时间：%4$s</string>
+    <string name="native_cloud_switch_on">已开启</string>
+    <string name="native_cloud_switch_off">未开启</string>
+    <string name="native_cloud_sync_type_all">任意网络</string>
+    <string name="native_cloud_sync_type_wifi">仅 Wi-Fi</string>
+    <string name="native_cloud_sync_format">聚合状态：%1$s　错误码：%2$d\n上传成功：%3$d　上传失败：%4$d\n下载成功：%5$d　下载失败：%6$d</string>
+    <string name="native_cloud_state_disabled">云同步未开启</string>
+    <string name="native_cloud_state_success">已同步</string>
+    <string name="native_cloud_state_syncing">同步中</string>
+    <string name="native_cloud_state_failed">同步失败</string>
+    <string name="native_cloud_state_paused">同步已暂停</string>
+    <string name="native_cloud_tip_disabled">开启后可将本机录音备份至云端</string>
+    <string name="native_cloud_tip_last_sync">最近同步：%1$s</string>
+    <string name="native_cloud_tip_never_synced">尚未同步过</string>
+    <string name="native_cloud_time_never">—</string>
+    <string name="native_cloud_err_10001">网络中断，请稍后再试</string>
+    <string name="native_cloud_err_10002">连接 Wi-Fi 后继续同步</string>
+    <string name="native_cloud_err_10003">服务器繁忙，请稍后重试</string>
+    <string name="native_cloud_err_20001">已达到本月同步上限，下个月可继续同步</string>
+    <string name="native_cloud_err_unknown">同步异常，错误码 %1$d</string>
+    <string name="native_cloud_toast_syncing">正在同步中，请等待完成</string>
+    <string name="native_cloud_toast_disabled">云同步未开启，请先开启开关</string>
+    <string name="native_cloud_log_snapshot">快照 status=%1$s errorCode=%2$d lastSyncTime=%3$d</string>
+    <string name="native_cloud_log_save">保存开关 enabled=%1$b syncType=%2$s（全量提交）</string>
+    <string name="native_cloud_log_save_ok">开关保存成功（SDK 侧状态需等 MQTT 或后台拉取才会更新）</string>
+    <string name="native_cloud_log_save_fail">开关保存失败 %1$s %2$s</string>
+    <string name="native_cloud_log_sync_already">syncNoteRecord 返回 10213：底层正在同步，据此纠正本地状态为「同步中」</string>
+    <string name="native_cloud_log_switch_event">开关变更事件 type=%1$s enabled=%2$s</string>
+    <string name="native_cloud_log_switch_error">开关查询失败 %1$s %2$s</string>
+    <string name="native_cloud_log_sync_ok">syncNoteRecord onSuccess（进度以 SyncObserver 为准）</string>
+    <string name="native_cloud_log_sync_fail">syncNoteRecord onError %1$s %2$s</string>
+    <string name="native_cloud_log_upload_start">上传 onStart</string>
+    <string name="native_cloud_log_upload_pause">上传 onPause</string>
+    <string name="native_cloud_log_uploading">上传中 progress=%1$d</string>
+    <string name="native_cloud_log_upload_error">单文件上传失败 %1$s %2$s</string>
+    <string name="native_cloud_log_upload_finish">上传结束 成功=%1$d 失败=%2$d</string>
+    <string name="native_cloud_log_upload_global_error">上传全局异常 code=%1$s %2$s</string>
+    <string name="native_cloud_log_download_start">下载 onStart</string>
+    <string name="native_cloud_log_download_pause">下载 onPause</string>
+    <string name="native_cloud_log_download_task_ready">下载任务就绪 文件数=%1$d</string>
+    <string name="native_cloud_log_downloading">下载中 %1$d/%2$d 字节 %3$d%%</string>
+    <string name="native_cloud_log_download_error">单文件下载失败（语义仍为下载中）%1$s %2$s</string>
+    <string name="native_cloud_log_download_error_batch">批量下载失败 数量=%1$d code=%2$d</string>
+    <string name="native_cloud_log_download_finish">下载结束 成功=%1$d 失败=%2$d</string>
+
+    <!-- 模块 8 · 合并录音 -->
+    <string name="native_merge_title">模块 8 · 合并录音</string>
+    <string name="native_merge_hint">把多条录音按选定顺序合并为一条。注意合并接口传的是业务 recordId（String），不是 recordTransferId（Long）。</string>
+    <string name="native_merge_btn_load_list">重新加载录音列表</string>
+    <string name="native_merge_candidate_section">候选录音（勾选参与合并）</string>
+    <string name="native_merge_selected_section">已选顺序</string>
+    <string name="native_merge_order_hint">列表顺序即音频拼接次序。小程序用拖拽排序，此处用上移/下移，语义相同。</string>
+    <string name="native_merge_selected_empty">尚未选择</string>
+    <string name="native_merge_move_up">↑</string>
+    <string name="native_merge_move_down">↓</string>
+    <string name="native_merge_btn_merge">开始合并</string>
+    <string name="native_merge_btn_cancel">取消合并</string>
+    <string name="native_merge_status_empty">等待合并事件…</string>
+    <string name="native_merge_candidate_format">%1$s　%2$s</string>
+    <string name="native_merge_status_format">状态：%1$s　子状态：%2$s\n进度：%3$d%%\n错误码：%4$d　%5$s\n合并结果 recordId：%6$s</string>
+    <string name="native_merge_btn_open_result">打开合并结果详情</string>
+    <string name="native_merge_candidate_unsupported">%1$s（面对面 / 对话类，不支持合并）</string>
+    <string name="native_merge_toast_need_min">请至少选择 %1$d 个文件</string>
+    <string name="native_merge_toast_exceed_max">一次最多选择 %1$d 个文件</string>
+    <string name="native_merge_toast_exceed_duration">合并总时长不能超过 %1$d 小时</string>
+    <string name="native_merge_toast_unsupported_type">已选中包含面对面 / 对话类录音，不支持合并</string>
+    <string name="native_merge_toast_task_running">上一个合并任务还在进行中</string>
+    <string name="native_merge_log_precheck_busy">getFileMergeStatus 预检：已有合并任务进行中，本次不发起</string>
+    <string name="native_merge_err_20220">参数错误，请重新选择文件后重试</string>
+    <string name="native_merge_err_20221">合并失败，请重试</string>
+    <string name="native_merge_err_20222">网络不可用，请检查网络后重试</string>
+    <string name="native_merge_err_20223">文件不存在，请检查文件后重试</string>
+    <string name="native_merge_err_20224">文件上传失败，请重试</string>
+    <string name="native_merge_err_20225">合并上报失败，请重试</string>
+    <string name="native_merge_err_20226">录音记录不存在，请重试</string>
+    <string name="native_merge_err_20227">未知错误，请重试</string>
+    <string name="native_merge_err_20229">合并文件创建失败，请重试</string>
+    <string name="native_merge_err_20230">合并已取消</string>
+    <string name="native_merge_err_unknown">合并失败，错误码 %1$d</string>
+    <string name="native_merge_state_not_started">未开始</string>
+    <string name="native_merge_state_running">执行中</string>
+    <string name="native_merge_state_finished">已完成</string>
+    <string name="native_merge_state_error">失败</string>
+    <string name="native_merge_sub_downloading">文件下载中</string>
+    <string name="native_merge_sub_merging">音频合并中</string>
+    <string name="native_merge_toast_finished">合并完成，recordId=%1$s</string>
+    <string name="native_merge_log_snapshot">getFileMergeStatus() 快照 status=%1$s</string>
+    <string name="native_merge_log_load_list">getRecordTransferResultList(pageSize=%1$d, remove=false)</string>
+    <string name="native_merge_log_load_fail">列表加载失败 %1$s %2$s</string>
+    <string name="native_merge_log_list_ok">候选加载完成，共 %1$d 条</string>
+    <string name="native_merge_log_list_empty">列表为空，没有可合并的录音</string>
+    <string name="native_merge_log_merge">mergeRecordList([%1$s])</string>
+    <string name="native_merge_log_merge_ok">mergeRecordList onSuccess（进度以 IMergeStatusListener 为准）</string>
+    <string name="native_merge_log_merge_fail">mergeRecordList onError %1$s %2$s</string>
+    <string name="native_merge_log_status">合并状态 %1$s 进度 %2$d%%</string>
+
+    <!-- 模块 9 · 快捷入口 -->
+    <string name="native_quick_title">模块 9 · 快捷入口</string>
+    <string name="native_quick_hint">查询与开关桌面小组件 / 快捷方式 / 磁贴。这些组件需宿主 App 事先注册，本 Demo 工程未注册任何此类组件，返回空列表或全部「隐藏添加」属正常。分享链接在录音详情页的更多操作中演示。</string>
+    <string name="native_quick_btn_query">查询入口状态</string>
+    <string name="native_quick_empty">未查询到快捷入口（本 Demo 未注册组件，属正常）</string>
+    <string name="native_quick_entry_state_format">type=%1$d　componentId=%2$d　状态：%3$s</string>
+    <string name="native_quick_btn_enable">开启</string>
+    <string name="native_quick_btn_disable">关闭</string>
+    <string name="native_quick_widget_1x1">桌面小组件 1x1</string>
+    <string name="native_quick_widget_2x2">桌面小组件 2x2</string>
+    <string name="native_quick_shortcut">快捷方式</string>
+    <string name="native_quick_tile">下拉磁贴</string>
+    <string name="native_quick_long_press">长按菜单</string>
+    <string name="native_quick_state_added">已添加</string>
+    <string name="native_quick_state_not_added">未添加</string>
+    <string name="native_quick_state_hide">隐藏添加</string>
+    <string name="native_quick_noop_section">模块 7 · 两个 no-op 接口</string>
+    <string name="native_quick_noop_hint">以下两个接口在 Android Native 侧无实际行为，直接回 onSuccess，仅为与小程序接口对齐而保留。</string>
+    <string name="native_quick_btn_event_limit">operateEventLimit（no-op）</string>
+    <string name="native_quick_btn_setup_channel">readyToSetupNativeChannel（no-op）</string>
+    <string name="native_quick_log_query_ok">getQuickEntryList onSuccess 共 %1$d 项</string>
+    <string name="native_quick_log_query_fail">getQuickEntryList onError %1$s %2$s</string>
+    <string name="native_quick_log_empty">getQuickEntryList 返回空列表</string>
+    <string name="native_quick_log_set">setQuickEntryEnabled(type=%1$d, componentId=%2$d, enabled=%3$d)</string>
+    <string name="native_quick_log_set_ok">setQuickEntryEnabled onSuccess（添加结果以 IQuickEntryAddListener 为准）</string>
+    <string name="native_quick_log_set_fail">setQuickEntryEnabled onError %1$s %2$s</string>
+    <string name="native_quick_log_add_result">onAddResult type=%1$d id=%2$d success=%3$b</string>
+    <string name="native_quick_hint_manual_add">当前系统不支持由 App 发起添加，需用户在桌面长按空白处手动添加</string>
+    <string name="native_quick_toast_added">已添加</string>
+    <string name="native_quick_toast_add_failed">添加失败</string>
+    <string name="native_quick_toast_requested">已请求，若未生效请检查系统权限</string>
+    <string name="native_quick_log_event_limit">operateEventLimit(%1$s, true)</string>
+    <string name="native_quick_log_noop_ok">%1$s onSuccess（no-op，无实际行为）</string>
 </resources>

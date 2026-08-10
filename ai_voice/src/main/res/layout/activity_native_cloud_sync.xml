@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 模块 6 · 云同步：开关读写 + 聚合状态 + 手动触发同步 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_cloud_hint" />
+
+    <!-- ===== 开关读写 ===== -->
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_cloud_switch_section" />
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_cloud_switch_hint" />
+
+    <CheckBox
+        android:id="@+id/cb_sync_enabled"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/native_cloud_switch_enabled"
+        android:textSize="13sp" />
+
+    <CheckBox
+        android:id="@+id/cb_wifi_only"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/native_cloud_switch_wifi_only"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/tv_switch_status"
+        style="@style/NativeInfoBlock"
+        android:text="@string/native_cloud_switch_empty" />
+
+    <Button
+        android:id="@+id/btn_query_switch"
+        style="@style/NativeActionButton"
+        android:text="@string/native_cloud_btn_query_switch" />
+
+    <!-- ===== 聚合状态 ===== -->
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_cloud_aggregate_section" />
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_cloud_aggregate_hint" />
+
+    <TextView
+        android:id="@+id/tv_sync_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="@color/ai_voice_text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tv_sync_tip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textColor="@color/ai_voice_text_secondary"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/tv_sync_status"
+        style="@style/NativeInfoBlock"
+        android:text="@string/native_cloud_sync_empty" />
+
+    <Button
+        android:id="@+id/btn_sync_now"
+        style="@style/NativeActionButton"
+        android:text="@string/native_cloud_btn_sync" />
+</LinearLayout>

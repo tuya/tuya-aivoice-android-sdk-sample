@@ -20,6 +20,15 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
+            <!-- 未读红点：visit 为 0 未读 / 2 已转录未读 时显示 -->
+            <View
+                android:id="@+id/native_item_unread"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:layout_marginEnd="6dp"
+                android:background="@color/ai_voice_status_recording"
+                android:visibility="gone" />
+
             <TextView
                 android:id="@+id/native_item_name"
                 android:layout_width="0dp"

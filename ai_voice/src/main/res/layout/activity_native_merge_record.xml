@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 模块 8 · 合并录音：拉列表 → 勾选并排序 → 合并 → 进度事件 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_merge_hint" />
+
+    <Button
+        android:id="@+id/btn_load_list"
+        style="@style/NativeActionButton"
+        android:text="@string/native_merge_btn_load_list" />
+
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_merge_candidate_section" />
+
+    <LinearLayout
+        android:id="@+id/ll_candidate_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_merge_selected_section" />
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_merge_order_hint" />
+
+    <LinearLayout
+        android:id="@+id/ll_selected_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_merge"
+            style="@style/NativeActionButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="@string/native_merge_btn_merge" />
+
+        <Button
+            android:id="@+id/btn_cancel_merge"
+            style="@style/NativeActionButtonDanger"
+            android:layout_width="0dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="@string/native_merge_btn_cancel" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_merge_status"
+        style="@style/NativeInfoBlock"
+        android:text="@string/native_merge_status_empty" />
+
+    <Button
+        android:id="@+id/btn_open_result"
+        style="@style/NativeActionButton"
+        android:text="@string/native_merge_btn_open_result" />
+</LinearLayout>

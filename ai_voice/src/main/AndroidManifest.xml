@@ -2,15 +2,40 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tuya.smart.ai_voice">
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <application>
         <activity
             android:name=".ui.AiVoiceHomeActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.NativeRecordActivity"
+            android:name=".nativeui.NativeRecordActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.NativeRecordListActivity"
+            android:name=".nativeui.NativeRecordListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".nativeui.NativeRecordDetailActivity"
+            android:exported="false" />
+
+        <!-- 更多 Native 能力：清单页与各模块演示页 -->
+        <activity
+            android:name=".nativeui.NativeApiListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".nativeui.NativeOfflineFileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".nativeui.NativeAudioImportActivity"
+            android:exported="false" />
+        <activity
+            android:name=".nativeui.NativeCloudSyncActivity"
+            android:exported="false" />
+        <activity
+            android:name=".nativeui.NativeMergeRecordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".nativeui.NativeQuickEntryActivity"
             android:exported="false" />
     </application>
 </manifest>

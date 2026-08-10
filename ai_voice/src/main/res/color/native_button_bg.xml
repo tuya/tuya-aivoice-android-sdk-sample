@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 演示页操作按钮背景：禁用态用灰色，避免默认样式下「禁用」与「可用」难以区分 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/ai_voice_btn_disable" android:state_enabled="false" />
+    <item android:color="@color/ai_voice_tab_selected" />
+</selector>

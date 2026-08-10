@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 操作按钮文字：禁用态降低对比度，与灰色背景配合 -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:alpha="0.6" android:color="@color/ai_voice_text_on_card" android:state_enabled="false" />
+    <item android:color="@color/ai_voice_text_on_card" />
+</selector>

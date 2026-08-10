@@ -9,6 +9,34 @@ AI Voice BizBundle Demo Link: [https://github.com/tuya/tuya-aivoice-android-sdk-
 
 ---
 
+## Native API Integration Guide
+
+Besides the ready-made UI BizBundle, this project also exposes a **Native API**
+(`ThingAudioDetectManagerNative`) so you can build your own UI on top of recording,
+transcription, cloud sync and the other capabilities.
+
+👉 **[Native API Integration Guide](./docs/modules/README.md)** (written in Chinese)
+
+Split per capability module. Each document covers the API list, call sequence,
+per-parameter reference, data structure field tables, error codes and an integration checklist:
+
+| Module | Document |
+|---|---|
+| 1 · Recording control & device capability | [module-01](./docs/modules/module-01-record-control.md) |
+| 2 · Transcription & summary | [module-02](./docs/modules/module-02-transcribe-summary.md) |
+| 3 · File management | [module-03](./docs/modules/module-03-file-management.md) |
+| 4 · Offline file transfer | [module-04](./docs/modules/module-04-offline-transfer.md) |
+| 5 · Audio import | [module-05](./docs/modules/module-05-audio-import.md) |
+| 6 · Cloud sync | [module-06](./docs/modules/module-06-cloud-sync.md) |
+| 8 · Merge recordings | [module-08](./docs/modules/module-08-merge-record.md) |
+| 9 · Share / floating ball / quick entry | [module-09](./docs/modules/module-09-share-and-entry.md) |
+| 10 · Text translation | [module-10](./docs/modules/module-10-text-translation.md) |
+
+Runnable samples live in [`ai_voice/.../nativeui`](./ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui);
+every module document links to its own demo page.
+
+---
+
 ## Brief Summary of Considerations
 
 ### 1. Preparation

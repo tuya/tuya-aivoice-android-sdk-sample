@@ -1,4 +1,4 @@
-package com.tuya.smart.ai_voice.ui;
+package com.tuya.smart.ai_voice.nativeui;
 
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -20,14 +20,27 @@ import java.util.Locale;
 
 /**
  * 录音文件列表 Adapter。数据源为 {@link RecordTransferResultBean}，字段全 public，直接读。
- * 列表项仅展示，无点击事件。
+ * 点击列表项回调 {@link OnItemClickListener}（跳转详情），长按回调
+ * {@link OnItemLongClickListener}（触发删除等操作）。
  */
 public class NativeRecordListAdapter
         extends RecyclerView.Adapter<NativeRecordListAdapter.ItemVh> {
 
+    /** 列表项点击回调。 */
+    public interface OnItemClickListener {
+        void onItemClick(@NonNull RecordTransferResultBean item);
+    }
+
+    /** 列表项长按回调（用于触发删除等操作）。 */
+    public interface OnItemLongClickListener {
+        void onItemLongClick(@NonNull RecordTransferResultBean item);
+    }
+
     private final List<RecordTransferResultBean> data = new ArrayList<>();
     private final SimpleDateFormat dateFmt =
             new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+    private OnItemClickListener clickListener;
+    private OnItemLongClickListener longClickListener;
 
     public void submitList(List<RecordTransferResultBean> list) {
         data.clear();
@@ -51,6 +64,26 @@ public class NativeRecordListAdapter
         notifyDataSetChanged();
     }
 
+    public void setOnItemClickListener(OnItemClickListener l) {
+        this.clickListener = l;
+    }
+
+    public void setOnItemLongClickListener(OnItemLongClickListener l) {
+        this.longClickListener = l;
+    }
+
+    /** 按 recordTransferId 移除单条数据并刷新。 */
+    public void removeByRecordTransferId(long recordTransferId) {
+        for (int i = 0; i < data.size(); i++) {
+            RecordTransferResultBean b = data.get(i);
+            if (b.recordTransferId != null && b.recordTransferId == recordTransferId) {
+                data.remove(i);
+                notifyItemRemoved(i);
+                return;
+            }
+        }
+    }
+
     @NonNull
     @Override
     public ItemVh onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -70,6 +103,20 @@ public class NativeRecordListAdapter
         holder.duration.setText(formatDuration(b.duration));
         holder.time.setText(b.recordTime == null ? "" : dateFmt.format(new Date(b.recordTime * 1000L)));
         holder.summary.setText(summaryText(ctx, b.summary));
+        holder.unread.setVisibility(isUnread(b.visit) ? View.VISIBLE : View.GONE);
+
+        holder.itemView.setOnClickListener(v -> {
+            if (clickListener != null) {
+                clickListener.onItemClick(b);
+            }
+        });
+        holder.itemView.setOnLongClickListener(v -> {
+            if (longClickListener != null) {
+                longClickListener.onItemLongClick(b);
+                return true;
+            }
+            return false;
+        });
     }
 
     @Override
@@ -125,7 +172,28 @@ public class NativeRecordListAdapter
         return String.format(Locale.getDefault(), "%02d:%02d", m, s);
     }
 
+    // ===== RecordTransferResultBean.visit =====
+    /** 未读。 */
+    private static final int VISIT_UNREAD = 0;
+    /** 已转录未读。 */
+    private static final int VISIT_TRANSCRIBED_UNREAD = 2;
+
+    /**
+     * 是否显示未读红点。
+     * <p>
+     * visit 有四个取值，转写前后各有一组未读 / 已读：{@code 0} 未读 / {@code 1} 已读 /
+     * {@code 2} 已转录未读 / {@code 3} 已转录已读。转写完成会把已读的条目重新置为
+     * {@code 2}，红点再次亮起，提醒用户「有新内容可看」。
+     *
+     * @param visit 访问状态，可能为 null
+     * @return true 表示未读
+     */
+    private static boolean isUnread(Integer visit) {
+        return visit != null && (visit == VISIT_UNREAD || visit == VISIT_TRANSCRIBED_UNREAD);
+    }
+
     static class ItemVh extends RecyclerView.ViewHolder {
+        final View unread;
         final TextView name;
         final TextView transfer;
         final TextView type;
@@ -136,6 +204,7 @@ public class NativeRecordListAdapter
 
         ItemVh(@NonNull View v) {
             super(v);
+            unread = v.findViewById(R.id.native_item_unread);
             name = v.findViewById(R.id.native_item_name);
             transfer = v.findViewById(R.id.native_item_transfer);
             type = v.findViewById(R.id.native_item_type);

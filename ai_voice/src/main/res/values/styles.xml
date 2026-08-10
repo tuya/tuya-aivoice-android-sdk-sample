@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Native 能力演示页共用样式，避免各页布局重复书写同一组属性 -->
+<resources>
+
+    <!-- 页面顶部的一段说明文字 -->
+    <style name="NativeSectionHint">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:textColor">@color/ai_voice_text_secondary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+    </style>
+
+    <!-- 表单项标签 -->
+    <style name="NativeFieldLabel">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:layout_marginBottom">4dp</item>
+        <item name="android:textColor">@color/ai_voice_text_primary</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- 操作按钮 -->
+    <style name="NativeActionButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:backgroundTint">@color/native_button_bg</item>
+        <item name="android:textColor">@color/native_button_text</item>
+    </style>
+
+    <!-- 停止 / 取消类操作按钮 -->
+    <style name="NativeActionButtonDanger" parent="NativeActionButton">
+        <item name="android:backgroundTint">@color/native_button_bg_danger</item>
+    </style>
+
+    <!-- 列表项内的小按钮（上移/下移、开启/关闭） -->
+    <style name="NativeInlineButton">
+        <item name="android:layout_height">36dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:backgroundTint">@color/native_button_bg</item>
+        <item name="android:textColor">@color/native_button_text</item>
+    </style>
+
+    <!-- 只读信息展示块（状态、进度、结果） -->
+    <style name="NativeInfoBlock">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:background">@color/ai_voice_action_bg</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:textColor">@color/ai_voice_text_primary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:lineSpacingExtra">3dp</item>
+        <item name="android:textIsSelectable">true</item>
+    </style>
+</resources>

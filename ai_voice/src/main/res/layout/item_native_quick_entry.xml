@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 快捷入口项：名称 + 添加状态 + 开关按钮 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:background="@color/ai_voice_action_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_entry_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/ai_voice_text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/tv_entry_state"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/ai_voice_text_secondary"
+            android:textSize="11sp" />
+
+        <!-- state == HIDE_ADD 时展示手动添加引导 -->
+        <TextView
+            android:id="@+id/tv_entry_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/ai_voice_status_recording"
+            android:textSize="11sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_enable"
+        style="@style/NativeInlineButton"
+        android:layout_width="wrap_content"
+        android:text="@string/native_quick_btn_enable" />
+
+    <Button
+        android:id="@+id/btn_disable"
+        style="@style/NativeInlineButton"
+        android:layout_width="wrap_content"
+        android:layout_marginStart="4dp"
+        android:text="@string/native_quick_btn_disable" />
+</LinearLayout>

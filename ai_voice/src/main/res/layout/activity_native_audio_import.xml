@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 模块 5 · 音频导入：发起导入 → 系统文件选择器 → onActivityResult 回灌 → 状态事件 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_import_hint" />
+
+    <TextView
+        android:id="@+id/tv_import_status"
+        style="@style/NativeInfoBlock"
+        android:text="@string/native_import_status_empty" />
+
+    <Button
+        android:id="@+id/btn_start_import"
+        style="@style/NativeActionButton"
+        android:text="@string/native_import_btn_start" />
+
+    <Button
+        android:id="@+id/btn_cancel_import"
+        style="@style/NativeActionButtonDanger"
+        android:text="@string/native_import_btn_cancel" />
+
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_import_retry_section" />
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_import_retry_hint" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_retry_import"
+            style="@style/NativeActionButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="@string/native_import_btn_retry" />
+
+        <Button
+            android:id="@+id/btn_cancel_retry"
+            style="@style/NativeActionButton"
+            android:layout_width="0dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="@string/native_import_btn_cancel_retry" />
+    </LinearLayout>
+
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_import_failed_section" />
+
+    <TextView
+        android:id="@+id/tv_failed_files"
+        style="@style/NativeInfoBlock"
+        android:text="@string/native_import_failed_empty" />
+</LinearLayout>

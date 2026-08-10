@@ -1,4 +1,4 @@
-package com.tuya.smart.ai_voice.ui.widget;
+package com.tuya.smart.ai_voice.nativeui.widget;
 
 import android.content.Context;
 import android.graphics.Canvas;

@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  模块 2 · 转写 / 总结。顶部栏与事件日志区由 NativeDemoBaseActivity 提供。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/native_detail_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/ai_voice_text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/native_detail_meta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="@color/ai_voice_text_secondary"
+        android:textSize="12sp" />
+
+    <!-- 上传进度：未开云同步时，转写前需先上传音频，进度由 ITransferListener 推送 -->
+    <TextView
+        android:id="@+id/native_detail_upload"
+        style="@style/NativeInfoBlock"
+        android:text="@string/native_detail_upload_idle"
+        android:visibility="gone" />
+
+    <!-- 转写 / 总结的可选参数，对应 TranscribeParam 的 template / summaryLang / enableSpeaker -->
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_detail_param_section" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/native_detail_template"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/ai_voice_action_bg"
+            android:hint="@string/native_detail_hint_template"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:padding="10dp"
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/native_detail_summary_lang"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:background="@color/ai_voice_action_bg"
+            android:hint="@string/native_detail_hint_summary_lang"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:padding="10dp"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/native_detail_enable_speaker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/native_detail_enable_speaker"
+        android:textSize="13sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/native_detail_btn_transfer"
+            style="@style/NativeActionButton"
+            android:layout_width="0dp"
+            android:layout_marginTop="0dp"
+            android:layout_weight="1"
+            android:text="@string/native_detail_gen_transfer" />
+
+        <Button
+            android:id="@+id/native_detail_btn_summary"
+            style="@style/NativeActionButton"
+            android:layout_width="0dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginTop="0dp"
+            android:layout_weight="1"
+            android:text="@string/native_detail_gen_summary" />
+
+        <Button
+            android:id="@+id/native_detail_btn_more"
+            style="@style/NativeActionButton"
+            android:layout_width="0dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginTop="0dp"
+            android:layout_weight="1"
+            android:text="@string/native_detail_more" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/native_detail_btn_refresh"
+        style="@style/NativeActionButton"
+        android:text="@string/native_detail_refresh" />
+
+    <!-- 转写 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/native_detail_transfer"
+            android:textColor="@color/ai_voice_text_primary"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/native_detail_transfer_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/ai_voice_tag_bg"
+            android:paddingStart="8dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="2dp"
+            android:textColor="@color/ai_voice_tab_selected"
+            android:textSize="11sp" />
+
+        <Button
+            android:id="@+id/native_detail_btn_save_transfer"
+            style="@style/NativeInlineButton"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/native_detail_save" />
+    </LinearLayout>
+
+    <!-- 可编辑：文件转写模式保存整份 JSON，实时转写模式点单句逐条保存 -->
+    <EditText
+        android:id="@+id/native_detail_transfer_text"
+        style="@style/NativeInfoBlock"
+        android:gravity="top"
+        android:importantForAutofill="no"
+        android:inputType="textMultiLine"
+        android:minHeight="120dp" />
+
+    <!-- 总结 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/native_detail_summary"
+            android:textColor="@color/ai_voice_text_primary"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/native_detail_summary_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/ai_voice_tag_bg"
+            android:paddingStart="8dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="2dp"
+            android:textColor="@color/ai_voice_tab_selected"
+            android:textSize="11sp" />
+
+        <Button
+            android:id="@+id/native_detail_btn_save_summary"
+            style="@style/NativeInlineButton"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/native_detail_save" />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/native_detail_summary_text"
+        style="@style/NativeInfoBlock"
+        android:gravity="top"
+        android:importantForAutofill="no"
+        android:inputType="textMultiLine"
+        android:minHeight="100dp" />
+</LinearLayout>
