@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  对话框里的文本输入框。
+
+  不要用裸 new EditText(context)：它没有背景也没有内边距，空输入时在对话框里
+  几乎看不见，hint 颜色还得看主题脸色（AppTheme 未设 android:textColorHint）。
+  这里把边框、内边距、文字色与 hint 色都定死，保证任何主题下都可读。
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="20dp"
+    android:paddingTop="12dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="4dp">
+
+    <EditText
+        android:id="@+id/native_dialog_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_native_dialog_input"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:minHeight="44dp"
+        android:paddingStart="12dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="10dp"
+        android:textColor="@color/ai_voice_text_primary"
+        android:textColorHint="@color/ai_voice_text_secondary"
+        android:textSize="14sp" />
+</FrameLayout>
