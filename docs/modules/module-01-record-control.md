@@ -106,7 +106,7 @@ sequenceDiagram
 | 参数 | 类型 | 必填 | 说明 |
 |---|---|---|---|
 | `deviceId` | `String` | 是 | 设备 ID；手机本地录音传 `"PHONE"` |
-| `params` | [`RecordParamsV2`](#recordparamsv2) | 是 | 录音参数，组合方式见[第五节](#五关键约定) |
+| `params` | [`RecordParamsV2`](#recordparamsv2) | 是 | 录音参数，组合方式见[第六节](#六关键约定) |
 | `callback` | `IResultCallback` | 否 | `onSuccess` 表示录音已启动；`onError` 的 `code` 见[第七节](#七错误码) |
 
 ---
@@ -312,7 +312,7 @@ Pro / 卡片等设备音源配 `DEVICE`。
 | `beginOffset` | `Long` | 该句起始偏移（毫秒） |
 | `endOffset` | `Long` | 该句结束偏移（毫秒） |
 | `translateText` | `String` | 翻译文本，同样是累积文案 |
-| `translateStatus` | `Integer` | 翻译状态 |
+| `translateStatus` | `Integer` | 译文的处理状态。开启翻译时才有意义 |
 | `errorCode` | `Integer` | 错误码 |
 | `errorMessage` | `String` | 错误消息 |
 

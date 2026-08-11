@@ -182,7 +182,12 @@ public class NativeRecordDetailActivity extends NativeDemoBaseActivity {
     /** 已转录已读。 */
     private static final int VISIT_TRANSCRIBED_READ = 3;
 
-    /** {@code getRecordTransferRecognizeResult} 的来源：0 本地 / 1 云端。 */
+    /**
+     * 取结果接口的 {@code from} 入参。
+     * <p>
+     * ⚠️ <b>该参数已废弃、不参与任何判断</b>：底层固定「先查本地库，查不到或失败自动回退云端」。
+     * 保留只为兼容既有签名，约定传 {@code 0}。
+     */
     private static final int RESULT_FROM_LOCAL = 0;
 
     /** 详情接口的振幅采样上限，0 表示取全量。 */
@@ -600,8 +605,8 @@ public class NativeRecordDetailActivity extends NativeDemoBaseActivity {
     /**
      * 实时转写模式的正文：一组带时间戳与声道的句子。
      * <p>
-     * 三个入参都可为 null，此处按 {@code recordId} 查。单句纠错可用
-     * {@code saveRecordTransferRealTimeRecognizeResult(asrId, ...)}，见 {@link #saveSentence}。
+     * 三个入参都可为 null，此处按 {@code recordId} 查。单句纠错走
+     * {@code saveRecordTransferRealTimeRecognizeResult(asrId, ...)}，见 {@link #editSentence}。
      */
     private void loadRealtimeSentences() {
         if (TextUtils.isEmpty(recordId)) return;

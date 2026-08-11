@@ -107,11 +107,16 @@ sequenceDiagram
 | 参数 | 类型 | 必填 | 说明 |
 |---|---|---|---|
 | `recordTransferId` | `long` | 是 | 文件 ID |
-| `from` | `int` | 是 | `0` 本地 / `1` 云端。常用 `0`，本地取不到时可用 `1` 兜底 |
+| `from` | `int` | 是 | ⚠️ **已废弃，传任意值均可**（约定传 `0`）。见下方说明 |
 | `callback` | `IRecordCallBack<String>` | 否 | 返回值是 **JSON 字符串**，需自行解析 |
 
 返回的 JSON 是数组，元素形如 `{transcript, translation, timeOffset, speaker}`。
 `timeOffset` 可能是毫秒数（`"1000"`）也可能带秒后缀（`"1s"`），解析时需兼容两种。
+
+> ⚠️ **`from` 参数已废弃。** 底层实现里它没有参与任何判断——
+> 取数逻辑固定为「**先查本地库，查不到或失败自动回退云端**」，
+> 不需要也无法由调用方指定来源。参数保留只为兼容既有签名，**约定传 `0`**。
+> 同样的情况见 `getRecordTransferSummaryResult`。
 
 ---
 
@@ -129,7 +134,8 @@ sequenceDiagram
 
 ### `getRecordTransferSummaryResult(long recordTransferId, int from, IRecordCallBack<String> callback)`
 
-查询总结正文。参数与 `getRecordTransferRecognizeResult` 相同。
+查询总结正文。参数与 `getRecordTransferRecognizeResult` 相同，
+**`from` 同样已废弃**，约定传 `0`。
 
 返回的 JSON 是对象，形如 `{summary, outline, question, title, imageUrl}`。
 **`outline` 与 `question` 本身是二次编码的 JSON 字符串**，要再解析一次。
@@ -228,20 +234,23 @@ manager.removeTransferListener(listener);
 | 字段 | 类型 | 必填 | 说明 |
 |---|---|---|---|
 | `fileId` | `Long` | 是 | 文件 ID，即 `recordTransferId` |
-| `template` | `String` | 否 | 总结模板。留空（`""`）用默认模板 |
-| `transferType` | `Integer` | 是 | **任务类型**：`0` 转写 / `1` 总结 / `2` 翻译。注意字段名叫 transferType，语义是任务类型 |
+| `template` | `String` | 否 | **总结模板 ID**，不是模板名也不是模板内容。留空（`""`）用智能推荐 |
+| `transferType` | `Integer` | 是 | **任务类型**，取值同 `TaskTypeDef`：`0` 转写 / `1` 总结 / `2` 翻译。别与 `RecordTransferResultBean.transferType`（转写模式）混淆，同名不同义 |
 | `audioLang` | `String` | 否 | ASR 语言，取录音的 `originalLanguage`；留空由底层判定 |
 | `transLang` | `String` | 否 | 翻译目标语言。仅 `transferType=2` 时需要 |
-| `summaryLang` | `String` | 否 | 总结输出语言。留空则跟随转写语言 |
+| `summaryLang` | `String` | 否 | 总结输出语言。留空即不指定，由底层决定 |
 | `enableSpeaker` | `boolean` | 否 | 是否开启说话人分离 |
-| `ownerId` | `String` | 否 | 家庭 ID |
-| `devId` | `String` | 否 | 设备 ID |
+| `ownerId` | `String` | 否 | 家庭 ID。语义是数字但类型为 `String` |
+| `devId` | `String` | 否 | 录音所属设备的 ID |
 | `key` | `String` | 否 | 业务 `recordId` |
 | `objectKey` | `String` | 否 | 对象存储 key |
-| `duration` | `Integer` | 否 | 音频时长（秒） |
-| `channelMode` | `String` | 否 | 声道模式 |
+| `duration` | `Integer` | 否 | 音频时长 |
+| `channelMode` | `String` | 否 | 声道模式，取值同 `ChannelModeDef`：`"single"` 单声道 / `"multi"` 多声道 |
 
 构造顺序：`(fileId, template, transferType, audioLang, transLang, summaryLang, enableSpeaker)`。
+
+其余 6 个字段（`ownerId` 起）不在构造函数里，需用 setter 设置；
+**通常不必设置**，底层会按 `fileId` 自行补齐。
 
 ### `RecordTransferRealTimeResult`
 
@@ -417,7 +426,9 @@ sequenceDiagram
 
 - 改名走的是**模块 3** 的 `updateRecordTransferResult`，其余可选参数传 `null` 表示不修改
 - **必须先比对再改**。总结每次重新加载都会走到这里，不比对就会反复发起无意义的更新
-- 文件名在本地与云端各存一份，**两处都要写**，详见[模块 3 · 重命名要写两处](./module-03-file-management.md#重命名要写两处)
+- 文件名共存三份（本地库、云端、总结 JSON 的 `title`），**这条路径只需写前两份**——
+  `title` 本就是从总结里读出来的，无需回写。手动改名则三处都要写，
+  详见[模块 3 · 重命名要写三处](./module-03-file-management.md#重命名要写三处)
 
 ---
 

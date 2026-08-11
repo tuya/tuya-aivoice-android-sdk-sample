@@ -155,10 +155,10 @@ manager.addTranslationListener(listener);   // ⚠️ 无对应 remove
 | `directoryId` | `Long?` | 目录 ID |
 | `deviceUniqueId` | `String?` | 设备录音唯一标识 |
 | `name` | `String?` | 文件名 |
-| `recordTime` | `Long?` | 录音时间（毫秒） |
+| `recordTime` | `Long?` | 录音时间（秒） |
 | `duration` | `Long?` | 录音时长（毫秒） |
 | `recordType` | `Int?` | `0` 电话 / `1` 会议 / `2` Pro 1v1 / `3` 入门 1v1 / `4` 文本翻译 |
-| `audioFormat` | `Int?` | 音频格式 |
+| `audioFormat` | `Int?` | 音频格式编码，播放走 `filePath` 即可，通常无需关心 |
 | `deviceId` | `String?` | 设备 ID |
 | `source` | `Int?` | 来源：`0` 未知 / `1` 蓝牙 / `2` MIC / `3` Pro / `4` 卡片 |
 | `filePath` | `String?` | 录音文件本地路径 |

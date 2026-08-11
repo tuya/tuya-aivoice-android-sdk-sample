@@ -212,7 +212,7 @@ manager.removeFileRecordUpdateListener(callback);
 | 回调 | 说明 |
 |---|---|
 | `onUpdate(List<RecordUpdateInfo> infos)` | 条目状态变更（转写完成、总结完成等），可做局部刷新 |
-| `onRecordOperate(String operate, List<RecordUpdateInfo> infos)` | 文件新增 / 修改 / 删除。`operate` 取值见 `RecordOperateDef`；新增会改变列表长度，需全量刷新 |
+| `onRecordOperate(String operate, List<RecordUpdateInfo> infos)` | 文件新增 / 修改 / 删除。`operate` 取值同 `RecordOperateDef`：`"add"` / `"update"` / `"delete"`；新增会改变列表长度，需全量刷新 |
 | `onRecordListSyncSuccess()` | 云同步完成，本地数据可能大批变化，建议全量刷新 |
 | `onUpdateWitheTags(List<RecordUpdateInfo> infos)` | 仅标签变更 |
 
@@ -266,7 +266,7 @@ manager.removeFileRecordUpdateListener(callback);
 | `filePath` | `String` | 录音文件路径 |
 | `wavFilePath` | `String` | ⚠️ 已废弃，统一用 `filePath` |
 | `amplitudes` | `String` | 振幅串（逗号分隔），画波形用 |
-| `audioFormat` | `Integer` | 音频格式 |
+| `audioFormat` | `Integer` | 音频格式编码，由底层写入，播放走 `filePath` 即可，通常无需关心 |
 | `source` | `Integer` | 音频源，取值与 `audioSource` 一致 |
 | `storageKey` | `String` | 云端存储 key |
 
@@ -282,7 +282,7 @@ manager.removeFileRecordUpdateListener(callback);
 | `transcriptionStatus` | `Integer` | ASR 覆盖度：`0` 未知 / `1` 无 / `2` 部分 / `3` 完整 |
 | `translateState` | `Integer` | 翻译状态 |
 | `summaryImageStatus` | `Integer` | 总结配图：`1` 未 / `2` 中 / `3` 成功 / `4` 失败 |
-| `noteFileConvertState` | `Integer` | note 转化：`0` 成功 / `1` 中 / `2` 失败 |
+| `noteFileConvertState` | `Integer` | note 转化，取值同 `NoteOfflineConvertStateDef`：`0` 成功 / `1` 转化中 / `2` 失败。注意 `0` 是成功不是「未开始」 |
 
 **同步与展示**
 
@@ -355,15 +355,18 @@ manager.removeFileRecordUpdateListener(callback);
 |---|---|---|
 | `recordId` | `String` | 业务录音 ID。**按它过滤出自己关心的条目** |
 | `name` | `String` | 文件名 |
-| `cloudSyncStatus` | `int` | 云同步状态 |
-| `transferStatus` | `int` | 转写状态 |
-| `summaryStatus` | `int` | 总结状态 |
-| `translateStatus` | `int` | 翻译状态 |
-| `noteFileConvertState` | `int` | note 转化状态 |
-| `asrStatus` | `int` | ASR 状态 |
-| `summaryImageStatus` | `int` | 总结配图状态 |
+| `cloudSyncStatus` | `int` | 云同步状态，取值同 [`RecordTransferResultBean.cloudSyncStatus`](#recordtransferresultbean) |
+| `transferStatus` | `int` | 转写状态，取值同该 bean 的 `transfer` |
+| `summaryStatus` | `int` | 总结状态，取值同该 bean 的 `summary` |
+| `translateStatus` | `int` | 翻译状态，取值同该 bean 的 `translateState` |
+| `noteFileConvertState` | `int` | note 转化状态，取值同该 bean 的同名字段 |
+| `asrStatus` | `int` | ASR 覆盖度，取值同该 bean 的 `transcriptionStatus` |
+| `summaryImageStatus` | `int` | 总结配图状态，取值同该 bean 的同名字段 |
 | `summaryImageUrl` | `String` | 总结配图 URL |
-| `tags` | `List<String>` | 标签列表 |
+| `tags` | `List<String>` | 标签列表。**`onUpdateWitheTags` 里它已是最新值**，可直接渲染 |
+
+各状态字段的取值定义都在 [`RecordTransferResultBean`](#recordtransferresultbean)，
+本 bean 只是变更事件的载体，不重复列举。
 
 ---
 
