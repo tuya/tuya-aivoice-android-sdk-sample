@@ -403,7 +403,7 @@ manager.removeFileRecordUpdateListener(callback);
 |---|---|---|
 | 本地库 | `updateRecordTransferResult(recordTransferId, name, ...)` | 界面不变 |
 | 云端 | atop `m.wearable.audio.record.add` | 其他端与重装后仍是旧名 |
-| **总结 JSON 的 `title`** | `saveRecordTransferSummaryResult` + atop `m.wearable.audio.summary.edit` | **改完的名字会自己变回去**，见下 |
+| **总结 JSON 的 `title`** | `saveRecordTransferSummaryResult`（**只写本地**） | **改完的名字会自己变回去**，见下 |
 
 云端接口的入参形态要注意：业务字段先拼成 JSON 字符串，
 再整体放进 `audioRecordRequest` 一个字段，而不是平铺成多个 post 参数。
@@ -433,12 +433,17 @@ audioRecordRequest = {"recordId":"xxx","name":"新名字","ownerId":<当前家�
 
 **两个方向都要保持一致**：自动改名是 `title` → 文件名，手动改名就得反过来把文件名写进 `title`。
 
+> ⚠️ **`title` 只写本地，不要调 `m.wearable.audio.summary.edit`。**
+> 那个接口的语义是「用户编辑了总结正文」，改名时调它会把这条记录误标成总结被人工改过。
+> 而且没有必要——`getRecordTransferSummaryResult` **优先读本地库**，
+> 拉锯问题的根源就在本地那份 `title`，写了本地就解决了。
+
 #### Demo 的两条改名路径
 
 | 触发 | 位置 | 要写的地方 |
 |---|---|---|
-| 用户手动改名 | 「更多操作」→ 重命名 | 三处都写 |
-| 总结完成后用 AI 标题自动改名 | `applySummaryTitle()` | 只写本地 + 云端文件名（`title` 本就是源头，无需回写） |
+| 用户手动改名 | 「更多操作」→ 重命名 | 本地文件名 + 本地总结 `title` + 云端文件名 |
+| 总结完成后用 AI 标题自动改名 | `applySummaryTitle()` | 本地文件名 + 云端文件名（`title` 本就是源头，无需回写） |
 
 云端写入统一封装在 `AudioContentBusiness`，接口名与入参形态只在这一个类里定义。
 云端失败时**不回滚本地**，让「本地已改、云端未同步」这个中间态可见。
