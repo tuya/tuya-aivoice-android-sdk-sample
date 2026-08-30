@@ -81,6 +81,7 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
 
+    // AppTheme 继承 Theme.MaterialComponents...Bridge，主题资源来自这里
     implementation 'com.google.android.material:material:1.11.0'
 
     implementation project(path: ':panel')

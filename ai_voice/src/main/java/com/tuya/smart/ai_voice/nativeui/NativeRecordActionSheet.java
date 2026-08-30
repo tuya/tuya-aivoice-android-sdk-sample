@@ -90,6 +90,16 @@ public final class NativeRecordActionSheet {
 
         /** 录音已被彻底删除，详情已不存在，调用方应关闭页面。 */
         void onRecordDeleted();
+
+        /**
+         * 用户点了「导出转写文本」，请调用方自行导出。
+         * <p>
+         * 这一项不像其余操作那样在本类内部闭环，因为导出的数据源是<b>调用方已加载到内存的转写正文</b>
+         * （文件转写的原始数组 / 实时转写的句子列表），本类只持有 ID，拿不到内容。
+         * 与其把内容当参数塞进 {@link #show}（那样每次弹面板都要先拼一遍整篇文案，
+         * 哪怕用户点的是重命名），不如把动作转发回去。
+         */
+        void onExportTranscript();
     }
 
     /**
@@ -108,6 +118,7 @@ public final class NativeRecordActionSheet {
                 activity.getString(R.string.native_action_share_on),
                 activity.getString(R.string.native_action_share_off),
                 activity.getString(R.string.native_action_download_audio),
+                activity.getString(R.string.native_action_export_transcript),
                 activity.getString(R.string.native_action_rename),
                 activity.getString(R.string.native_action_add_tag),
                 activity.getString(R.string.native_action_remove_tag),
@@ -121,11 +132,12 @@ public final class NativeRecordActionSheet {
                         case 0: operateShare(activity, recordId, SHARE_STATUS_ON, callback); break;
                         case 1: operateShare(activity, recordId, SHARE_STATUS_OFF, callback); break;
                         case 2: downloadAudio(activity, recordTransferId, recordId); break;
-                        case 3: rename(activity, recordId, recordTransferId, currentName, callback); break;
-                        case 4: editTag(activity, recordId, TAG_BIZ_ADD, callback); break;
-                        case 5: editTag(activity, recordId, TAG_BIZ_REMOVE, callback); break;
-                        case 6: removeLocalAudio(activity, recordTransferId, callback); break;
-                        case 7: deleteRecord(activity, recordTransferId, currentName, callback); break;
+                        case 3: callback.onExportTranscript(); break;
+                        case 4: rename(activity, recordId, recordTransferId, currentName, callback); break;
+                        case 5: editTag(activity, recordId, TAG_BIZ_ADD, callback); break;
+                        case 6: editTag(activity, recordId, TAG_BIZ_REMOVE, callback); break;
+                        case 7: removeLocalAudio(activity, recordTransferId, callback); break;
+                        case 8: deleteRecord(activity, recordTransferId, currentName, callback); break;
                         default: break;
                     }
                 })

@@ -86,7 +86,7 @@ import java.util.Locale;
  */
 public class NativeRecordActivity extends NativeDemoBaseActivity {
 
-    private static final String[] LANGS = {"zh", "en", "ja", "ko", "fr", "es"};
+    private static final String[] LANGS = {"zh", "en", "de", "ja", "ko", "fr", "es"};
     private static final int REQ_CODE_RECORD_AUDIO = 1001;
 
     // ===== RecordParamsV2.recordMode =====

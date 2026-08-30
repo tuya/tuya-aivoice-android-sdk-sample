@@ -404,4 +404,9 @@
     <string name="native_action_toast_download_started">已发起下载，完成后会提示</string>
     <string name="native_action_toast_local_audio_removed">本地音频已删除，记录保留</string>
     <string name="native_offline_no_card_device">当前家庭没有录音卡片设备。离线文件传输仅支持录音卡片，耳机与手机不产生设备侧缓存文件。</string>
+    <string name="native_action_export_transcript">导出转写文本</string>
+    <string name="native_detail_toast_export_empty">暂无转写内容，无法导出</string>
+    <string name="native_detail_toast_export_failed">导出失败：%1$s</string>
+    <string name="native_detail_export_chooser">分享转写文本</string>
+    <string name="native_detail_export_default_name">转写记录</string>
 </resources>

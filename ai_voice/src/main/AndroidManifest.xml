@@ -37,5 +37,24 @@
         <activity
             android:name=".nativeui.NativeQuickEntryActivity"
             android:exported="false" />
+
+        <!--
+            导出转写文件用。转写文本先写进应用私有目录，再由 FileProvider 换成
+            content:// URI 交给系统分享，全程不需要任何存储权限。
+            复制 NativeRecordDetailActivity 的导出代码时，本节点与 @xml/native_file_paths 必须一并带走，
+            否则运行到分享那步会直接抛 IllegalArgumentException。
+            android:name 必须用自有子类：SDK 依赖里已声明过 androidx.core.content.FileProvider，
+            再声明一次会合并失败，详见 TranscriptFileProvider 的类注释。
+            authority 也特意加了 aivoice 段，避免与宿主应用已有的 provider 撞名。
+        -->
+        <provider
+            android:name=".nativeui.widget.TranscriptFileProvider"
+            android:authorities="${applicationId}.aivoice.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/native_file_paths" />
+        </provider>
     </application>
 </manifest>

@@ -84,10 +84,8 @@ public class TuyaSmartApp extends Application {
                 // }
             }
         });
-
+        //tuya log
         ThingHomeSdk.setDebugMode(true);
-
-
     }
 
     @Override

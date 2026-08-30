@@ -1,5 +1,8 @@
 package com.tuya.smart.ai_voice.nativeui;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -37,8 +40,13 @@ import com.tuya.smart.ai_voice.nativeui.base.NativeDemoBaseActivity;
 import com.tuya.smart.ai_voice.nativeui.business.AudioContentBusiness;
 import com.tuya.smart.ai_voice.nativeui.widget.RecordErrorCode;
 import com.tuya.smart.ai_voice.nativeui.widget.RecordTagBinder;
+import com.tuya.smart.ai_voice.nativeui.widget.TranscriptFileProvider;
 import com.tuya.smart.ai_voice.nativeui.widget.TransferTextParser;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -195,6 +203,21 @@ public class NativeRecordDetailActivity extends NativeDemoBaseActivity {
 
     /** 未取到源语言时的兜底值。 */
     private static final String DEFAULT_LANGUAGE = "zh";
+
+    /**
+     * 导出转写用的 FileProvider authority 后缀，与 AndroidManifest 中的
+     * {@code ${applicationId}.aivoice.fileprovider} 保持一致。
+     */
+    private static final String FILE_PROVIDER_SUFFIX = ".aivoice.fileprovider";
+
+    /** 导出文件的 MIME，纯文本，接收方（微信、邮件等）可直接预览。 */
+    private static final String MIME_TEXT_PLAIN = "text/plain";
+
+    /** 导出文件名的最大字符数，超出截断，避免超过文件系统上限。 */
+    private static final int MAX_EXPORT_NAME_LENGTH = 60;
+
+    /** 导出文件扩展名。 */
+    private static final String EXPORT_FILE_SUFFIX = ".txt";
 
     private String recordId;
     /** 详情接口返回的业务主键，后续所有结果查询以它为入参。 */
@@ -631,6 +654,21 @@ public class NativeRecordDetailActivity extends NativeDemoBaseActivity {
             return;
         }
         realtimeSentences.addAll(result);
+        transferText.setText(buildRealtimeText(result));
+    }
+
+    /**
+     * 把实时转写的句子列表拼成可读文案，格式与文件转写分支
+     * （{@link TransferTextParser#parseTranscript}）保持一致：{@code [mm:ss] 正文}，
+     * 有译文时换行追加译文。
+     * <p>
+     * 界面渲染与导出共用这一份实现，避免两处格式漂移。
+     *
+     * @param result 实时转写句子列表
+     * @return 多行可读文本，列表为空时返回空串
+     */
+    private String buildRealtimeText(@Nullable List<RecordTransferRealTimeResult> result) {
+        if (result == null || result.isEmpty()) return "";
         StringBuilder sb = new StringBuilder();
         for (RecordTransferRealTimeResult item : result) {
             long begin = item.beginOffset == null ? 0L : item.beginOffset;
@@ -640,7 +678,7 @@ public class NativeRecordDetailActivity extends NativeDemoBaseActivity {
                 sb.append("  ➜ ").append(item.translate).append('\n');
             }
         }
-        transferText.setText(sb.toString().trim());
+        return sb.toString().trim();
     }
 
     // ===================== 编辑保存 =====================
@@ -706,13 +744,13 @@ public class NativeRecordDetailActivity extends NativeDemoBaseActivity {
             return;
         }
         rawSummaryJson = payload;
+        // 只写本地：拉锯问题的根源是本地那份 title（取总结优先读本地库）。
+        // 不调 m.wearable.audio.summary.edit——那个接口语义是「用户编辑了总结正文」，
+        // 改名时调它会把这条记录误标成总结被人工改过。
         manager.saveRecordTransferSummaryResult(recordTransferId, payload, new IResultCallback() {
             @Override
             public void onSuccess() {
-                runOnUi(() -> {
-                    saveSummaryOnCloud(payload);
-                    loadDetail();
-                });
+                runOnUi(NativeRecordDetailActivity.this::loadDetail);
             }
 
             @Override
@@ -1267,7 +1305,131 @@ public class NativeRecordDetailActivity extends NativeDemoBaseActivity {
                         toast(getString(R.string.native_list_delete_success));
                         finish();
                     }
+
+                    @Override
+                    public void onExportTranscript() {
+                        exportTranscript();
+                    }
                 });
+    }
+
+    // ===================== 导出转写文本 =====================
+
+    /**
+     * 把当前已加载到内存的转写正文导出成 {@code .txt}，再交给系统分享。
+     * <p>
+     * 导出的是<b>本地这一份</b>转写内容：数据就是详情页正在展示的那份，不再请求云端，
+     * 段落若被编辑过也会原样带出。文件落在应用私有目录
+     * （{@code getExternalFilesDir(DIRECTORY_DOCUMENTS)}），读写<b>不需要任何存储权限</b>，
+     * 用户经系统分享把它发到别处；私有目录里的文件在应用卸载时随之清除，此处不做清理。
+     * <p>
+     * <b>复制本方法到自己的工程时</b>，AndroidManifest 里的 {@code FileProvider} 节点与
+     * {@code res/xml/native_file_paths.xml}、{@link TranscriptFileProvider} 必须一并带上，否则
+     * {@link TranscriptFileProvider#getUriForFile} 会抛 {@code IllegalArgumentException}。
+     */
+    private void exportTranscript() {
+        String content = buildTranscriptForExport();
+        if (TextUtils.isEmpty(content)) {
+            toast(getString(R.string.native_detail_toast_export_empty));
+            return;
+        }
+        File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+        if (dir == null) {
+            toastExportFailed("external files dir unavailable");
+            return;
+        }
+        if (!dir.exists() && !dir.mkdirs()) {
+            toastExportFailed("create dir failed");
+            return;
+        }
+        File file = new File(dir, exportFileName());
+        // 同名覆盖：一条记录始终只保留最新的一份导出结果
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8")) {
+            writer.write(content);
+        } catch (Exception e) {
+            toastExportFailed(String.valueOf(e.getMessage()));
+            return;
+        }
+        shareTranscriptFile(file);
+    }
+
+    /**
+     * 取出待导出的转写正文。
+     * <p>
+     * 两种转写模式的正文存放形态不同，这里按 {@link #useRealtimeBranch()} 分流——
+     * 与取数、编辑保存的分流口径完全一致：实时模式用句子列表，文件模式用原始 JSON 数组。
+     *
+     * @return 可读多行文本；尚无转写内容时返回空串
+     */
+    private String buildTranscriptForExport() {
+        if (useRealtimeBranch()) {
+            return buildRealtimeText(realtimeSentences);
+        }
+        if (originRecognizeList == null || originRecognizeList.isEmpty()) {
+            return "";
+        }
+        return TransferTextParser.parseTranscript(originRecognizeList.toJSONString(), durationMs);
+    }
+
+    /**
+     * 拼出导出文件名：文件名取自当前记录名，非法字符已过滤。
+     *
+     * @return 形如 {@code 周会纪要.txt} 的文件名
+     */
+    private String exportFileName() {
+        String name = sanitizeFileName(currentName);
+        if (TextUtils.isEmpty(name)) {
+            // 记录名可以为空，此时用默认名加主键，保证不同记录导出的文件不互相覆盖
+            name = getString(R.string.native_detail_export_default_name)
+                    + (recordTransferId > 0 ? "_" + recordTransferId : "");
+        }
+        return name + EXPORT_FILE_SUFFIX;
+    }
+
+    /**
+     * 过滤文件名中的非法字符。
+     * <p>
+     * 记录名是用户可自由编辑的，其中只要含一个 {@code /} 就会让文件创建失败，
+     * 这里统一替换成下划线并限长。
+     *
+     * @param raw 原始记录名，可为 {@code null}
+     * @return 可安全用作文件名的字符串，可能为空串
+     */
+    private static String sanitizeFileName(@Nullable String raw) {
+        if (raw == null) return "";
+        String cleaned = raw.replaceAll("[\\\\/:*?\"<>|\\r\\n]", "_").trim();
+        return cleaned.length() > MAX_EXPORT_NAME_LENGTH
+                ? cleaned.substring(0, MAX_EXPORT_NAME_LENGTH)
+                : cleaned;
+    }
+
+    /**
+     * 用系统分享把导出的文件交给用户。
+     * <p>
+     * 私有目录的 {@code file://} 路径不能直接跨进程传递，必须经 {@link TranscriptFileProvider}
+     * 换成 {@code content://} 并附带 {@link Intent#FLAG_GRANT_READ_URI_PERMISSION}，
+     * 否则接收方读取时会被拒绝。
+     *
+     * @param file 已写好的导出文件
+     */
+    private void shareTranscriptFile(@NonNull File file) {
+        try {
+            Uri uri = TranscriptFileProvider.getUriForFile(this,
+                    getPackageName() + FILE_PROVIDER_SUFFIX, file);
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType(MIME_TEXT_PLAIN);
+            intent.putExtra(Intent.EXTRA_STREAM, uri);
+            intent.putExtra(Intent.EXTRA_SUBJECT, file.getName());
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(intent,
+                    getString(R.string.native_detail_export_chooser)));
+        } catch (Exception e) {
+            toastExportFailed(String.valueOf(e.getMessage()));
+        }
+    }
+
+    private void toastExportFailed(String reason) {
+        toast(getString(R.string.native_detail_toast_export_failed, reason));
     }
 
     // ===================== 辅助 =====================

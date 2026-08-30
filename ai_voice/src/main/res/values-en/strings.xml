@@ -404,4 +404,9 @@
     <string name="native_action_toast_download_started">Download started; you will be notified when it finishes</string>
     <string name="native_action_toast_local_audio_removed">Local audio deleted; the record is kept</string>
     <string name="native_offline_no_card_device">No recording card in this home. Offline file transfer is only supported on recording cards; earphones and the phone do not keep device-side cached files.</string>
+    <string name="native_action_export_transcript">Export transcript</string>
+    <string name="native_detail_toast_export_empty">No transcript to export</string>
+    <string name="native_detail_toast_export_failed">Export failed: %1$s</string>
+    <string name="native_detail_export_chooser">Share transcript</string>
+    <string name="native_detail_export_default_name">Transcript</string>
 </resources>

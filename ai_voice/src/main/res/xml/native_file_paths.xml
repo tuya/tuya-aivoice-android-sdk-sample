@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    导出转写用的 FileProvider 路径白名单。
+    只放开应用私有目录下的 Documents 子目录，对应 getExternalFilesDir(DIRECTORY_DOCUMENTS)。
+    私有目录读写不需要任何存储权限，卸载应用时随之清除。
+-->
+<paths>
+    <external-files-path
+        name="native_transcript"
+        path="Documents/" />
+</paths>
