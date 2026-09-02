@@ -16,6 +16,9 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.thingclips.smart.ai.audio.utils.AudioInjectEventManager;
+import com.thingclips.smart.ai.audio.utils.PhoneMicAudioInputFactory;
+import com.thingclips.smart.earphone.enhance.api.bean.AudioFrontInputConfig;
 import com.thingclips.smart.earphone.enhance.api.bean.RealTimeTransferStatus;
 import com.thingclips.smart.earphone.enhance.api.bean.RecordParamsV2;
 import com.thingclips.smart.earphone.enhance.api.bean.RecordStatusBean;
@@ -142,6 +145,8 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
     private IRecordListener recordListener;
     /** 设备能力监听，用字段持有，remove 时传同一引用。 */
     private INativeAbilityListener abilityListener;
+    /** 灌流播放结束监听，仅在开启灌流时会被触发。 */
+    private AudioInjectEventManager.OnAudioInjectEndListener injectEndListener;
 
     // ===== 视图 =====
     private Spinner modeSpinner;
@@ -158,6 +163,7 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
     private TextView abilityText;
     private AmplitudeWaveView waveView;
     private TextView realtimeText;
+    private TextView injectBanner;
     private View btnStart, btnPause, btnResume, btnStop, btnSwitchChannel;
 
     // ===== 状态 =====
@@ -203,6 +209,7 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
         applyModeDefaults();
         updateSummary();
         refreshAbilityText();
+        setupInjectEntry();
     }
 
     private void bindViews() {
@@ -220,6 +227,7 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
         abilityText = findViewById(R.id.native_device_ability);
         waveView = findViewById(R.id.native_wave);
         realtimeText = findViewById(R.id.native_realtime_text);
+        injectBanner = findViewById(R.id.tv_inject_banner);
         btnStart = findViewById(R.id.native_btn_start);
         btnPause = findViewById(R.id.native_btn_pause);
         btnResume = findViewById(R.id.native_btn_resume);
@@ -475,6 +483,26 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
     // ===================== 事件监听 =====================
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        // 灌流配置可能刚在设置页被改动，回到本页时重新读取
+        refreshInjectBanner();
+        // 灌流结束通知是全局单例的覆盖式 setter，不是 add / remove 列表，同一时刻只有
+        // 最后一个设置者收得到。放在 onResume / onPause 成对处理，避免与批量测试页互相顶掉。
+        injectEndListener = deviceId -> runOnUi(NativeRecordActivity.this::onInjectFileEnd);
+        AudioInjectEventManager.INSTANCE.setOnAudioInjectEndListener(injectEndListener);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (injectEndListener != null) {
+            AudioInjectEventManager.INSTANCE.setOnAudioInjectEndListener(null);
+            injectEndListener = null;
+        }
+    }
+
+    @Override
     protected void registerListeners() {
         recordListener = new IRecordListener() {
             @Override
@@ -593,6 +621,57 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
         if (btConnectedStatus == BT_CONNECTED) return getString(R.string.native_bt_connected);
         if (btConnectedStatus == 0) return getString(R.string.native_bt_disconnected);
         return getString(R.string.native_bt_unknown);
+    }
+
+    // ===================== 灌流（音频注入） =====================
+
+    /**
+     * 装配灌流入口：顶栏设置按钮 + 提示条。
+     * <p>
+     * 灌流是测试能力，把麦克风采集替换为指定音频文件，详见 {@link NativeAudioInjectActivity}。
+     */
+    private void setupInjectEntry() {
+        setTopBarAction(R.drawable.ic_ai_settings, R.string.native_inject_title,
+                v -> openInjectSettings());
+        injectBanner.setOnClickListener(v -> openInjectSettings());
+        refreshInjectBanner();
+    }
+
+    private void openInjectSettings() {
+        startActivity(NativeAudioInjectActivity.buildIntent(
+                this, currentDeviceId(), currentDeviceName(), isRecordingOrPaused()));
+    }
+
+    /**
+     * 刷新灌流提示条。
+     * <p>
+     * 灌流开启时波形与实时转写全部来自音频文件，与麦克风无关。这一点不在界面上明说，
+     * 使用者第一反应会是「SDK 有问题」而不是「我开着灌流」，因此常驻提示。
+     */
+    private void refreshInjectBanner() {
+        AudioFrontInputConfig config = PhoneMicAudioInputFactory.INSTANCE.getDebugStrategy();
+        if (config == null) {
+            injectBanner.setVisibility(View.GONE);
+            return;
+        }
+        injectBanner.setText(getString(R.string.native_inject_banner,
+                config.getReplaceCaptureData().getFileName()));
+        injectBanner.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * 灌流音频播放到结尾。此后麦克风通道不再有数据流入，录音继续下去只会得到静音，
+     * 故直接走与手动停止相同的路径结束本次录音。
+     */
+    private void onInjectFileEnd() {
+        if (!isRecordingOrPaused()) return;
+        if (controlLocked) {
+            // 刚好撞上其它控制操作的锁定期，等锁释放后再停，避免提示了却没停下来
+            main.postDelayed(this::onInjectFileEnd, CONTROL_LOCK_MS);
+            return;
+        }
+        toast(getString(R.string.native_inject_toast_file_end));
+        stopRecord();
     }
 
     // ===================== 恢复进行中的任务 =====================

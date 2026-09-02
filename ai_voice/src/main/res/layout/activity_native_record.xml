@@ -9,6 +9,22 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
+    <!--
+      灌流提示条。开启灌流后波形与转写全部来自音频文件而非麦克风，
+      不显式提示极易被误判成 SDK 异常。点击进入灌流设置页。
+    -->
+    <TextView
+        android:id="@+id/tv_inject_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@color/ai_voice_tag_bg"
+        android:padding="12dp"
+        android:textColor="@color/ai_voice_logout_text"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
     <!-- ===== 配置区 ===== -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"

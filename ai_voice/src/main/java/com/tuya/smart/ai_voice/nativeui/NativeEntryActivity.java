@@ -1,11 +1,14 @@
 package com.tuya.smart.ai_voice.nativeui;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
@@ -13,26 +16,46 @@ import com.tuya.smart.ai_voice.R;
 import com.tuya.smart.ai_voice.nativeui.base.NativeDemoBaseActivity;
 
 /**
- * 更多 Native 能力清单页。
+ * Native 能力总入口。所有 Native 演示页的唯一导航页。
  * <p>
- * 纯导航页，不调用任何 SDK 接口，因此 {@link #registerListeners()} /
- * {@link #unregisterListeners()} 为空实现、日志区关闭。
- * 清单条目与 {@code docs/modules/} 下的模块编号一一对应。
+ * 纯导航，不调用任何 SDK 接口，因此 {@link #registerListeners()} /
+ * {@link #unregisterListeners()} 为空实现。条目与 {@code docs/modules/} 下的模块编号一一对应。
+ *
+ * <h3>作为调试入口使用</h3>
+ * 本组件以 aar 形式提供给接入方时，这一页是唯一需要知道的入口，
+ * 接入方从自己的代码里调 {@link #start(Context)} 进入。
  * <p>
- * 未列出的模块：
+ * 本页与其余演示页一样是 {@code exported="false"}：这是一组调试页，
+ * 没有理由允许其它应用拉起。<b>接入方的正式包中请移除对本组件的依赖。</b>
+ *
+ * <h3>进不去的两个模块</h3>
  * <ul>
- *     <li>模块 1 录音控制、模块 7 设备能力 → {@link NativeRecordActivity}</li>
- *     <li>模块 2 转写/总结 → {@link NativeRecordDetailActivity}</li>
- *     <li>模块 3 文件管理 → {@link NativeRecordListActivity}</li>
- *     <li>模块 10 文本翻译 → 属于 AI Translate 业务（businessType=1），本 Demo 不实现</li>
+ *     <li>模块 2 转写 / 总结 —— {@link NativeRecordDetailActivity} 必须带
+ *         {@code EXTRA_RECORD_ID}，只能从文件管理页点进某条录音</li>
+ *     <li>模块 10 文本翻译 —— 属于 AI Translate 业务（{@code businessType=1}），本 Demo 不实现</li>
  * </ul>
+ * 这两条以置灰形式保留在清单里：不列出来会让人误以为 SDK 不支持。
  */
-public class NativeApiListActivity extends NativeDemoBaseActivity {
+public class NativeEntryActivity extends NativeDemoBaseActivity {
 
     /**
-     * 清单条目定义。{@code target} 为 null 表示该模块不可进入（仅作说明展示）。
+     * 能力清单。按模块编号排列，调试类工具置底。
+     * <p>
+     * {@code target} 为 null 表示该条目不能直接进入，条目会整体置灰，原因写在 desc 里。
      */
     private static final Entry[] ENTRIES = {
+            new Entry(R.string.native_api_entry_record_title,
+                    R.string.native_api_entry_record_desc,
+                    R.string.native_api_entry_record_api,
+                    NativeRecordActivity.class),
+            new Entry(R.string.native_api_entry_detail_title,
+                    R.string.native_api_entry_detail_desc,
+                    R.string.native_api_entry_detail_api,
+                    null),
+            new Entry(R.string.native_api_entry_file_title,
+                    R.string.native_api_entry_file_desc,
+                    R.string.native_api_entry_file_api,
+                    NativeRecordListActivity.class),
             new Entry(R.string.native_api_entry_offline_title,
                     R.string.native_api_entry_offline_desc,
                     R.string.native_api_entry_offline_api,
@@ -52,16 +75,40 @@ public class NativeApiListActivity extends NativeDemoBaseActivity {
             new Entry(R.string.native_api_entry_quick_title,
                     R.string.native_api_entry_quick_desc,
                     R.string.native_api_entry_quick_api,
-                    null), //NativeQuickEntryActivity.class
+                    NativeQuickEntryActivity.class),
             new Entry(R.string.native_api_entry_translate_title,
                     R.string.native_api_entry_translate_desc,
                     R.string.native_api_entry_translate_api,
                     null),
+            new Entry(R.string.native_api_entry_inject_title,
+                    R.string.native_api_entry_inject_desc,
+                    R.string.native_api_entry_inject_api,
+                    NativeAudioInjectActivity.class),
+            new Entry(R.string.native_api_entry_batch_title,
+                    R.string.native_api_entry_batch_desc,
+                    R.string.native_api_entry_batch_api,
+                    NativeInjectBatchActivity.class),
     };
+
+    /**
+     * 打开 Native 能力总入口。
+     * <p>
+     * 允许传入 Application / Service 等非 Activity 的 Context，内部会补上
+     * {@code FLAG_ACTIVITY_NEW_TASK}——缺了它从非 Activity Context 启动会直接抛异常。
+     *
+     * @param context 上下文
+     */
+    public static void start(@NonNull Context context) {
+        Intent intent = new Intent(context, NativeEntryActivity.class);
+        if (!(context instanceof Activity)) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+        context.startActivity(intent);
+    }
 
     @Override
     protected int getContentLayoutId() {
-        return R.layout.activity_native_api_list;
+        return R.layout.activity_native_entry;
     }
 
     @Override
@@ -81,9 +128,9 @@ public class NativeApiListActivity extends NativeDemoBaseActivity {
     /**
      * 构建单个清单条目视图。不可进入的条目整体置灰且不响应点击。
      *
-     * @param inflater  布局填充器
-     * @param parent    父容器，仅用于测量参数，不附加
-     * @param entry     条目定义
+     * @param inflater 布局填充器
+     * @param parent   父容器，仅用于测量参数，不附加
+     * @param entry    条目定义
      * @return 条目视图
      */
     private View createEntryView(LayoutInflater inflater, LinearLayout parent, Entry entry) {
@@ -117,7 +164,7 @@ public class NativeApiListActivity extends NativeDemoBaseActivity {
         final int desc;
         @StringRes
         final int api;
-        /** 目标页；null 表示本 Demo 不实现该模块。 */
+        /** 目标页；null 表示不能从本页直接进入。 */
         @Nullable
         final Class<?> target;
 

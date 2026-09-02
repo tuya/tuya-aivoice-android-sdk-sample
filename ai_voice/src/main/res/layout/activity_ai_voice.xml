@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  顶部状态栏 inset 打在带背景色的根布局上；底部导航栏 inset 由白色 tab 栏自己吃，
+  否则导航栏位置会露出一条根布局的灰色。
+-->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cl_ai_voice_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/ai_voice_background">
@@ -15,11 +20,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!--
+      底部 tab 栏。高度用 wrap_content + minHeight 而非固定值：
+      导航栏 inset 是以 paddingBottom 形式加上来的，固定高度会把图标挤扁，
+      wrap_content 才能让白色背景向下延伸到屏幕底边。
+    -->
     <LinearLayout
         android:id="@+id/ai_voice_tab_bar"
         android:layout_width="0dp"
-        android:layout_height="64dp"
+        android:layout_height="wrap_content"
         android:background="@color/ai_voice_action_bg"
+        android:minHeight="64dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -29,7 +40,7 @@
         <LinearLayout
             android:id="@+id/ai_voice_tab_home"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="64dp"
             android:layout_weight="1"
             android:gravity="center"
             android:orientation="vertical">
@@ -54,7 +65,7 @@
         <LinearLayout
             android:id="@+id/ai_voice_tab_mine"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="64dp"
             android:layout_weight="1"
             android:gravity="center"
             android:orientation="vertical">

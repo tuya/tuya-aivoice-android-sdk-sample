@@ -153,7 +153,9 @@ SDK 把该跳哪里告诉 App，由 App 自行 `startActivity`。
 | 文件 | 说明 |
 |---|---|
 | `base/NativeDemoBaseActivity` | 演示页基类：标题栏、内容容器、事件日志区、设备选择器、`runOnUi` |
-| `NativeApiListActivity` | 能力清单导航页 |
+| `NativeEntryActivity` | Native 能力总入口，全部演示页的唯一导航页 |
+| `NativeAudioInjectActivity` | 灌流设置，见 [灌流调试工具指南](../inject-tool-guide.md) |
+| `NativeInjectBatchActivity` | 灌流批量测试与 WER 评测，见 [灌流调试工具指南](../inject-tool-guide.md) |
 | `NativeRecordActivity` | 模块 1 · 录音控制 |
 | `NativeRecordListActivity` / `NativeRecordListAdapter` | 模块 3 · 列表、搜索、空间统计 |
 | `NativeRecordDetailActivity` | 模块 2 · 转写 / 总结，兼模块 3 详情 |

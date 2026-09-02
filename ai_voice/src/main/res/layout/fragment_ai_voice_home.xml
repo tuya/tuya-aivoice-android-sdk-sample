@@ -379,110 +379,38 @@
                         </LinearLayout>
                     </LinearLayout>
 
-                    <LinearLayout
+                    <!-- Native 能力总入口：全部演示页收敛到 NativeEntryActivity 一处 -->
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/ai_voice_native_entry"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="86dp"
                         android:layout_marginTop="16dp"
-                        android:orientation="horizontal">
+                        app:cardBackgroundColor="@color/ai_voice_card_green"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp">
 
-                        <androidx.cardview.widget.CardView
-                            android:id="@+id/ai_voice_native_record"
-                            android:layout_width="0dp"
-                            android:layout_height="86dp"
-                            android:layout_marginEnd="8dp"
-                            android:layout_weight="1"
-                            app:cardBackgroundColor="@color/ai_voice_card_green"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="0dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical">
 
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:gravity="center"
-                                android:orientation="vertical">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:contentDescription="@string/native_entry_card"
+                                android:src="@drawable/ic_ai_mic"
+                                app:tint="@color/white" />
 
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:contentDescription="@string/native_record_entry"
-                                    android:src="@drawable/ic_ai_mic"
-                                    app:tint="@color/white" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="8dp"
-                                    android:text="@string/native_record_entry"
-                                    android:textColor="@color/ai_voice_text_on_card"
-                                    android:textSize="13sp" />
-                            </LinearLayout>
-                        </androidx.cardview.widget.CardView>
-
-                        <androidx.cardview.widget.CardView
-                            android:id="@+id/ai_voice_native_list"
-                            android:layout_width="0dp"
-                            android:layout_height="86dp"
-                            android:layout_marginEnd="8dp"
-                            android:layout_weight="1"
-                            app:cardBackgroundColor="@color/ai_voice_card_green"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="0dp">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:gravity="center"
-                                android:orientation="vertical">
-
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:contentDescription="@string/native_list_entry"
-                                    android:src="@drawable/ic_ai_note" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="8dp"
-                                    android:text="@string/native_list_entry"
-                                    android:textColor="@color/ai_voice_text_on_card"
-                                    android:textSize="13sp" />
-                            </LinearLayout>
-                        </androidx.cardview.widget.CardView>
-
-                        <!-- 更多 Native 能力：模块 4/5/6/8/9 的独立演示页清单 -->
-                        <androidx.cardview.widget.CardView
-                            android:id="@+id/ai_voice_native_more"
-                            android:layout_width="0dp"
-                            android:layout_height="86dp"
-                            android:layout_weight="1"
-                            app:cardBackgroundColor="@color/ai_voice_card_green"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="0dp">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:gravity="center"
-                                android:orientation="vertical">
-
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:contentDescription="@string/native_more_entry"
-                                    android:src="@drawable/ic_ai_chevron_right"
-                                    app:tint="@color/white" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="8dp"
-                                    android:text="@string/native_more_entry"
-                                    android:textColor="@color/ai_voice_text_on_card"
-                                    android:textSize="13sp" />
-                            </LinearLayout>
-                        </androidx.cardview.widget.CardView>
-                    </LinearLayout>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="@string/native_entry_card"
+                                android:textColor="@color/ai_voice_text_on_card"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 

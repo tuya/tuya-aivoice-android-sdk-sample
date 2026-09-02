@@ -20,9 +20,7 @@ import com.thingclips.smart.home.sdk.ThingHomeSdk;
 import com.thingclips.smart.panelcaller.api.AbsPanelCallerService;
 import com.thingclips.smart.sdk.bean.DeviceBean;
 import com.tuya.smart.ai_voice.R;
-import com.tuya.smart.ai_voice.nativeui.NativeApiListActivity;
-import com.tuya.smart.ai_voice.nativeui.NativeRecordActivity;
-import com.tuya.smart.ai_voice.nativeui.NativeRecordListActivity;
+import com.tuya.smart.ai_voice.nativeui.NativeEntryActivity;
 
 import java.util.List;
 
@@ -84,13 +82,9 @@ public class AiVoiceHomeFragment extends Fragment {
         view.findViewById(R.id.ai_voice_action_dialog_translate).setOnClickListener(v -> {
             UrlRouter.execute(getActivity(), "thingSmart://miniApp?url=godzilla%3A%2F%2Fty0u9m1s5ea1k71m2h%2Fpages%2FFaceToFace%2Findex");
         });
-        // Native 能力：录音实时流 / 录音文件列表 / 更多能力清单
-        view.findViewById(R.id.ai_voice_native_record).setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), NativeRecordActivity.class)));
-        view.findViewById(R.id.ai_voice_native_list).setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), NativeRecordListActivity.class)));
-        view.findViewById(R.id.ai_voice_native_more).setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), NativeApiListActivity.class)));
+        // Native 能力：全部演示页收敛到总入口，宿主 Demo 与 aar 接入方走同一条路径
+        view.findViewById(R.id.ai_voice_native_entry).setOnClickListener(v ->
+                NativeEntryActivity.start(requireContext()));
     }
 
     public List<DeviceBean> getDeviceList() {

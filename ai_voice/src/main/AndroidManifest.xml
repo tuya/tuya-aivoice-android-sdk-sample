@@ -11,6 +11,14 @@
         <activity
             android:name=".nativeui.NativeRecordActivity"
             android:exported="false" />
+        <!-- 灌流（音频注入）设置，从录音页顶栏进入 -->
+        <activity
+            android:name=".nativeui.NativeAudioInjectActivity"
+            android:exported="false" />
+        <!-- 灌流批量测试：多轮跑批 + WER + 报告导出 -->
+        <activity
+            android:name=".nativeui.NativeInjectBatchActivity"
+            android:exported="false" />
         <activity
             android:name=".nativeui.NativeRecordListActivity"
             android:exported="false" />
@@ -18,9 +26,14 @@
             android:name=".nativeui.NativeRecordDetailActivity"
             android:exported="false" />
 
-        <!-- 更多 Native 能力：清单页与各模块演示页 -->
+        <!--
+            Native 能力总入口：各模块演示页的唯一导航页，接入方从代码调
+            NativeEntryActivity.start(context) 进入。
+            exported 保持 false：这是一组调试页，没有理由允许其它应用拉起；
+            接入方的正式包中也请移除对本组件的依赖。
+        -->
         <activity
-            android:name=".nativeui.NativeApiListActivity"
+            android:name=".nativeui.NativeEntryActivity"
             android:exported="false" />
         <activity
             android:name=".nativeui.NativeOfflineFileActivity"

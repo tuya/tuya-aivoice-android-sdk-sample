@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 更多 Native 能力清单：纯导航，不含任何 SDK 调用 -->
+<!-- Native 能力总入口：纯导航，不含任何 SDK 调用 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

@@ -9,11 +9,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,6 +30,7 @@ import com.thingclips.smart.home.sdk.ThingHomeSdk;
 import com.thingclips.smart.plugin.tuniaudiodetectmanager.ThingAudioDetectManagerNative;
 import com.thingclips.smart.sdk.bean.DeviceBean;
 import com.tuya.smart.ai_voice.R;
+import com.tuya.smart.ai_voice.nativeui.widget.SystemBarInsets;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +42,7 @@ import java.util.Map;
  * <p>
  * 提供四样东西：
  * <ol>
- *     <li>统一布局：顶部栏 + 内容容器</li>
+ *     <li>统一布局：顶部栏 + 内容容器，并完成状态栏 / 导航栏避让</li>
  *     <li>{@link #toast(String)} / {@link #runOnUi(Runnable)}
  *         —— SDK 回调一律在子线程，更新 UI 必须切回主线程</li>
  *     <li>{@link #registerListeners()} / {@link #unregisterListeners()} 抽象方法，
@@ -117,6 +120,11 @@ public abstract class NativeDemoBaseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_native_demo_base);
 
+        // targetSdk 36 起系统强制 edge-to-edge，内容会画到状态栏与导航栏下面，
+        // 上下 inset 打在带背景色的根布局上，顶栏与内容整体避开系统栏。
+        SystemBarInsets.applyPadding(findViewById(R.id.ll_native_root), true, true);
+        SystemBarInsets.setLightSystemBars(this);
+
         ((TextView) findViewById(R.id.tv_title)).setText(getTitleResId());
         findViewById(R.id.iv_back).setOnClickListener(v -> finish());
 
@@ -146,6 +154,26 @@ public abstract class NativeDemoBaseActivity extends AppCompatActivity {
         super.onDestroy();
         unregisterListeners();
         main.removeCallbacksAndMessages(null);
+    }
+
+    // ===================== 顶栏动作位 =====================
+
+    /**
+     * 挂载顶栏右侧的动作入口（设置 / 更多）。未调用时该位置不显示。
+     * <p>
+     * 需要随状态改变图标或点击行为时重复调用即可，内部只做覆盖。
+     *
+     * @param iconRes  图标资源
+     * @param descRes  无障碍描述
+     * @param listener 点击回调
+     */
+    protected void setTopBarAction(@DrawableRes int iconRes, @StringRes int descRes,
+                                   @NonNull View.OnClickListener listener) {
+        ImageView action = findViewById(R.id.iv_top_action);
+        action.setImageResource(iconRes);
+        action.setContentDescription(getString(descRes));
+        action.setOnClickListener(listener);
+        action.setVisibility(View.VISIBLE);
     }
 
     // ===================== 通用工具 =====================

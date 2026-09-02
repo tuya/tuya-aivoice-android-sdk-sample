@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  灌流批量测试。仅内容区，顶部栏与滚动容器由 NativeDemoBaseActivity 提供。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_batch_hint" />
+
+    <!-- ===== 音频选择 ===== -->
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_batch_file_section" />
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_batch_file_hint" />
+
+    <LinearLayout
+        android:id="@+id/ll_batch_files"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+    <!-- ===== 重复次数 ===== -->
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_batch_repeat_section" />
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_batch_repeat_hint" />
+
+    <EditText
+        android:id="@+id/et_batch_repeat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_native_dialog_input"
+        android:inputType="number"
+        android:maxLength="2"
+        android:padding="10dp"
+        android:text="1"
+        android:textSize="14sp"
+        android:importantForAutofill="no" />
+
+    <Button
+        android:id="@+id/btn_batch_start"
+        style="@style/NativeActionButton"
+        android:text="@string/native_batch_btn_start" />
+
+    <Button
+        android:id="@+id/btn_batch_abort"
+        style="@style/NativeActionButtonDanger"
+        android:text="@string/native_batch_btn_abort"
+        android:visibility="gone" />
+
+    <!-- ===== 进度 ===== -->
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_batch_progress_section" />
+
+    <TextView
+        android:id="@+id/tv_batch_progress"
+        style="@style/NativeInfoBlock"
+        android:text="@string/native_batch_progress_idle" />
+
+    <TextView
+        android:id="@+id/tv_batch_stage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/native_batch_stage_idle"
+        android:textColor="@color/ai_voice_text_secondary"
+        android:textSize="12sp" />
+
+    <!-- 实时转写：只为看出「还活着」，不参与 WER 计算 -->
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_batch_realtime_section" />
+
+    <!--
+      实时转写窗口。固定 8 行高、内部自行滚动，新内容到达时代码会自动滚到底部。
+      textIsSelectable 必须覆盖成 false：它与滚动用的 MovementMethod 互斥，
+      而这里的文本每次推送都在重写，选中也没有意义。
+    -->
+    <TextView
+        android:id="@+id/tv_batch_realtime"
+        style="@style/NativeInfoBlock"
+        android:maxLines="8"
+        android:scrollbars="vertical"
+        android:textIsSelectable="false" />
+
+    <!-- ===== 结果 ===== -->
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_batch_result_section" />
+
+    <LinearLayout
+        android:id="@+id/ll_batch_results"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/ai_voice_action_bg"
+        android:orientation="vertical"
+        android:padding="12dp" />
+
+    <Button
+        android:id="@+id/btn_batch_share"
+        style="@style/NativeActionButton"
+        android:text="@string/native_batch_btn_share"
+        android:visibility="gone" />
+</LinearLayout>

@@ -26,7 +26,6 @@
     <string name="native_card_title">Native 能力</string>
     <string name="native_card_subtitle">ThingAudioDetectManagerNative</string>
     <string name="native_record_entry">Native 录音</string>
-    <string name="native_list_entry">录音列表</string>
     <string name="native_record_title">Native 录音</string>
     <string name="native_record_list_title">录音文件列表</string>
     <string name="native_back">返回</string>
@@ -198,9 +197,18 @@
     <!-- Native 演示页脚手架 -->
 
     <!-- 更多 Native 能力清单 -->
-    <string name="native_more_entry">更多能力</string>
-    <string name="native_api_list_title">更多 Native 能力</string>
-    <string name="native_api_list_hint">以下页面按 wearkit-ttt-native-api.md 的模块划分，每页独立演示一个模块的完整流程（含事件监听的注册与注销）。录音控制、设备能力见「Native 录音」，文件管理与转写总结见「录音列表」。</string>
+    <string name="native_entry_card">Native 能力</string>
+    <string name="native_api_list_title">Native 能力</string>
+    <string name="native_api_list_hint">全部 Native 演示页的入口。条目按 docs/modules/ 的模块编号排列，每页独立演示一个模块的完整流程（含事件监听的注册与注销）。置灰条目无法从本页直接进入，原因见各自说明。</string>
+    <string name="native_api_entry_record_title">模块 1 · 录音控制与设备能力</string>
+    <string name="native_api_entry_record_desc">一次录音的完整生命周期：开始 / 暂停 / 恢复 / 停止、录音中动态改参、切换收音通道，附带蓝牙连接状态与电量、信噪比</string>
+    <string name="native_api_entry_record_api">startAudioRecording / pauseRecordTransfer / resumeRecordTransfer / stopRecordTransfer / updateParams / switchRecordChannel</string>
+    <string name="native_api_entry_detail_title">模块 2 · 转写 / 总结（从文件管理进入）</string>
+    <string name="native_api_entry_detail_desc">详情页必须带上 recordId 才能打开，无法从本页直接进入。请点开「模块 3 · 文件管理」，再点其中任意一条录音</string>
+    <string name="native_api_entry_detail_api">getRecordTransferRealTimeResult / startTransfer / getSummary / operateRecordShareLink</string>
+    <string name="native_api_entry_file_title">模块 3 · 文件管理</string>
+    <string name="native_api_entry_file_desc">录音列表的查询、搜索、重命名、删除与标签，是进入转写 / 总结详情页的唯一路径</string>
+    <string name="native_api_entry_file_api">getRecordList / searchRecordTransferResult / updateRecordInfo / deleteRecord</string>
     <string name="native_api_entry_offline_title">模块 4 · 离线文件传输</string>
     <string name="native_api_entry_offline_desc">把设备本地缓存的录音传到手机，支持 BLE 与 AP 快传两种通道</string>
     <string name="native_api_entry_offline_api">getDeviceOfflineFileStatus / loadOfflineFile / switchModeLoadOfflineFile / registerFileProgressCallback</string>
@@ -219,6 +227,9 @@
     <string name="native_api_entry_translate_title">模块 10 · 文本翻译（未实现）</string>
     <string name="native_api_entry_translate_desc">该模块属于 AI Translate 业务（businessType=1），AI 笔记小程序未使用，本 Demo 不实现</string>
     <string name="native_api_entry_translate_api">startTranslate / getTranslateFileList / sendToNote / batchRemoveTranslationFiles</string>
+    <string name="native_api_entry_inject_title">灌流设置（调试工具）</string>
+    <string name="native_api_entry_inject_desc">把麦克风采集替换为指定音频文件，让转写 / 翻译链路跑在可复现的输入上。仅作用于手机 MIC 通道，非 SDK 对外能力</string>
+    <string name="native_api_entry_inject_api">PhoneMicAudioInputFactory.setDebugStrategy / AudioFrontInputConfig</string>
 
     <!-- 模块 4 · 离线文件传输 -->
     <string name="native_offline_title">模块 4 · 离线文件传输</string>
@@ -409,4 +420,86 @@
     <string name="native_detail_toast_export_failed">导出失败：%1$s</string>
     <string name="native_detail_export_chooser">分享转写文本</string>
     <string name="native_detail_export_default_name">转写记录</string>
+
+    <!-- ===== 灌流（音频注入）设置 ===== -->
+    <string name="native_inject_title">灌流设置</string>
+    <string name="native_inject_hint">灌流是测试能力：把麦克风采集到的数据替换为指定音频文件，让转写 / 翻译链路跑在可复现的输入上。\n三条约束：① 只作用于手机 MIC 通道，蓝牙耳机通道无效；② 只支持 16kHz / 单声道 / 16bit 的整型 PCM wav；③ 只在下次开始录音时生效，录音中改动对本次录音没有影响。\n配置保存在 SDK 的内存中，不做本地持久化，进程重启即失效。</string>
+    <string name="native_inject_device_warning">当前选中的是「%1$s」，走的不是手机 MIC 通道，本页设置对它不生效。需要验证灌流请把设备切回「手机本地录音」。</string>
+    <string name="native_inject_switch_section">灌流开关</string>
+    <string name="native_inject_switch_enabled">开启灌流（关闭后恢复真实麦克风采集）</string>
+    <string name="native_inject_file_section">音频文件</string>
+    <string name="native_inject_file_hint">只列 wav 文件，来源为 Demo 内置样例。SDK 只接受一个文件名，故为单选。样例在保存时才落到底层约定的位置。</string>
+    <string name="native_inject_file_empty">没有内置的 wav 样例。</string>
+    <string name="native_inject_3a_section">音频处理（3A）</string>
+    <string name="native_inject_3a_hint">随灌流配置一起下发。降噪等级 SDK 未定义取值范围，固定使用默认值 1。</string>
+    <string name="native_inject_anc">ANC 降噪</string>
+    <string name="native_inject_agc">AGC 自动增益</string>
+    <string name="native_inject_aec">AEC 回声消除</string>
+    <string name="native_inject_status_section">当前生效配置</string>
+    <string name="native_inject_status_off">未开启灌流，录音走真实麦克风。</string>
+    <string name="native_inject_status_on">已开启灌流\n文件：%1$s\nANC：%2$s　AGC：%3$s　AEC：%4$s</string>
+    <string name="native_inject_on">开</string>
+    <string name="native_inject_off">关</string>
+    <string name="native_inject_btn_save">保存</string>
+    <string name="native_inject_btn_saving">正在准备文件…</string>
+    <string name="native_inject_banner">灌流模式已开启：%1$s\n波形与转写均来自该文件，与麦克风无关。点击修改。</string>
+    <string name="native_inject_toast_need_file">请先选择一个音频文件</string>
+    <string name="native_inject_toast_copy_failed">文件准备失败：%1$s</string>
+    <string name="native_inject_toast_saved">灌流配置已保存，下次开始录音时生效</string>
+    <string name="native_inject_toast_saved_recording">灌流配置已保存。当前录音不受影响，下次开始录音时生效</string>
+    <string name="native_inject_toast_disabled">已关闭灌流，恢复真实麦克风采集</string>
+    <string name="native_inject_toast_file_end">灌流音频已播放完毕，自动停止录音</string>
+
+    <!-- ===== 灌流批量测试 ===== -->
+    <string name="native_batch_title">灌流批量测试</string>
+    <string name="native_batch_hint">用固定音频连续跑多轮 ASR，自动与参考答案计算 WER 并导出报告。\n一轮 = 下发灌流配置 → 开始录音 → 等灌流播完 → 停止录音 → 拉取转写结果 → 算分。任一环节卡住由单轮超时兜底（音频时长 × 3 + 60 秒），超时判该轮失败并继续下一轮。\n跑批期间屏幕保持常亮，退出页面即中止。</string>
+    <string name="native_batch_file_section">音频（可多选）</string>
+    <string name="native_batch_file_hint">只列 wav。参与跑批需要两个前提：灌流清单里有对应条目（提供源语言与能力开关），且音频是 16kHz / 单声道 / 16bit 的整型 PCM。参考答案是与音频同名的 txt，缺失时照常跑但不算 WER。</string>
+    <string name="native_batch_file_no_manifest">清单中无此条目，无法参与跑批（源语言只能来自清单）</string>
+    <string name="native_batch_file_bad_format">不是整型 PCM 的 wav，灌进去不会有任何识别结果。转换：ffmpeg -i in.wav -ar 16000 -ac 1 -c:a pcm_s16le out.wav</string>
+    <string name="native_batch_file_warn_format">采样率 / 声道 / 位深与 16kHz 单声道 16bit 不符，可以试跑但结果未必正常</string>
+    <string name="native_batch_no_file">没有内置的 wav 样例。</string>
+    <string name="native_batch_repeat_section">重复次数</string>
+    <string name="native_batch_repeat_hint">每个音频连跑几次，用于观察同一语料的结果抖动。总轮数 = 选中音频数 × 重复次数，顺序为文件外层、重复内层。</string>
+    <string name="native_batch_btn_start">开始跑批</string>
+    <string name="native_batch_btn_abort">中止</string>
+    <string name="native_batch_btn_share">分享报告</string>
+    <string name="native_batch_progress_section">进度</string>
+    <string name="native_batch_progress_idle">尚未开始。</string>
+    <string name="native_batch_progress_format">%1$s · 第 %2$d/%3$d 次 · 总 %4$d/%5$d 轮</string>
+    <string name="native_batch_stage_idle">空闲</string>
+    <string name="native_batch_stage_injecting">灌流中…</string>
+    <string name="native_batch_stage_finishing">等待录音结束…</string>
+    <string name="native_batch_stage_fetching">拉取转写结果…</string>
+    <string name="native_batch_stage_scoring">计算 WER…</string>
+    <string name="native_batch_realtime_section">实时转写（仅供观察，不参与计算）</string>
+    <string name="native_batch_result_section">轮次结果</string>
+    <string name="native_batch_result_row_format">#%1$d %2$s (%3$d/%4$d)  WER %5$s  %6$s</string>
+    <string name="native_batch_status_success">成功</string>
+    <string name="native_batch_status_timeout">超时</string>
+    <string name="native_batch_status_no_result">无识别结果</string>
+    <string name="native_batch_status_error">失败</string>
+    <string name="native_batch_timeout">超过单轮超时</string>
+    <string name="native_batch_no_record_id">未拿到 recordId</string>
+    <string name="native_batch_no_asr">一条识别结果都没有，请检查音频是否为整型 PCM</string>
+    <string name="native_batch_record_failed">录音异常结束</string>
+    <string name="native_batch_file_not_ready">音频文件准备失败</string>
+    <string name="native_batch_finished_format">跑批完成，共 %1$d 轮。报告：%2$s</string>
+    <string name="native_batch_aborted_format">跑批已中止，已完成 %1$d 轮。报告：%2$s</string>
+    <string name="native_batch_finished_empty">跑批结束，没有任何轮次结果。</string>
+    <string name="native_batch_report_failed">报告生成失败</string>
+    <string name="native_batch_share_chooser">分享测试报告</string>
+    <string name="native_batch_toast_need_file">请先选择至少一个音频</string>
+    <string name="native_batch_toast_bad_repeat">重复次数需在 %1$d ~ %2$d 之间</string>
+    <string name="native_batch_warn_title">音频格式不完全匹配</string>
+    <string name="native_batch_warn_message">选中的音频里有采样率 / 声道 / 位深与 16kHz 单声道 16bit 不符的。底层未必真的不支持，可以试跑，但结果未必正常。</string>
+    <string name="native_batch_warn_continue">仍然开始</string>
+    <string name="native_batch_abort_title">中止跑批</string>
+    <string name="native_batch_abort_message">当前轮会被记为失败，已完成的轮次仍会生成报告。</string>
+    <string name="native_batch_abort_confirm">中止</string>
+    <string name="native_batch_abort_manual">手动中止</string>
+    <string name="native_batch_abort_background">页面退到后台，跑批中止</string>
+    <string name="native_api_entry_batch_title">灌流批量测试（调试工具）</string>
+    <string name="native_api_entry_batch_desc">用固定音频连续跑多轮 ASR，自动计算 WER 并导出 HTML / CSV 报告。非 SDK 对外能力</string>
+    <string name="native_api_entry_batch_api">startAudioRecording / stopRecordTransfer / getRecordTransferRealTimeResult</string>
 </resources>

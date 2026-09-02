@@ -1,0 +1,10 @@
+[
+  {
+    "name": "lvlian_de_input.wav",
+    "originalLanguage": "de",
+    "targetLanguage": "en",
+    "enableRealtimeTranscription": true,
+    "enableRealtimeTranslation": true,
+    "needTts": true
+  }
+]

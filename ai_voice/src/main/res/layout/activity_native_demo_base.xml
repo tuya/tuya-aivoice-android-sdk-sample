@@ -3,7 +3,12 @@
   Native 能力演示页统一脚手架布局。
   子类只提供内容区布局，由 NativeDemoBaseActivity 注入到 ll_content_container 中。
 -->
+<!--
+  根布局带背景色，系统栏避让的 padding 区域会被它填满，
+  不会露出主题的 windowBackground，故上下 inset 直接打在这一层。
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_native_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/ai_voice_background"
@@ -37,6 +42,18 @@
             android:textColor="@color/ai_voice_text_primary"
             android:textSize="18sp"
             android:textStyle="bold" />
+
+        <!--
+          顶栏右侧动作位。默认隐藏，由 NativeDemoBaseActivity#setTopBarAction 挂载，
+          子类页面需要「设置」「更多」这类页面级入口时使用。
+        -->
+        <ImageView
+            android:id="@+id/iv_top_action"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="10dp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <!--

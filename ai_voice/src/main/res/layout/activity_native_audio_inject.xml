@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  灌流（音频注入）设置。仅内容区，顶部栏与滚动容器由 NativeDemoBaseActivity 提供。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_inject_hint" />
+
+    <!-- 选中的不是手机时给出提示：灌流只替换手机 MIC 的采集数据 -->
+    <TextView
+        android:id="@+id/tv_inject_device_warning"
+        style="@style/NativeInfoBlock"
+        android:layout_marginBottom="4dp"
+        android:textColor="@color/ai_voice_logout_text"
+        android:visibility="gone" />
+
+    <!-- ===== 开关 ===== -->
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_inject_switch_section" />
+
+    <CheckBox
+        android:id="@+id/cb_inject_enabled"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/native_inject_switch_enabled"
+        android:textSize="13sp" />
+
+    <!-- ===== 音频文件 ===== -->
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_inject_file_section" />
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_inject_file_hint" />
+
+    <!-- 单选：SDK 只接受一个 fileName，多选没有意义 -->
+    <RadioGroup
+        android:id="@+id/rg_inject_file"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+    <TextView
+        android:id="@+id/tv_inject_file_empty"
+        style="@style/NativeInfoBlock"
+        android:text="@string/native_inject_file_empty"
+        android:visibility="gone" />
+
+    <!--
+      ===== 3A 处理 =====
+      暂时隐藏：三个开关未勾选即按 false 下发，与底层默认行为一致。
+      需要放开时把本容器的 visibility 去掉即可，页面代码无需改动。
+    -->
+    <LinearLayout
+        android:id="@+id/ll_inject_3a"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            style="@style/NativeFieldLabel"
+            android:text="@string/native_inject_3a_section" />
+
+        <TextView
+            style="@style/NativeSectionHint"
+            android:text="@string/native_inject_3a_hint" />
+
+        <CheckBox
+            android:id="@+id/cb_inject_anc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/native_inject_anc"
+            android:textSize="13sp" />
+
+        <CheckBox
+            android:id="@+id/cb_inject_agc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/native_inject_agc"
+            android:textSize="13sp" />
+
+        <CheckBox
+            android:id="@+id/cb_inject_aec"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/native_inject_aec"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <!-- ===== 当前生效状态 ===== -->
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_inject_status_section" />
+
+    <TextView
+        android:id="@+id/tv_inject_status"
+        style="@style/NativeInfoBlock" />
+
+    <Button
+        android:id="@+id/btn_inject_save"
+        style="@style/NativeActionButton"
+        android:text="@string/native_inject_btn_save" />
+</LinearLayout>

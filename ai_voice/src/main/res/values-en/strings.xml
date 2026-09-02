@@ -26,7 +26,6 @@
     <string name="native_card_title">Native Capability</string>
     <string name="native_card_subtitle">ThingAudioDetectManagerNative</string>
     <string name="native_record_entry">Native Record</string>
-    <string name="native_list_entry">Record List</string>
     <string name="native_record_title">Native Record</string>
     <string name="native_record_list_title">Record Files</string>
     <string name="native_back">Back</string>
@@ -198,9 +197,18 @@
     <!-- Demo scaffold -->
 
     <!-- More Native capabilities -->
-    <string name="native_more_entry">More</string>
-    <string name="native_api_list_title">More Native Capabilities</string>
-    <string name="native_api_list_hint">Pages below follow the module split in wearkit-ttt-native-api.md. Each demonstrates one module end to end, including listener registration and removal. Recording control and device ability live in "Native Record"; file management and transcription live in "Record List".</string>
+    <string name="native_entry_card">Native Capabilities</string>
+    <string name="native_api_list_title">Native Capabilities</string>
+    <string name="native_api_list_hint">Entry point for every Native demo page. Items follow the module numbering in docs/modules/; each page demonstrates one module end to end, including listener registration and removal. Greyed-out items cannot be opened from here — see their descriptions.</string>
+    <string name="native_api_entry_record_title">Module 1 · Recording control and device ability</string>
+    <string name="native_api_entry_record_desc">A full recording lifecycle: start / pause / resume / stop, changing params while recording, switching the capture channel, plus Bluetooth state, battery and SNR</string>
+    <string name="native_api_entry_record_api">startAudioRecording / pauseRecordTransfer / resumeRecordTransfer / stopRecordTransfer / updateParams / switchRecordChannel</string>
+    <string name="native_api_entry_detail_title">Module 2 · Transcription / summary (open from file management)</string>
+    <string name="native_api_entry_detail_desc">The detail page needs a recordId, so it cannot be opened from here. Open "Module 3 · File management" and tap any recording.</string>
+    <string name="native_api_entry_detail_api">getRecordTransferRealTimeResult / startTransfer / getSummary / operateRecordShareLink</string>
+    <string name="native_api_entry_file_title">Module 3 · File management</string>
+    <string name="native_api_entry_file_desc">Query, search, rename, delete and tag recordings. The only way into the transcription / summary detail page.</string>
+    <string name="native_api_entry_file_api">getRecordList / searchRecordTransferResult / updateRecordInfo / deleteRecord</string>
     <string name="native_api_entry_offline_title">Module 4 · Offline file transfer</string>
     <string name="native_api_entry_offline_desc">Download recordings cached on the device, over BLE or AP fast transfer</string>
     <string name="native_api_entry_offline_api">getDeviceOfflineFileStatus / loadOfflineFile / switchModeLoadOfflineFile / registerFileProgressCallback</string>
@@ -219,6 +227,9 @@
     <string name="native_api_entry_translate_title">Module 10 · Text translation (not implemented)</string>
     <string name="native_api_entry_translate_desc">Belongs to the AI Translate business (businessType=1) and is unused by the AI Note mini program, so it is out of scope for this demo</string>
     <string name="native_api_entry_translate_api">startTranslate / getTranslateFileList / sendToNote / batchRemoveTranslationFiles</string>
+    <string name="native_api_entry_inject_title">Audio injection (debug tool)</string>
+    <string name="native_api_entry_inject_desc">Replaces microphone capture with a given audio file so the transcription / translation pipeline runs on reproducible input. Phone MIC channel only; not a public SDK capability.</string>
+    <string name="native_api_entry_inject_api">PhoneMicAudioInputFactory.setDebugStrategy / AudioFrontInputConfig</string>
 
     <!-- Module 4 · Offline file transfer -->
     <string name="native_offline_title">Module 4 · Offline file transfer</string>
@@ -409,4 +420,86 @@
     <string name="native_detail_toast_export_failed">Export failed: %1$s</string>
     <string name="native_detail_export_chooser">Share transcript</string>
     <string name="native_detail_export_default_name">Transcript</string>
+
+    <!-- ===== Audio injection settings ===== -->
+    <string name="native_inject_title">Audio injection</string>
+    <string name="native_inject_hint">Audio injection is a test-only capability: it replaces microphone capture with a given audio file so the transcription / translation pipeline runs on reproducible input.\nThree constraints: (1) it only affects the phone MIC channel, not the Bluetooth earphone channel; (2) only 16kHz / mono / 16bit integer-PCM wav is supported; (3) it takes effect on the next recording only — changing it mid-recording does not affect the current one.\nThe config lives in SDK memory and is not persisted, so it is gone after a process restart.</string>
+    <string name="native_inject_device_warning">\"%1$s\" is selected, which does not use the phone MIC channel, so these settings do not apply to it. Switch the device back to phone recording to verify injection.</string>
+    <string name="native_inject_switch_section">Injection switch</string>
+    <string name="native_inject_switch_enabled">Enable injection (turning it off restores real microphone capture)</string>
+    <string name="native_inject_file_section">Audio file</string>
+    <string name="native_inject_file_hint">Only wav files are listed, taken from the samples bundled with the demo. The SDK accepts a single file name, hence single choice. Samples are copied into place when you save.</string>
+    <string name="native_inject_file_empty">No wav sample is bundled.</string>
+    <string name="native_inject_3a_section">Audio processing (3A)</string>
+    <string name="native_inject_3a_hint">Sent along with the injection config. The SDK does not define a range for the ANC level, so the default value 1 is always used.</string>
+    <string name="native_inject_anc">ANC</string>
+    <string name="native_inject_agc">AGC</string>
+    <string name="native_inject_aec">AEC</string>
+    <string name="native_inject_status_section">Effective config</string>
+    <string name="native_inject_status_off">Injection is off; recording uses the real microphone.</string>
+    <string name="native_inject_status_on">Injection is on\nFile: %1$s\nANC: %2$s　AGC: %3$s　AEC: %4$s</string>
+    <string name="native_inject_on">On</string>
+    <string name="native_inject_off">Off</string>
+    <string name="native_inject_btn_save">Save</string>
+    <string name="native_inject_btn_saving">Preparing file…</string>
+    <string name="native_inject_banner">Injection mode is on: %1$s\nThe waveform and transcript come from this file, not the microphone. Tap to change.</string>
+    <string name="native_inject_toast_need_file">Select an audio file first</string>
+    <string name="native_inject_toast_copy_failed">Failed to prepare the file: %1$s</string>
+    <string name="native_inject_toast_saved">Saved. It takes effect on the next recording</string>
+    <string name="native_inject_toast_saved_recording">Saved. The current recording is unaffected; it takes effect on the next one</string>
+    <string name="native_inject_toast_disabled">Injection disabled; real microphone capture restored</string>
+    <string name="native_inject_toast_file_end">Injected audio finished playing; recording stopped automatically</string>
+
+    <!-- ===== Batch injection test ===== -->
+    <string name="native_batch_title">Batch injection test</string>
+    <string name="native_batch_hint">Runs ASR over fixed audio for several rounds, scores WER against the reference answer and exports a report.\nOne round = push injection config → start recording → wait for playback to finish → stop recording → fetch the transcript → score. A per-round timeout (audio length × 3 + 60s) covers anything that stalls; a timed-out round is marked failed and the batch continues.\nThe screen stays on while running, and leaving the page aborts the batch.</string>
+    <string name="native_batch_file_section">Audio (multiple)</string>
+    <string name="native_batch_file_hint">Only wav is listed. Two prerequisites to take part in a batch: an entry in the injection manifest (which supplies the source language and capability flags), and 16kHz / mono / 16bit integer PCM audio. The reference answer is a txt with the same name as the audio; without it the round still runs but is not scored.</string>
+    <string name="native_batch_file_no_manifest">No manifest entry, cannot run in a batch (the source language can only come from the manifest)</string>
+    <string name="native_batch_file_bad_format">Not integer-PCM wav; injecting it produces no recognition at all. Convert: ffmpeg -i in.wav -ar 16000 -ac 1 -c:a pcm_s16le out.wav</string>
+    <string name="native_batch_file_warn_format">Sample rate / channels / bit depth differ from 16kHz mono 16bit; you may still try, but results may be off</string>
+    <string name="native_batch_no_file">No wav sample is bundled.</string>
+    <string name="native_batch_repeat_section">Repeats</string>
+    <string name="native_batch_repeat_hint">How many times each audio runs in a row, to observe variance on the same material. Total rounds = selected audio × repeats, iterating files on the outside and repeats on the inside.</string>
+    <string name="native_batch_btn_start">Start batch</string>
+    <string name="native_batch_btn_abort">Abort</string>
+    <string name="native_batch_btn_share">Share report</string>
+    <string name="native_batch_progress_section">Progress</string>
+    <string name="native_batch_progress_idle">Not started.</string>
+    <string name="native_batch_progress_format">%1$s · run %2$d/%3$d · round %4$d/%5$d</string>
+    <string name="native_batch_stage_idle">Idle</string>
+    <string name="native_batch_stage_injecting">Injecting…</string>
+    <string name="native_batch_stage_finishing">Waiting for the recording to end…</string>
+    <string name="native_batch_stage_fetching">Fetching the transcript…</string>
+    <string name="native_batch_stage_scoring">Scoring WER…</string>
+    <string name="native_batch_realtime_section">Live transcript (for observation only, not scored)</string>
+    <string name="native_batch_result_section">Round results</string>
+    <string name="native_batch_result_row_format">#%1$d %2$s (%3$d/%4$d)  WER %5$s  %6$s</string>
+    <string name="native_batch_status_success">OK</string>
+    <string name="native_batch_status_timeout">Timed out</string>
+    <string name="native_batch_status_no_result">No recognition</string>
+    <string name="native_batch_status_error">Failed</string>
+    <string name="native_batch_timeout">Exceeded the per-round timeout</string>
+    <string name="native_batch_no_record_id">No recordId received</string>
+    <string name="native_batch_no_asr">No recognition at all — check that the audio is integer PCM</string>
+    <string name="native_batch_record_failed">The recording ended with an error</string>
+    <string name="native_batch_file_not_ready">Failed to prepare the audio file</string>
+    <string name="native_batch_finished_format">Batch finished, %1$d rounds. Report: %2$s</string>
+    <string name="native_batch_aborted_format">Batch aborted after %1$d rounds. Report: %2$s</string>
+    <string name="native_batch_finished_empty">Batch ended with no round results.</string>
+    <string name="native_batch_report_failed">Failed to generate the report</string>
+    <string name="native_batch_share_chooser">Share the test report</string>
+    <string name="native_batch_toast_need_file">Select at least one audio file first</string>
+    <string name="native_batch_toast_bad_repeat">Repeats must be between %1$d and %2$d</string>
+    <string name="native_batch_warn_title">Audio format does not fully match</string>
+    <string name="native_batch_warn_message">Some selected audio differs from 16kHz mono 16bit in sample rate, channels or bit depth. The underlying layer may still handle it, so you can try, but results may be off.</string>
+    <string name="native_batch_warn_continue">Start anyway</string>
+    <string name="native_batch_abort_title">Abort the batch</string>
+    <string name="native_batch_abort_message">The current round will be recorded as failed; completed rounds still produce a report.</string>
+    <string name="native_batch_abort_confirm">Abort</string>
+    <string name="native_batch_abort_manual">Aborted manually</string>
+    <string name="native_batch_abort_background">The page went to the background, so the batch was aborted</string>
+    <string name="native_api_entry_batch_title">Batch injection test (debug)</string>
+    <string name="native_api_entry_batch_desc">Runs ASR over fixed audio for several rounds, scores WER automatically and exports HTML / CSV reports. Not a public SDK capability.</string>
+    <string name="native_api_entry_batch_api">startAudioRecording / stopRecordTransfer / getRecordTransferRealTimeResult</string>
 </resources>
