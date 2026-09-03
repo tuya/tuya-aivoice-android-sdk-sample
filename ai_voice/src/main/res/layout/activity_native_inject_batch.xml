@@ -26,6 +26,107 @@
         android:layout_height="wrap_content"
         android:orientation="vertical" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_batch_import_files"
+            style="@style/NativeInlineButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="@string/native_batch_btn_import_files" />
+
+        <Button
+            android:id="@+id/btn_batch_clear_import"
+            style="@style/NativeInlineButton"
+            android:layout_width="0dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="@string/native_batch_btn_clear_import" />
+    </LinearLayout>
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:layout_marginTop="4dp"
+        android:text="@string/native_batch_import_hint" />
+
+    <!-- ===== 跑批参数（整批共用） ===== -->
+    <TextView
+        style="@style/NativeFieldLabel"
+        android:text="@string/native_batch_config_section" />
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:text="@string/native_batch_config_hint" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/native_source_lang"
+                android:textColor="@color/ai_voice_text_secondary"
+                android:textSize="12sp" />
+
+            <Spinner
+                android:id="@+id/sp_batch_source_lang"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/native_target_lang"
+                android:textColor="@color/ai_voice_text_secondary"
+                android:textSize="12sp" />
+
+            <Spinner
+                android:id="@+id/sp_batch_target_lang"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <CheckBox
+        android:id="@+id/cb_batch_asr"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/native_batch_cfg_asr"
+        android:textSize="13sp" />
+
+    <CheckBox
+        android:id="@+id/cb_batch_translate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/native_batch_cfg_translate"
+        android:textSize="13sp" />
+
+    <CheckBox
+        android:id="@+id/cb_batch_tts"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/native_batch_cfg_tts"
+        android:textSize="13sp" />
+
     <!-- ===== 重复次数 ===== -->
     <TextView
         style="@style/NativeFieldLabel"

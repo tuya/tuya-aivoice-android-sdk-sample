@@ -14,6 +14,7 @@ import androidx.annotation.StringRes;
 
 import com.tuya.smart.ai_voice.R;
 import com.tuya.smart.ai_voice.nativeui.base.NativeDemoBaseActivity;
+import com.tuya.smart.ai_voice.nativeui.widget.InjectEndDispatcher;
 
 /**
  * Native 能力总入口。所有 Native 演示页的唯一导航页。
@@ -99,6 +100,10 @@ public class NativeEntryActivity extends NativeDemoBaseActivity {
      * @param context 上下文
      */
     public static void start(@NonNull Context context) {
+        // 进入调试入口即安装灌流结束的分发器：所有能开启灌流的路径都必经这里，
+        // 装在这里既保证「有灌流就一定有人接事件」，也保证接入方没打开过调试入口时
+        // 组件不往他的进程里注册任何全局监听。
+        InjectEndDispatcher.get().install(context);
         Intent intent = new Intent(context, NativeEntryActivity.class);
         if (!(context instanceof Activity)) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

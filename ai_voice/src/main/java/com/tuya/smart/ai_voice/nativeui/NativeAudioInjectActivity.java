@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 
 import com.thingclips.smart.ai.audio.utils.PhoneMicAudioInputFactory;
 import com.thingclips.smart.earphone.enhance.api.bean.AudioFrontInputConfig;
+import com.thingclips.smart.home.sdk.ThingHomeSdk;
 import com.tuya.smart.ai_voice.R;
 import com.tuya.smart.ai_voice.nativeui.base.NativeDemoBaseActivity;
 import com.tuya.smart.ai_voice.nativeui.widget.AudioInjectFileHelper;
@@ -78,8 +79,8 @@ public class NativeAudioInjectActivity extends NativeDemoBaseActivity {
     /** 文件拷贝与目录扫描都是阻塞 IO，统一丢到这里执行。 */
     private final ExecutorService io = Executors.newSingleThreadExecutor();
 
-    /** 当前可选的音频文件名，用于判断列表是否为空。 */
-    private final List<String> fileNames = new ArrayList<>();
+    /** 当前可选的语料，用于判断列表是否为空。 */
+    private final List<AudioInjectFileHelper.Corpus> corpusList = new ArrayList<>();
 
     /**
      * 打开灌流设置页，不带任何上下文。
@@ -213,17 +214,17 @@ public class NativeAudioInjectActivity extends NativeDemoBaseActivity {
 
     private void loadFileList() {
         io.execute(() -> {
-            List<String> names = AudioInjectFileHelper.listAvailableFiles(this);
+            List<AudioInjectFileHelper.Corpus> names = AudioInjectFileHelper.listCorpus(this);
             runOnUi(() -> renderFileList(names));
         });
     }
 
-    private void renderFileList(@NonNull List<String> names) {
-        fileNames.clear();
-        fileNames.addAll(names);
+    private void renderFileList(@NonNull List<AudioInjectFileHelper.Corpus> corpora) {
+        corpusList.clear();
+        corpusList.addAll(corpora);
         fileGroup.removeAllViews();
 
-        if (names.isEmpty()) {
+        if (corpora.isEmpty()) {
             fileEmptyText.setVisibility(View.VISIBLE);
             return;
         }
@@ -232,35 +233,38 @@ public class NativeAudioInjectActivity extends NativeDemoBaseActivity {
         AudioFrontInputConfig config = PhoneMicAudioInputFactory.INSTANCE.getDebugStrategy();
         String selected = config == null ? null : config.getReplaceCaptureData().getFileName();
 
-        for (String name : names) {
+        for (AudioInjectFileHelper.Corpus corpus : corpora) {
             RadioButton item = new RadioButton(this);
             // RadioGroup 靠 ID 管理选中态，动态创建的 View 必须显式分配。
             // 这里只能用 generateViewId：手写常量会撞进 aapt 分配的 R.id 区间，
             // 使 findViewById 可能命中这些临时 View。
             item.setId(View.generateViewId());
-            item.setTag(name);
-            item.setText(name);
+            item.setTag(corpus);
+            item.setText(getString(corpus.imported
+                            ? R.string.native_inject_file_item_imported
+                            : R.string.native_inject_file_item_builtin,
+                    corpus.baseName()));
             item.setTextSize(13f);
             item.setLayoutParams(new RadioGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             fileGroup.addView(item);
-            if (name.equals(selected)) {
+            if (corpus.fileName.equals(selected)) {
                 item.setChecked(true);
             }
         }
     }
 
     /**
-     * @return 当前选中的文件名；未选中时返回 {@code null}
+     * @return 当前选中的语料；未选中时返回 {@code null}
      */
     @Nullable
-    private String selectedFileName() {
+    private AudioInjectFileHelper.Corpus selectedCorpus() {
         int checkedId = fileGroup.getCheckedRadioButtonId();
         if (checkedId == View.NO_ID) {
             return null;
         }
         RadioButton checked = fileGroup.findViewById(checkedId);
-        return checked == null ? null : (String) checked.getTag();
+        return checked == null ? null : (AudioInjectFileHelper.Corpus) checked.getTag();
     }
 
     // ===================== 保存 =====================
@@ -275,8 +279,8 @@ public class NativeAudioInjectActivity extends NativeDemoBaseActivity {
             return;
         }
 
-        String fileName = selectedFileName();
-        if (fileName == null) {
+        AudioInjectFileHelper.Corpus corpus = selectedCorpus();
+        if (corpus == null) {
             toast(getString(R.string.native_inject_toast_need_file));
             return;
         }
@@ -288,16 +292,16 @@ public class NativeAudioInjectActivity extends NativeDemoBaseActivity {
         saveButton.setEnabled(false);
         saveButton.setText(R.string.native_inject_btn_saving);
         io.execute(() -> {
-            // assets 中的样例要先落到目标目录，底层才读得到
-            boolean ready = AudioInjectFileHelper.ensureFileReady(this, fileName);
+            // assets 中的样例要先落到目标目录，底层才读得到；导入语料本来就在那里
+            boolean ready = AudioInjectFileHelper.ensureFileReady(this, corpus);
             runOnUi(() -> {
                 saveButton.setEnabled(true);
                 saveButton.setText(R.string.native_inject_btn_save);
                 if (!ready) {
-                    toast(getString(R.string.native_inject_toast_copy_failed, fileName));
+                    toast(getString(R.string.native_inject_toast_copy_failed, corpus.baseName()));
                     return;
                 }
-                applyConfig(fileName, anc, agc, aec);
+                applyConfig(corpus.fileName, anc, agc, aec);
             });
         });
     }

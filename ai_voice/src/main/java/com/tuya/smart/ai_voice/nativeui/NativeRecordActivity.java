@@ -16,7 +16,6 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.thingclips.smart.ai.audio.utils.AudioInjectEventManager;
 import com.thingclips.smart.ai.audio.utils.PhoneMicAudioInputFactory;
 import com.thingclips.smart.earphone.enhance.api.bean.AudioFrontInputConfig;
 import com.thingclips.smart.earphone.enhance.api.bean.RealTimeTransferStatus;
@@ -38,6 +37,7 @@ import com.thingclips.smart.sdk.api.IResultCallback;
 import com.tuya.smart.ai_voice.R;
 import com.tuya.smart.ai_voice.nativeui.base.NativeDemoBaseActivity;
 import com.tuya.smart.ai_voice.nativeui.widget.AmplitudeWaveView;
+import com.tuya.smart.ai_voice.nativeui.widget.InjectEndDispatcher;
 import com.tuya.smart.ai_voice.nativeui.widget.RecordErrorCode;
 
 import java.util.ArrayList;
@@ -145,8 +145,8 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
     private IRecordListener recordListener;
     /** 设备能力监听，用字段持有，remove 时传同一引用。 */
     private INativeAbilityListener abilityListener;
-    /** 灌流播放结束监听，仅在开启灌流时会被触发。 */
-    private AudioInjectEventManager.OnAudioInjectEndListener injectEndListener;
+    /** 灌流播放结束的订阅，仅在开启灌流时会被触发。 */
+    private InjectEndDispatcher.Consumer injectEndConsumer;
 
     // ===== 视图 =====
     private Spinner modeSpinner;
@@ -487,18 +487,18 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
         super.onResume();
         // 灌流配置可能刚在设置页被改动，回到本页时重新读取
         refreshInjectBanner();
-        // 灌流结束通知是全局单例的覆盖式 setter，不是 add / remove 列表，同一时刻只有
-        // 最后一个设置者收得到。放在 onResume / onPause 成对处理，避免与批量测试页互相顶掉。
-        injectEndListener = deviceId -> runOnUi(NativeRecordActivity.this::onInjectFileEnd);
-        AudioInjectEventManager.INSTANCE.setOnAudioInjectEndListener(injectEndListener);
+        // 订阅灌流结束事件，接管本次处置（停录音 + 弹窗）。
+        // 底层那个 setter 是覆盖式单槽，统一由 InjectEndDispatcher 独占，页面只向它订阅。
+        injectEndConsumer = deviceId -> onInjectFileEnd();
+        InjectEndDispatcher.get().setPageConsumer(this, injectEndConsumer);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (injectEndListener != null) {
-            AudioInjectEventManager.INSTANCE.setOnAudioInjectEndListener(null);
-            injectEndListener = null;
+        if (injectEndConsumer != null) {
+            InjectEndDispatcher.get().clearPageConsumer(injectEndConsumer);
+            injectEndConsumer = null;
         }
     }
 
@@ -670,8 +670,18 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
             main.postDelayed(this::onInjectFileEnd, CONTROL_LOCK_MS);
             return;
         }
-        toast(getString(R.string.native_inject_toast_file_end));
         stopRecord();
+        // 延后重试的那条路径可能落在 onPause 之后，此时弹窗会因 window token 失效而抛异常
+        if (isFinishing() || isDestroyed()) {
+            return;
+        }
+        AudioFrontInputConfig config = PhoneMicAudioInputFactory.INSTANCE.getDebugStrategy();
+        String fileName = config == null ? "-" : config.getReplaceCaptureData().getFileName();
+        new android.app.AlertDialog.Builder(this)
+                .setTitle(R.string.native_inject_end_dialog_title)
+                .setMessage(getString(R.string.native_inject_end_dialog_message, fileName))
+                .setPositiveButton(R.string.native_inject_end_dialog_ok, null)
+                .show();
     }
 
     // ===================== 恢复进行中的任务 =====================

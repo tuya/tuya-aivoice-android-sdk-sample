@@ -3,6 +3,7 @@ package com.tuya.smart.ai_voice.nativeui;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -14,7 +15,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -23,7 +26,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.thingclips.smart.ai.audio.utils.AudioInjectEventManager;
 import com.thingclips.smart.ai.audio.utils.PhoneMicAudioInputFactory;
 import com.thingclips.smart.earphone.enhance.api.bean.AudioFrontInputConfig;
 import com.thingclips.smart.earphone.enhance.api.bean.RealTimeTransferStatus;
@@ -40,7 +42,8 @@ import com.thingclips.smart.sdk.api.IResultCallback;
 import com.tuya.smart.ai_voice.R;
 import com.tuya.smart.ai_voice.nativeui.base.NativeDemoBaseActivity;
 import com.tuya.smart.ai_voice.nativeui.widget.AudioInjectFileHelper;
-import com.tuya.smart.ai_voice.nativeui.widget.InjectManifest;
+import com.tuya.smart.ai_voice.nativeui.widget.InjectCorpusImporter;
+import com.tuya.smart.ai_voice.nativeui.widget.InjectEndDispatcher;
 import com.tuya.smart.ai_voice.nativeui.widget.InjectReportBuilder;
 import com.tuya.smart.ai_voice.nativeui.widget.InjectRoundResult;
 import com.tuya.smart.ai_voice.nativeui.widget.TranscriptFileProvider;
@@ -54,7 +57,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -77,10 +79,12 @@ import java.util.concurrent.Executors;
  *
  * <h3>数据从哪来</h3>
  * <ul>
- *     <li>音频：assets {@code audio_inject/}，只认 wav</li>
- *     <li>参考答案：assets 中与音频同名的 txt，见 {@link AudioInjectFileHelper#readReferenceText}</li>
- *     <li>语言与能力开关：assets 中的 {@link InjectManifest}。<b>清单里没有条目的音频不能跑批</b>，
- *         因为源语言只能来自清单，猜错会让整轮数据不可信</li>
+ *     <li>音频：assets {@code audio_inject/} 内置，或用户经 SAF 从手机本地目录导入
+ *         （见 {@link InjectCorpusImporter}），只认 wav</li>
+ *     <li>参考答案：与音频同名的 txt，查找顺序与音频一致——先导入目录、再 assets</li>
+ *     <li>语言与能力开关：<b>来自本页的配置区，整批共用</b>（{@link BatchConfig}）。
+ *         早前是逐文件写在 assets 清单里的，改成页面配置后不用为了换语言重新编包，
+ *         代价是同一批只能一个源语言</li>
  * </ul>
  *
  * <h3>识别结果的两个来源</h3>
@@ -91,6 +95,12 @@ import java.util.concurrent.Executors;
 public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
 
     private static final int REQ_CODE_RECORD_AUDIO = 2001;
+    private static final int REQ_CODE_PICK_FILES = 2002;
+
+    /** 语言列表，与 {@code NativeRecordActivity.LANGS} 保持一致。 */
+    private static final String[] LANGS = {"zh", "en", "de", "ja", "ko", "fr", "es"};
+    private static final String DEFAULT_SOURCE_LANG = "zh";
+    private static final String DEFAULT_TARGET_LANG = "en";
 
     /** FileProvider authority 后缀，与 AndroidManifest 中的声明保持一致。 */
     private static final String FILE_PROVIDER_SUFFIX = ".aivoice.fileprovider";
@@ -149,21 +159,49 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
 
     /** 文件列表的一行。 */
     private static final class FileRow {
-        final String name;
-        @Nullable
-        final InjectManifest.Entry entry;
+        final AudioInjectFileHelper.Corpus corpus;
         final WavFileInfo wav;
         CheckBox box;
 
-        FileRow(String name, @Nullable InjectManifest.Entry entry, WavFileInfo wav) {
-            this.name = name;
-            this.entry = entry;
+        FileRow(AudioInjectFileHelper.Corpus corpus, WavFileInfo wav) {
+            this.corpus = corpus;
             this.wav = wav;
         }
 
-        /** @return 能否参与跑批：清单里有条目，且音频不是必然灌不进去的格式 */
+        /** @return 能否参与跑批。语言等配置来自页面，唯一门槛是音频格式 */
         boolean runnable() {
-            return entry != null && wav.isDecodable();
+            return wav.isDecodable();
+        }
+    }
+
+    /**
+     * 一次跑批的参数，来自页面配置，<b>整批共用</b>。
+     * <p>
+     * 原先这些是逐文件写在 assets 清单里的，改成页面配置后不用为了换个语言重新编包，
+     * 代价是<b>同一批只能一个源语言</b>——混语种请分批跑，累积 CSV 里有 {@code sourceLang} 列，
+     * 跨批次筛出来看趋势完全够用。
+     */
+    private static final class BatchConfig {
+        final String sourceLanguage;
+        /** 空串表示不翻译。 */
+        final String targetLanguage;
+        final boolean asr;
+        final boolean translate;
+        final boolean tts;
+
+        BatchConfig(String sourceLanguage, String targetLanguage,
+                    boolean asr, boolean translate, boolean tts) {
+            this.sourceLanguage = sourceLanguage;
+            this.targetLanguage = targetLanguage;
+            this.asr = asr;
+            this.translate = translate;
+            this.tts = tts;
+        }
+
+        /** 目标语言与源语言相同等于没翻，下发给 SDK 只会白跑一趟。 */
+        boolean shouldTranslate() {
+            return translate && !targetLanguage.isEmpty()
+                    && !targetLanguage.equals(sourceLanguage);
         }
     }
 
@@ -175,13 +213,14 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
 
     /** 队列里的一轮任务。 */
     private static final class Round {
-        final InjectManifest.Entry entry;
+        final AudioInjectFileHelper.Corpus corpus;
         final long audioDurationMs;
         final int repeatIndex;
         final int repeatTotal;
 
-        Round(InjectManifest.Entry entry, long audioDurationMs, int repeatIndex, int repeatTotal) {
-            this.entry = entry;
+        Round(AudioInjectFileHelper.Corpus corpus, long audioDurationMs,
+              int repeatIndex, int repeatTotal) {
+            this.corpus = corpus;
             this.audioDurationMs = audioDurationMs;
             this.repeatIndex = repeatIndex;
             this.repeatTotal = repeatTotal;
@@ -190,6 +229,13 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
 
     // ===== 视图 =====
     private LinearLayout fileContainer;
+    private Spinner sourceLangSpinner;
+    private Spinner targetLangSpinner;
+    private CheckBox asrSwitch;
+    private CheckBox translateSwitch;
+    private CheckBox ttsSwitch;
+    private Button importFilesButton;
+    private Button clearImportButton;
     private EditText repeatInput;
     private Button startButton;
     private Button abortButton;
@@ -206,12 +252,14 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
     private final List<InjectRoundResult> results = new ArrayList<>();
 
     private IRecordListener recordListener;
-    private AudioInjectEventManager.OnAudioInjectEndListener injectEndListener;
+    private InjectEndDispatcher.Consumer injectEndConsumer;
 
     private boolean running;
     private int roundIndex = -1;
     private Stage stage = Stage.IDLE;
     private String batchId = "";
+    /** 本批跑批参数，点「开始跑批」时从页面读一次，跑批期间不再变化。 */
+    private BatchConfig config;
 
     /** 当前轮的累积状态。 */
     private InjectRoundResult current;
@@ -256,6 +304,9 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
     @Override
     protected void onContentViewCreated() {
         bindViews();
+        setupConfig();
+        importFilesButton.setOnClickListener(v -> pickImportFiles());
+        clearImportButton.setOnClickListener(v -> confirmClearImported());
         startButton.setOnClickListener(v -> onStartClicked());
         abortButton.setOnClickListener(v -> confirmAbort());
         shareButton.setOnClickListener(v -> shareReport());
@@ -276,6 +327,61 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
         // 再套一层 ScrollView 会抢滚动事件，因此用 MovementMethod 而不是嵌套滚动容器。
         realtimeText.setMovementMethod(new ScrollingMovementMethod());
         resultContainer = findViewById(R.id.ll_batch_results);
+        sourceLangSpinner = findViewById(R.id.sp_batch_source_lang);
+        targetLangSpinner = findViewById(R.id.sp_batch_target_lang);
+        asrSwitch = findViewById(R.id.cb_batch_asr);
+        translateSwitch = findViewById(R.id.cb_batch_translate);
+        ttsSwitch = findViewById(R.id.cb_batch_tts);
+        importFilesButton = findViewById(R.id.btn_batch_import_files);
+        clearImportButton = findViewById(R.id.btn_batch_clear_import);
+    }
+
+    /**
+     * 装配语言下拉与默认值。
+     * <p>
+     * 语言用下拉而不是输入框：填错语言的代价是整批数据废掉<b>且看不出原因</b>——
+     * WER 会低得莫名其妙，你无从判断是识别差还是语种设错。
+     * 默认 {@code zh → en} 与录音页一致，避免两页默认行为不同引起误会。
+     */
+    private void setupConfig() {
+        ArrayAdapter<String> sourceAdapter = new ArrayAdapter<>(
+                this, R.layout.item_spinner_native, LANGS);
+        sourceAdapter.setDropDownViewResource(R.layout.item_spinner_native_dropdown);
+        sourceLangSpinner.setAdapter(sourceAdapter);
+        sourceLangSpinner.setSelection(indexOf(LANGS, DEFAULT_SOURCE_LANG));
+
+        // 目标语言多一项「不翻译」，放在首位
+        String[] targets = new String[LANGS.length + 1];
+        targets[0] = getString(R.string.native_batch_target_none);
+        System.arraycopy(LANGS, 0, targets, 1, LANGS.length);
+        ArrayAdapter<String> targetAdapter = new ArrayAdapter<>(
+                this, R.layout.item_spinner_native, targets);
+        targetAdapter.setDropDownViewResource(R.layout.item_spinner_native_dropdown);
+        targetLangSpinner.setAdapter(targetAdapter);
+        targetLangSpinner.setSelection(indexOf(targets, DEFAULT_TARGET_LANG));
+
+        asrSwitch.setChecked(true);
+        translateSwitch.setChecked(true);
+        ttsSwitch.setChecked(true);
+    }
+
+    /** @return 从页面读一次配置 */
+    @NonNull
+    private BatchConfig readConfig() {
+        String source = (String) sourceLangSpinner.getSelectedItem();
+        String target = targetLangSpinner.getSelectedItemPosition() == 0
+                ? "" : (String) targetLangSpinner.getSelectedItem();
+        return new BatchConfig(source, target, asrSwitch.isChecked(),
+                translateSwitch.isChecked(), ttsSwitch.isChecked());
+    }
+
+    private static int indexOf(@NonNull String[] array, @NonNull String value) {
+        for (int i = 0; i < array.length; i++) {
+            if (value.equals(array[i])) {
+                return i;
+            }
+        }
+        return 0;
     }
 
     // ===================== 监听 =====================
@@ -333,18 +439,18 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // 灌流结束通知是全局单例的覆盖式 setter，同一时刻只有最后一个设置者收得到。
-        // 在 onResume/onPause 成对处理，避免与录音页互相顶掉。
-        injectEndListener = deviceId -> runOnUi(this::onInjectEnd);
-        AudioInjectEventManager.INSTANCE.setOnAudioInjectEndListener(injectEndListener);
+        // 订阅灌流结束事件，接管本次处置。跑批必须静默——弹窗会阻塞后续几十轮的自动流程，
+        // 所以这里不能落到 InjectEndDispatcher 的兜底逻辑上。
+        injectEndConsumer = deviceId -> onInjectEnd();
+        InjectEndDispatcher.get().setPageConsumer(this, injectEndConsumer);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (injectEndListener != null) {
-            AudioInjectEventManager.INSTANCE.setOnAudioInjectEndListener(null);
-            injectEndListener = null;
+        if (injectEndConsumer != null) {
+            InjectEndDispatcher.get().clearPageConsumer(injectEndConsumer);
+            injectEndConsumer = null;
         }
         // 页面不在前台就中止：跑批不做后台化，留着只会让录音和灌流配置悬空
         if (running && !isChangingConfigurations()) {
@@ -367,16 +473,118 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
         super.onBackPressed();
     }
 
+    // ===================== 语料导入 =====================
+
+    /**
+     * 拉起系统目录选择器。
+     * <p>
+     * 走 SAF 而不是直接读 {@code /sdcard/Download}：{@code targetSdk} 已到 36，
+     * 分区存储下没有 {@code MANAGE_EXTERNAL_STORAGE} 拿不到那个目录，
+     * 而 SAF <b>不需要任何权限</b>。原因详见 {@link InjectCorpusImporter}。
+     */
+    private void pickImportFiles() {
+        if (running) {
+            return;
+        }
+        try {
+            startActivityForResult(InjectCorpusImporter.buildPickFilesIntent(),
+                    REQ_CODE_PICK_FILES);
+        } catch (Exception e) {
+            toast(getString(R.string.native_batch_import_no_picker));
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != REQ_CODE_PICK_FILES || resultCode != RESULT_OK || data == null) {
+            return;
+        }
+        List<Uri> uris = collectUris(data);
+        if (uris.isEmpty()) {
+            return;
+        }
+        importFilesButton.setEnabled(false);
+        importFilesButton.setText(R.string.native_batch_btn_importing);
+        io.execute(() -> {
+            InjectCorpusImporter.Result result = InjectCorpusImporter.importFiles(this, uris);
+            runOnUi(() -> {
+                importFilesButton.setEnabled(true);
+                importFilesButton.setText(R.string.native_batch_btn_import_files);
+                onImportFinished(result);
+            });
+        });
+    }
+
+    /**
+     * 从多选结果里取出全部 Uri。
+     * <p>
+     * 多选返回的是 {@code ClipData}，单选返回的是 {@code getData()}——
+     * 只处理其中一种会让「只选了一个文件」或「选了多个文件」之一静默失败。
+     */
+    @NonNull
+    private static List<Uri> collectUris(@NonNull Intent data) {
+        List<Uri> uris = new ArrayList<>();
+        ClipData clip = data.getClipData();
+        if (clip != null) {
+            for (int i = 0; i < clip.getItemCount(); i++) {
+                Uri uri = clip.getItemAt(i).getUri();
+                if (uri != null) {
+                    uris.add(uri);
+                }
+            }
+        } else if (data.getData() != null) {
+            uris.add(data.getData());
+        }
+        return uris;
+    }
+
+    private void onImportFinished(@NonNull InjectCorpusImporter.Result result) {
+        if (result.unavailable) {
+            // 外置私有目录不可用，与「选了但一个都没落地」是同一类结果，用同一句提示
+            toast(getString(R.string.native_batch_import_empty));
+            return;
+        }
+        if (result.isEmpty()) {
+            toast(getString(R.string.native_batch_import_empty));
+            return;
+        }
+        toast(getString(R.string.native_batch_import_done,
+                result.audioCount, result.textCount));
+        loadFiles();
+    }
+
+
+    private void confirmClearImported() {
+        if (running) {
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.native_batch_clear_title)
+                .setMessage(R.string.native_batch_clear_message)
+                .setPositiveButton(R.string.native_batch_clear_confirm, (d, which) -> clearImported())
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void clearImported() {
+        io.execute(() -> {
+            int removed = AudioInjectFileHelper.clearImported(this);
+            runOnUi(() -> {
+                toast(getString(R.string.native_batch_clear_done, removed));
+                loadFiles();
+            });
+        });
+    }
+
     // ===================== 文件列表 =====================
 
     private void loadFiles() {
         io.execute(() -> {
-            Map<String, InjectManifest.Entry> manifest = InjectManifest.load(this);
-            List<String> names = AudioInjectFileHelper.listAvailableFiles(this);
-            List<FileRow> rows = new ArrayList<>(names.size());
-            for (String name : names) {
-                rows.add(new FileRow(name, manifest.get(name),
-                        AudioInjectFileHelper.readWavInfo(this, name)));
+            List<AudioInjectFileHelper.Corpus> corpora = AudioInjectFileHelper.listCorpus(this);
+            List<FileRow> rows = new ArrayList<>(corpora.size());
+            for (AudioInjectFileHelper.Corpus corpus : corpora) {
+                rows.add(new FileRow(corpus, AudioInjectFileHelper.readWavInfo(this, corpus)));
             }
             runOnUi(() -> renderFiles(rows));
         });
@@ -415,15 +623,17 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
      */
     @NonNull
     private String fileLabel(@NonNull FileRow row) {
-        StringBuilder sb = new StringBuilder(row.name);
+        StringBuilder sb = new StringBuilder();
+        sb.append(getString(row.corpus.imported
+                        ? R.string.native_inject_file_item_imported
+                        : R.string.native_inject_file_item_builtin,
+                row.corpus.baseName()));
         String summary = row.wav.summary();
         if (summary != null) {
             sb.append("  ").append(summary);
         }
         if (row.wav.level() == WavFileInfo.Level.BLOCK) {
             sb.append('\n').append(getString(R.string.native_batch_file_bad_format));
-        } else if (row.entry == null) {
-            sb.append('\n').append(getString(R.string.native_batch_file_no_manifest));
         } else if (row.wav.level() == WavFileInfo.Level.WARN) {
             sb.append('\n').append(getString(R.string.native_batch_file_warn_format));
         }
@@ -480,9 +690,10 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
         for (FileRow row : selected) {
             long duration = row.wav.durationMs();
             for (int i = 1; i <= repeat; i++) {
-                queue.add(new Round(row.entry, duration, i, repeat));
+                queue.add(new Round(row.corpus, duration, i, repeat));
             }
         }
+        config = readConfig();
         batchId = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         roundIndex = -1;
         running = true;
@@ -535,12 +746,12 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
         Round round = queue.get(roundIndex);
         current = new InjectRoundResult();
         current.index = roundIndex + 1;
-        current.fileName = round.entry.name;
+        current.fileName = round.corpus.fileName;
         current.repeatIndex = round.repeatIndex;
         current.repeatTotal = round.repeatTotal;
-        current.sourceLanguage = round.entry.originalLanguage;
-        current.targetLanguage = round.entry.shouldTranslate() ? round.entry.targetLanguage : "";
-        current.needTts = round.entry.needTts && round.entry.shouldTranslate();
+        current.sourceLanguage = config.sourceLanguage;
+        current.targetLanguage = config.shouldTranslate() ? config.targetLanguage : "";
+        current.needTts = config.tts && config.shouldTranslate();
         finishedSentences.clear();
         currentSentence = null;
         realtimeText.setText("");
@@ -554,8 +765,8 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
 
         // 拷贝与读参考答案是阻塞 IO，放子线程；回到主线程才下发配置并开录
         io.execute(() -> {
-            boolean ready = AudioInjectFileHelper.ensureFileReady(this, round.entry.name);
-            String reference = AudioInjectFileHelper.readReferenceText(this, round.entry.name);
+            boolean ready = AudioInjectFileHelper.ensureFileReady(this, round.corpus);
+            String reference = AudioInjectFileHelper.readReferenceText(this, round.corpus);
             runOnUi(() -> {
                 if (!running || current == null) {
                     return;
@@ -566,8 +777,8 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
                             getString(R.string.native_batch_file_not_ready));
                     return;
                 }
-                applyInjectConfig(round.entry.name);
-                startRecording(round.entry);
+                applyInjectConfig(round.corpus.fileName);
+                startRecording();
             });
         });
     }
@@ -588,7 +799,7 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
         PhoneMicAudioInputFactory.INSTANCE.setDebugStrategy(config);
     }
 
-    private void startRecording(@NonNull InjectManifest.Entry entry) {
+    private void startRecording() {
         RecordParamsV2 params = new RecordParamsV2();
         params.setUpdateParams(false);
         params.setBusinessType(BUSINESS_TYPE_NOTE);
@@ -597,15 +808,15 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
         List<Integer> sourceList = new ArrayList<>();
         sourceList.add(AUDIO_SOURCE_SYSTEM_MIC);
         params.setAudioSourceList(sourceList);
-        params.setNeedAsr(entry.enableRealtimeTranscription);
+        params.setNeedAsr(config.asr);
         // 跑批不画波形，关掉省电
         params.setNeedAmplitude(false);
-        boolean translate = entry.shouldTranslate();
+        boolean translate = config.shouldTranslate();
         params.setNeedTranslate(translate);
-        params.setNeedTts(entry.needTts && translate);
-        params.setOriginalLanguage(entry.originalLanguage);
+        params.setNeedTts(config.tts && translate);
+        params.setOriginalLanguage(config.sourceLanguage);
         if (translate) {
-            params.setTargetLanguage(entry.targetLanguage);
+            params.setTargetLanguage(config.targetLanguage);
         }
         if (params.getNeedTts()) {
             // 手机 MIC 链路：输出走系统 MIC 通道，devId 必须传空
@@ -1137,7 +1348,7 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
     private void refreshProgress() {
         Round round = queue.get(roundIndex);
         progressText.setText(getString(R.string.native_batch_progress_format,
-                round.entry.name, round.repeatIndex, round.repeatTotal,
+                round.corpus.baseName(), round.repeatIndex, round.repeatTotal,
                 roundIndex + 1, queue.size()));
     }
 
@@ -1146,6 +1357,13 @@ public class NativeInjectBatchActivity extends NativeDemoBaseActivity {
         startButton.setEnabled(idle && !selectedRows().isEmpty());
         abortButton.setVisibility(running ? View.VISIBLE : View.GONE);
         repeatInput.setEnabled(idle);
+        importFilesButton.setEnabled(idle);
+        clearImportButton.setEnabled(idle);
+        sourceLangSpinner.setEnabled(idle);
+        targetLangSpinner.setEnabled(idle);
+        asrSwitch.setEnabled(idle);
+        translateSwitch.setEnabled(idle);
+        ttsSwitch.setEnabled(idle);
         for (FileRow row : fileRows) {
             if (row.box != null) {
                 row.box.setEnabled(idle && row.runnable());

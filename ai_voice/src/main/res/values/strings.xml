@@ -415,8 +415,10 @@
     <string name="native_action_toast_download_started">已发起下载，完成后会提示</string>
     <string name="native_action_toast_local_audio_removed">本地音频已删除，记录保留</string>
     <string name="native_offline_no_card_device">当前家庭没有录音卡片设备。离线文件传输仅支持录音卡片，耳机与手机不产生设备侧缓存文件。</string>
-    <string name="native_action_export_transcript">导出转写文本</string>
+    <string name="native_action_export_transcript">导出转写</string>
+    <string name="native_action_export_translation">导出翻译</string>
     <string name="native_detail_toast_export_empty">暂无转写内容，无法导出</string>
+    <string name="native_detail_toast_export_translation_empty">暂无翻译内容，无法导出</string>
     <string name="native_detail_toast_export_failed">导出失败：%1$s</string>
     <string name="native_detail_export_chooser">分享转写文本</string>
     <string name="native_detail_export_default_name">转写记录</string>
@@ -448,14 +450,38 @@
     <string name="native_inject_toast_saved">灌流配置已保存，下次开始录音时生效</string>
     <string name="native_inject_toast_saved_recording">灌流配置已保存。当前录音不受影响，下次开始录音时生效</string>
     <string name="native_inject_toast_disabled">已关闭灌流，恢复真实麦克风采集</string>
-    <string name="native_inject_toast_file_end">灌流音频已播放完毕，自动停止录音</string>
+    <string name="native_inject_end_dialog_title">灌流结束</string>
+    <string name="native_inject_end_dialog_message">灌流音频「%1$s」已播放完毕，当前录音已自动停止。
+
+灌流仍处于开启状态，下次开始录音仍会使用该文件。需要恢复真实麦克风采集，请到「灌流设置」关闭。</string>
+    <string name="native_inject_end_dialog_ok">知道了</string>
+    <string name="native_inject_end_toast">灌流音频「%1$s」已播放完毕，录音已自动停止；灌流仍处于开启状态</string>
 
     <!-- ===== 灌流批量测试 ===== -->
     <string name="native_batch_title">灌流批量测试</string>
     <string name="native_batch_hint">用固定音频连续跑多轮 ASR，自动与参考答案计算 WER 并导出报告。\n一轮 = 下发灌流配置 → 开始录音 → 等灌流播完 → 停止录音 → 拉取转写结果 → 算分。任一环节卡住由单轮超时兜底（音频时长 × 3 + 60 秒），超时判该轮失败并继续下一轮。\n跑批期间屏幕保持常亮，退出页面即中止。</string>
     <string name="native_batch_file_section">音频（可多选）</string>
-    <string name="native_batch_file_hint">只列 wav。参与跑批需要两个前提：灌流清单里有对应条目（提供源语言与能力开关），且音频是 16kHz / 单声道 / 16bit 的整型 PCM。参考答案是与音频同名的 txt，缺失时照常跑但不算 WER。</string>
-    <string name="native_batch_file_no_manifest">清单中无此条目，无法参与跑批（源语言只能来自清单）</string>
+    <string name="native_batch_file_hint">只列 wav，来源为 assets 内置样例与你从本地目录导入的语料，同名时导入优先。参考答案是与音频同名的 txt（导入目录优先，其次 assets），缺失时照常跑但不算 WER。音频需为 16kHz / 单声道 / 16bit 的整型 PCM。</string>
+    <string name="native_inject_file_item_builtin">%1$s（内置）</string>
+    <string name="native_inject_file_item_imported">%1$s（导入）</string>
+    <string name="native_batch_config_section">跑批参数（整批共用）</string>
+    <string name="native_batch_config_hint">语言与能力开关对本批全部轮次生效。同一批只能用一个源语言，混语种请分批跑——累积 CSV 里有 sourceLang 列，跨批次筛出来看趋势即可。本页配置不做持久化，每次进入回到默认值。</string>
+    <string name="native_batch_target_none">不翻译</string>
+    <string name="native_batch_cfg_asr">实时转写</string>
+    <string name="native_batch_cfg_translate">实时翻译</string>
+    <string name="native_batch_cfg_tts">TTS（把译文合成语音播回，不参与评分）</string>
+    <string name="native_batch_btn_import_files">导入本地文件</string>
+    <string name="native_batch_btn_importing">导入中…</string>
+    <string name="native_batch_btn_clear_import">清空导入语料</string>
+    <string name="native_batch_import_done">导入完成：音频 %1$d 个，参考答案 %2$d 个</string>
+    <string name="native_batch_import_empty">该目录下没有可导入的 wav 或 txt</string>
+    <string name="native_batch_import_no_picker">系统没有可用的文件选择器</string>
+    <string name="native_batch_import_hint">从手机本地目录（如 Download）多选 wav 与同名 txt 导入，不需要任何权限。
+记得把 txt 一起选上：只导入 wav 的语料照样能跑，只是不计算 WER。导入的文件会累积保留，重启应用仍在。</string>
+    <string name="native_batch_clear_title">清空导入语料</string>
+    <string name="native_batch_clear_message">将删除全部导入的音频与参考答案。内置语料不受影响。</string>
+    <string name="native_batch_clear_confirm">清空</string>
+    <string name="native_batch_clear_done">已清空 %1$d 个文件</string>
     <string name="native_batch_file_bad_format">不是整型 PCM 的 wav，灌进去不会有任何识别结果。转换：ffmpeg -i in.wav -ar 16000 -ac 1 -c:a pcm_s16le out.wav</string>
     <string name="native_batch_file_warn_format">采样率 / 声道 / 位深与 16kHz 单声道 16bit 不符，可以试跑但结果未必正常</string>
     <string name="native_batch_no_file">没有内置的 wav 样例。</string>

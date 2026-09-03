@@ -416,7 +416,9 @@
     <string name="native_action_toast_local_audio_removed">Local audio deleted; the record is kept</string>
     <string name="native_offline_no_card_device">No recording card in this home. Offline file transfer is only supported on recording cards; earphones and the phone do not keep device-side cached files.</string>
     <string name="native_action_export_transcript">Export transcript</string>
+    <string name="native_action_export_translation">Export translation</string>
     <string name="native_detail_toast_export_empty">No transcript to export</string>
+    <string name="native_detail_toast_export_translation_empty">No translation to export</string>
     <string name="native_detail_toast_export_failed">Export failed: %1$s</string>
     <string name="native_detail_export_chooser">Share transcript</string>
     <string name="native_detail_export_default_name">Transcript</string>
@@ -448,14 +450,38 @@
     <string name="native_inject_toast_saved">Saved. It takes effect on the next recording</string>
     <string name="native_inject_toast_saved_recording">Saved. The current recording is unaffected; it takes effect on the next one</string>
     <string name="native_inject_toast_disabled">Injection disabled; real microphone capture restored</string>
-    <string name="native_inject_toast_file_end">Injected audio finished playing; recording stopped automatically</string>
+    <string name="native_inject_end_dialog_title">Injection finished</string>
+    <string name="native_inject_end_dialog_message">The injected audio "%1$s" has finished playing, and the current recording was stopped automatically.
+
+Injection is still enabled, so the next recording will use the same file. To restore real microphone capture, turn it off in Audio injection.</string>
+    <string name="native_inject_end_dialog_ok">Got it</string>
+    <string name="native_inject_end_toast">The injected audio "%1$s" finished playing; the recording was stopped automatically and injection is still enabled</string>
 
     <!-- ===== Batch injection test ===== -->
     <string name="native_batch_title">Batch injection test</string>
     <string name="native_batch_hint">Runs ASR over fixed audio for several rounds, scores WER against the reference answer and exports a report.\nOne round = push injection config → start recording → wait for playback to finish → stop recording → fetch the transcript → score. A per-round timeout (audio length × 3 + 60s) covers anything that stalls; a timed-out round is marked failed and the batch continues.\nThe screen stays on while running, and leaving the page aborts the batch.</string>
     <string name="native_batch_file_section">Audio (multiple)</string>
-    <string name="native_batch_file_hint">Only wav is listed. Two prerequisites to take part in a batch: an entry in the injection manifest (which supplies the source language and capability flags), and 16kHz / mono / 16bit integer PCM audio. The reference answer is a txt with the same name as the audio; without it the round still runs but is not scored.</string>
-    <string name="native_batch_file_no_manifest">No manifest entry, cannot run in a batch (the source language can only come from the manifest)</string>
+    <string name="native_batch_file_hint">Only wav is listed, from the bundled samples in assets plus whatever you imported from a local folder; imported files win on a name clash. The reference answer is a txt with the same name as the audio (imported folder first, then assets); without it the round still runs but is not scored. Audio must be 16kHz / mono / 16bit integer PCM.</string>
+    <string name="native_inject_file_item_builtin">%1$s (bundled)</string>
+    <string name="native_inject_file_item_imported">%1$s (imported)</string>
+    <string name="native_batch_config_section">Batch parameters (shared by every round)</string>
+    <string name="native_batch_config_hint">Languages and capability switches apply to every round in this batch. A batch can only use one source language, so run mixed-language material in separate batches — the cumulative CSV has a sourceLang column for cross-batch trends. These settings are not persisted; the page resets to defaults each time.</string>
+    <string name="native_batch_target_none">No translation</string>
+    <string name="native_batch_cfg_asr">Live transcription</string>
+    <string name="native_batch_cfg_translate">Live translation</string>
+    <string name="native_batch_cfg_tts">TTS (plays the translation back; not scored)</string>
+    <string name="native_batch_btn_import_files">Import local files</string>
+    <string name="native_batch_btn_importing">Importing…</string>
+    <string name="native_batch_btn_clear_import">Clear imported</string>
+    <string name="native_batch_import_done">Imported %1$d audio file(s) and %2$d reference file(s)</string>
+    <string name="native_batch_import_empty">No wav or txt to import in that folder</string>
+    <string name="native_batch_import_no_picker">No file picker available on this device</string>
+    <string name="native_batch_import_hint">Pick wav files and their same-named txt from a local folder (such as Download); no permission is required.
+Remember to include the txt: a corpus imported without one still runs, it just is not scored. Imported files accumulate and survive an app restart.</string>
+    <string name="native_batch_clear_title">Clear imported corpora</string>
+    <string name="native_batch_clear_message">This deletes every imported audio and reference file. Bundled corpora are untouched.</string>
+    <string name="native_batch_clear_confirm">Clear</string>
+    <string name="native_batch_clear_done">Removed %1$d file(s)</string>
     <string name="native_batch_file_bad_format">Not integer-PCM wav; injecting it produces no recognition at all. Convert: ffmpeg -i in.wav -ar 16000 -ac 1 -c:a pcm_s16le out.wav</string>
     <string name="native_batch_file_warn_format">Sample rate / channels / bit depth differ from 16kHz mono 16bit; you may still try, but results may be off</string>
     <string name="native_batch_no_file">No wav sample is bundled.</string>

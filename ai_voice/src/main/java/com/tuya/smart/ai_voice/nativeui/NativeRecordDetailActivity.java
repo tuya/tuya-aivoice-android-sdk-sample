@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.thingclips.smart.ai.audio.sync.api.DownloadListener;
 import com.thingclips.smart.ai.audio.sync.api.UploadListener;
 import com.thingclips.smart.ai.audio.sync.api.ttt.SyncObserver;
@@ -1308,12 +1309,34 @@ public class NativeRecordDetailActivity extends NativeDemoBaseActivity {
 
                     @Override
                     public void onExportTranscript() {
-                        exportTranscript();
+                        export(ExportKind.ASR);
+                    }
+
+                    @Override
+                    public void onExportTranslation() {
+                        export(ExportKind.TRANSLATION);
                     }
                 });
     }
 
-    // ===================== 导出转写文本 =====================
+    // ===================== 导出转写 / 翻译 =====================
+
+    /**
+     * 导出内容的种类。转写与译文各导一份独立文件，下游通常只要其中一份。
+     */
+    private enum ExportKind {
+        /** ASR 原文。 */
+        ASR("_asr"),
+        /** 译文。 */
+        TRANSLATION("_translation");
+
+        /** 文件名里的类型后缀。 */
+        final String fileSuffix;
+
+        ExportKind(String fileSuffix) {
+            this.fileSuffix = fileSuffix;
+        }
+    }
 
     /**
      * 把当前已加载到内存的转写正文导出成 {@code .txt}，再交给系统分享。
@@ -1327,10 +1350,12 @@ public class NativeRecordDetailActivity extends NativeDemoBaseActivity {
      * {@code res/xml/native_file_paths.xml}、{@link TranscriptFileProvider} 必须一并带上，否则
      * {@link TranscriptFileProvider#getUriForFile} 会抛 {@code IllegalArgumentException}。
      */
-    private void exportTranscript() {
-        String content = buildTranscriptForExport();
+    private void export(@NonNull ExportKind kind) {
+        String content = buildExportText(kind);
         if (TextUtils.isEmpty(content)) {
-            toast(getString(R.string.native_detail_toast_export_empty));
+            toast(getString(kind == ExportKind.ASR
+                    ? R.string.native_detail_toast_export_empty
+                    : R.string.native_detail_toast_export_translation_empty));
             return;
         }
         File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
@@ -1342,7 +1367,7 @@ public class NativeRecordDetailActivity extends NativeDemoBaseActivity {
             toastExportFailed("create dir failed");
             return;
         }
-        File file = new File(dir, exportFileName());
+        File file = new File(dir, exportFileName(kind));
         // 同名覆盖：一条记录始终只保留最新的一份导出结果
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8")) {
             writer.write(content);
@@ -1361,14 +1386,79 @@ public class NativeRecordDetailActivity extends NativeDemoBaseActivity {
      *
      * @return 可读多行文本；尚无转写内容时返回空串
      */
-    private String buildTranscriptForExport() {
+    private String buildExportText(@NonNull ExportKind kind) {
         if (useRealtimeBranch()) {
-            return buildRealtimeText(realtimeSentences);
+            return buildRealtimeExportText(realtimeSentences, kind);
         }
         if (originRecognizeList == null || originRecognizeList.isEmpty()) {
             return "";
         }
-        return TransferTextParser.parseTranscript(originRecognizeList.toJSONString(), durationMs);
+        return buildOfflineExportText(originRecognizeList, kind);
+    }
+
+    /**
+     * 实时转写分支的导出正文，一行一段。
+     * <p>
+     * 与界面用的 {@link #buildRealtimeText} 的差别就是<b>不带时间戳、不带译文标识符</b>：
+     * 那两样在界面上有用（知道某句在第几分钟、哪行是译文），导出给下游做语料或对比时是噪声。
+     * <p>
+     * 这条分支<b>拿不到说话人</b>——{@code RecordTransferRealTimeResult} 里没有该字段。
+     *
+     * @param result 实时转写结果
+     * @param kind   导出原文还是译文
+     * @return 导出正文；无内容时返回空串
+     */
+    private String buildRealtimeExportText(@Nullable List<RecordTransferRealTimeResult> result,
+                                           @NonNull ExportKind kind) {
+        if (result == null || result.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (RecordTransferRealTimeResult item : result) {
+            String line = kind == ExportKind.ASR
+                    ? (TextUtils.isEmpty(item.text) ? nullToEmpty(item.asr) : item.text)
+                    : nullToEmpty(item.translate);
+            if (TextUtils.isEmpty(line)) {
+                continue;
+            }
+            sb.append(line.trim()).append('\n');
+        }
+        return sb.toString().trim();
+    }
+
+    /**
+     * 离线 / 云端分支的导出正文，一行一段，保留说话人前缀。
+     * <p>
+     * 不复用 {@link TransferTextParser#parseTranscript}：那个方法产出的是给界面看的文案
+     * （带时间戳、原文与译文交错），用正则把装饰剥回来是最脆的做法——正文里本来就可能出现
+     * {@code [00:12]} 或 {@code ➜} 这类字符，剥错了不报错，只会静默损坏数据。
+     * <p>
+     * <b>某个分段没有译文时该行直接跳过</b>，因此译文文件的行数不一定与原文文件对齐。
+     *
+     * @param list 转写分段的原始 JSON
+     * @param kind 导出原文还是译文
+     * @return 导出正文；无内容时返回空串
+     */
+    private String buildOfflineExportText(@NonNull JSONArray list, @NonNull ExportKind kind) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            JSONObject seg = list.getJSONObject(i);
+            if (seg == null) {
+                continue;
+            }
+            String body = kind == ExportKind.ASR
+                    ? seg.getString("transcript")
+                    : seg.getString("translation");
+            if (TextUtils.isEmpty(body)) {
+                continue;
+            }
+            String speaker = seg.getString("speaker");
+            if (!TextUtils.isEmpty(speaker)) {
+                sb.append(speaker).append(": ");
+            }
+            sb.append(body.trim()).append('\n');
+        }
+        return sb.toString().trim();
     }
 
     /**
@@ -1376,14 +1466,15 @@ public class NativeRecordDetailActivity extends NativeDemoBaseActivity {
      *
      * @return 形如 {@code 周会纪要.txt} 的文件名
      */
-    private String exportFileName() {
+    private String exportFileName(@NonNull ExportKind kind) {
         String name = sanitizeFileName(currentName);
         if (TextUtils.isEmpty(name)) {
             // 记录名可以为空，此时用默认名加主键，保证不同记录导出的文件不互相覆盖
             name = getString(R.string.native_detail_export_default_name)
                     + (recordTransferId > 0 ? "_" + recordTransferId : "");
         }
-        return name + EXPORT_FILE_SUFFIX;
+        // 类型后缀用英文：这份文件通常要发到 PC 上做后续处理，中文名跨平台传递容易出问题
+        return name + kind.fileSuffix + EXPORT_FILE_SUFFIX;
     }
 
     /**
