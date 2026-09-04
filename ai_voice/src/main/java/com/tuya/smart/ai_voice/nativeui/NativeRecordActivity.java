@@ -66,8 +66,8 @@ import java.util.Locale;
  * 同声传译          1        true        false         true（可选 needTts）
  * </pre>
  * 选中模式后自动套用该组合，「高级」区的开关允许在此基础上手动覆盖。
- * <b>{@code needAmplitude} 是唯一的例外</b>：本页各模式一律默认开启以便观察波形，
- * 与上表不符，理由见 {@link #applyModeDefaults()}。
+ * {@code needAmplitude} 同样跟随上表：现场/电话录音默认开启，实时转写/同声传译默认关闭，
+ * 理由见 {@link #applyModeDefaults()}。
  *
  * <h3>audioSource 的推导</h3>
  * 音源不是固定值，由<b>设备类型 + 是否电话模式</b>共同决定，见 {@link #resolveAudioSource()}。
@@ -242,24 +242,27 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
      */
     private enum RecordModeOption {
         /** 现场录音：只录音不转写。 */
-        LIVE(R.string.native_mode_live, RECORD_MODE_LIVE, false, false),
+        LIVE(R.string.native_mode_live, RECORD_MODE_LIVE, false, false, true),
         /** 电话录音：{@code recordMode=0}，未在通话中开录会返回错误码 10061。 */
-        PHONE(R.string.native_mode_phone, RECORD_MODE_PHONE, false, false),
+        PHONE(R.string.native_mode_phone, RECORD_MODE_PHONE, false, false, true),
         /** 实时转写：边录边出文字。 */
-        REALTIME(R.string.native_mode_realtime, RECORD_MODE_LIVE, true, false),
+        REALTIME(R.string.native_mode_realtime, RECORD_MODE_LIVE, true, false, false),
         /** 同声传译：实时转写 + 翻译，可选 TTS 把译文播回耳机。 */
-        SIMULTANEOUS(R.string.native_mode_simultaneous, RECORD_MODE_LIVE, true, true);
+        SIMULTANEOUS(R.string.native_mode_simultaneous, RECORD_MODE_LIVE, true, true, false);
 
         final int labelRes;
         final int recordMode;
         final boolean needAsr;
         final boolean needTranslate;
+        final boolean needAmplitude;
 
-        RecordModeOption(int labelRes, int recordMode, boolean needAsr, boolean needTranslate) {
+        RecordModeOption(int labelRes, int recordMode, boolean needAsr, boolean needTranslate,
+                         boolean needAmplitude) {
             this.labelRes = labelRes;
             this.recordMode = recordMode;
             this.needAsr = needAsr;
             this.needTranslate = needTranslate;
+            this.needAmplitude = needAmplitude;
         }
 
         /** @return 是否为电话录音模式，影响 Pro 耳机的音源取值 */
@@ -308,10 +311,10 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
         RecordModeOption mode = currentMode();
         applyingModeDefaults = true;
         optAsrSwitch.setChecked(mode.needAsr);
-        // 振幅回调各模式一律默认开启，便于观察波形。
-        // 实时转写 / 同声传译模式下建议关掉它（needAmplitude=false）以省电，
-        // 生产环境若不画波形，建议照此关闭。
-        optAmplitudeSwitch.setChecked(true);
+        // 实时转写 / 同声传译模式下必须关闭（needAmplitude=false）：逐帧振幅回调会拖慢
+        // 采集线程，实测造成语音中途断音、ASR 大量漏读（WER 约 31% → 6%）。
+        // 现场/电话录音没有实时转写链路，保留开启以便观察波形。
+        optAmplitudeSwitch.setChecked(mode.needAmplitude);
         optTranslateSwitch.setChecked(mode.needTranslate);
         optTtsSwitch.setChecked(false);
         // TTS 只在需要翻译时才有意义（把译文播回耳机）
@@ -733,8 +736,8 @@ public class NativeRecordActivity extends NativeDemoBaseActivity {
 
                     @Override
                     public void onError(String code, String error) {
-                toastRecordError(code);
-            }
+                        toastRecordError(code);
+                    }
                 });
     }
 

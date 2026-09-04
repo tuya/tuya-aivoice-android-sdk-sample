@@ -1,14 +1,8 @@
 package com.tuya.smart.ai_voice.nativeui.widget;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Application;
 import android.content.Context;
-import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.TextUtils;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -18,11 +12,6 @@ import com.thingclips.smart.ai.audio.utils.AudioInjectEventManager;
 import com.thingclips.smart.ai.audio.utils.PhoneMicAudioInputFactory;
 import com.thingclips.smart.earphone.enhance.api.bean.AudioFrontInputConfig;
 import com.thingclips.smart.home.sdk.ThingHomeSdk;
-import com.thingclips.smart.plugin.tuniaudiodetectmanager.ThingAudioDetectManagerNative;
-import com.thingclips.smart.sdk.api.IResultCallback;
-import com.tuya.smart.ai_voice.R;
-
-import java.lang.ref.WeakReference;
 
 /**
  * 灌流播放结束事件的唯一持有者与分发器。
@@ -38,14 +27,14 @@ import java.lang.ref.WeakReference;
  * <ul>
  *     <li>有页面订阅者（{@link #setPageConsumer}）→ 事件转给它，兜底不介入。
  *         Demo 的录音页要停录音并弹窗、批量页要静默进下一轮，两种行为都与兜底不同</li>
- *     <li>无订阅者且灌流处于开启状态 → 走兜底：停掉该设备的录音，并在栈顶 Activity 上弹窗告知</li>
+ *     <li>无订阅者且灌流处于开启状态 → 走兜底：弹个 toast 告知</li>
  *     <li>无订阅者且灌流未开启 → 什么都不做</li>
  * </ul>
  *
  * <h3>兜底存在的意义</h3>
  * 灌流配置是全局的，接入方在灌流设置页开启后，回到<b>自己的业务页面</b>录音同样会被灌流。
  * 但他的页面没有任何灌流状态提示（Demo 录音页那条横幅只在 Demo 里），
- * 音频播完后采集通道就没有数据了，界面上看不出任何异常。兜底弹窗就是为这种情况准备的。
+ * 音频播完后采集通道就没有数据了，界面上看不出任何异常。兜底 toast 就是为这种情况准备的。
  *
  * <h3>安装时机</h3>
  * {@link #install(Context)} 由 {@code NativeEntryActivity.start()} 调用——所有能开启灌流的
@@ -70,13 +59,9 @@ public final class InjectEndDispatcher {
 
     private final Handler main = new Handler(Looper.getMainLooper());
 
-    /** Application Context，供拿不到 Activity 时的 toast 兜底使用。 */
+    /** Application Context。兜底 toast 不需要 window token，无须挂到某个 Activity 上。 */
     @Nullable
     private Context appContext;
-
-    /** 栈顶 Activity。用弱引用持有，避免 Activity 被这个进程级单例吊住。 */
-    @Nullable
-    private WeakReference<Activity> topActivity;
 
     /** 当前的页面级消费者。非空时兜底不执行。 */
     @Nullable
@@ -92,10 +77,10 @@ public final class InjectEndDispatcher {
     }
 
     /**
-     * 安装：注册 Activity 生命周期回调以追踪栈顶页面，并占住 SDK 的灌流结束事件槽位。
+     * 安装：占住 SDK 的灌流结束事件槽位。
      * <p>
-     * 幂等，重复调用只有第一次生效。生命周期回调注册后<b>不注销</b>——它只用弱引用记一个
-     * 栈顶 Activity，开销可忽略，而按灌流开关去注销会引入「关了又开、监听没了」的时序坑。
+     * 幂等，重复调用只有第一次生效。监听注册后<b>不注销</b>——
+     * 按灌流开关去注销会引入「关了又开、监听没了」的时序坑。
      *
      * @param context 任意 Context，内部取 {@code getApplicationContext()}
      */
@@ -103,13 +88,8 @@ public final class InjectEndDispatcher {
         if (installed) {
             return;
         }
-        Context app = context.getApplicationContext();
-        if (!(app instanceof Application)) {
-            return;
-        }
         installed = true;
-        appContext = app;
-        ((Application) app).registerActivityLifecycleCallbacks(new TopActivityTracker());
+        appContext = context.getApplicationContext();
         AudioInjectEventManager.INSTANCE.setOnAudioInjectEndListener(
                 deviceId -> main.post(() -> dispatch(deviceId)));
         //tuya log
@@ -157,99 +137,8 @@ public final class InjectEndDispatcher {
         if (config == null) {
             return;
         }
-        stopRecording(deviceId);
-        showEndDialog(config.getReplaceCaptureData().getFileName());
-    }
-
-    /** 文件播完后采集通道不再有数据，继续录只会得到静音。 */
-    private void stopRecording(@NonNull String deviceId) {
-        ThingAudioDetectManagerNative.getInstance().stopRecordTransfer(deviceId,
-                new IResultCallback() {
-                    @Override
-                    public void onSuccess() {
-                    }
-
-                    @Override
-                    public void onError(String code, String error) {
-                        // 多数情况是「本来就没在录」，无需打扰使用者
-                    }
-                });
-    }
-
-    /**
-     * 在栈顶 Activity 上弹窗告知。
-     * <p>
-     * <b>刻意使用 framework 的 {@link AlertDialog} 而不是 AppCompat 版</b>：
-     * 这个弹窗会出现在接入方的 Activity 上，宿主主题不可控，
-     * AppCompat 版在非 {@code Theme.AppCompat} 主题上会直接抛
-     * {@code IllegalStateException}。样式差异对一个调试提示无所谓，不崩才是第一位的。
-     *
-     * @param fileName 当前灌流的文件名，用于在多语料轮测时确认灌的是哪个
-     */
-    private void showEndDialog(@Nullable String fileName) {
-        String name = TextUtils.isEmpty(fileName) ? "-" : fileName;
-        Activity activity = topActivity == null ? null : topActivity.get();
-        if (activity == null || activity.isFinishing() || isDestroyed(activity)) {
-            // 没有可用的窗口（应用在后台，或栈顶页面正在销毁）。
-            // 弹窗需要有效的 window token，此时 show 会抛 BadTokenException，退回 toast。
-            if (appContext != null) {
-                Toast.makeText(appContext,
-                        appContext.getString(R.string.native_inject_end_toast, name),
-                        Toast.LENGTH_LONG).show();
-            }
-            return;
-        }
-        new AlertDialog.Builder(activity)
-                .setTitle(R.string.native_inject_end_dialog_title)
-                .setMessage(activity.getString(R.string.native_inject_end_dialog_message, name))
-                .setPositiveButton(R.string.native_inject_end_dialog_ok, null)
-                .setCancelable(true)
-                .show();
-    }
-
-    private static boolean isDestroyed(@NonNull Activity activity) {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && activity.isDestroyed();
-    }
-
-    // ===================== 栈顶追踪 =====================
-
-    /**
-     * 只为拿到「现在哪个 Activity 在前台」，用于弹窗的宿主。
-     * <p>
-     * 弱引用持有，Activity 销毁后自然可回收，本单例不会造成泄漏。
-     */
-    private final class TopActivityTracker implements Application.ActivityLifecycleCallbacks {
-
-        @Override
-        public void onActivityResumed(@NonNull Activity activity) {
-            topActivity = new WeakReference<>(activity);
-        }
-
-        @Override
-        public void onActivityPaused(@NonNull Activity activity) {
-            if (topActivity != null && topActivity.get() == activity) {
-                topActivity = null;
-            }
-        }
-
-        @Override
-        public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
-        }
-
-        @Override
-        public void onActivityStarted(@NonNull Activity activity) {
-        }
-
-        @Override
-        public void onActivityStopped(@NonNull Activity activity) {
-        }
-
-        @Override
-        public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
-        }
-
-        @Override
-        public void onActivityDestroyed(@NonNull Activity activity) {
+        if (appContext != null) {
+            Toast.makeText(appContext, "Record End", Toast.LENGTH_LONG).show();
         }
     }
 }

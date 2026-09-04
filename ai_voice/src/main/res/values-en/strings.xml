@@ -455,7 +455,6 @@
 
 Injection is still enabled, so the next recording will use the same file. To restore real microphone capture, turn it off in Audio injection.</string>
     <string name="native_inject_end_dialog_ok">Got it</string>
-    <string name="native_inject_end_toast">The injected audio "%1$s" finished playing; the recording was stopped automatically and injection is still enabled</string>
 
     <!-- ===== Batch injection test ===== -->
     <string name="native_batch_title">Batch injection test</string>

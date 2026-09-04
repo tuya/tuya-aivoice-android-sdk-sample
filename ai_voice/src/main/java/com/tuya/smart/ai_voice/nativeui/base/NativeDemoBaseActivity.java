@@ -60,7 +60,7 @@ public abstract class NativeDemoBaseActivity extends AppCompatActivity {
     /** 音频类设备的产品配置 meta key，用于从 configMetas 中解析 product_type。 */
     private static final String AUDIO_PRODUCT_META_KEY = "tyabiw4jrd";
 
-    /** SDK 单例入口，接入者只需面向它编程。 */
+    /** SDK 单例入口，接入者只需面向它编程。任意线程调用均安全（内部在专用后台线程初始化）。 */
     protected final ThingAudioDetectManagerNative manager =
             ThingAudioDetectManagerNative.getInstance();
 
