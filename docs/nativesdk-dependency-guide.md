@@ -12,10 +12,9 @@
 ```gradle
 // 根 build.gradle
 ext {
-    sdk_version          = '7.8.0'
-    ipc_sdk_version 	   = '7.8.1'
-    biz_bom_version      = '7.8.19'
-    audio_engine_version = '7.8.1'
+    sdk_version     = '7.11.0'
+    ipc_sdk_version = '7.11.1'
+    biz_bom_version = '7.11.19'
 }
 ```
 
@@ -26,15 +25,15 @@ dependencies {
 
     api "com.thingclips.smart:thingsmart:${sdk_version}"
     api "com.thingclips.smart:thingsmart-bizbundle-wearkit"
+    api "com.thingclips.smart:thingsmart-bizbundle-panelmore"
     api "com.thingclips.smart:thingsmart-bizbundle-family"
-    api "com.thingclips.smart:thingsmart-bizbundle-basekit"
     api "com.thingclips.smart:thingsmart-ipcsdk:${ipc_sdk_version}"
 }
 ```
 
 以上组件均为必需，缺失会导致编译失败或运行时异常，请勿删减。
 
-后 7 个组件不由 BOM 管理版本，需按上述版本号显式声明。其余组件版本由
+上述组件中，`thingsmart` 与 `thingsmart-ipcsdk` 需按版本号显式声明；其余组件版本由
 `enforcedPlatform` 统一仲裁，可通过
 `./gradlew :app:dependencies --configuration debugRuntimeClasspath` 查看生效版本。
 

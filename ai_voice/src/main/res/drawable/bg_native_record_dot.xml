@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 录音室计时行的状态圆点，颜色由代码按录音状态 tint -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/ai_voice_btn_disable" />
+</shape>

@@ -2,7 +2,7 @@
 
 | 项 | 内容 |
 |---|---|
-| Demo 页面 | [`NativeOfflineFileActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeOfflineFileActivity.java) |
+| Demo 页面 | [`NativeOfflineFileActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeOfflineFileActivity.kt) |
 | 全局约定 | [接入指南](./README.md) |
 
 ---
@@ -201,6 +201,10 @@ manager.unRegisterFileProgressCallback(callback);   // 传同一实例
 | `2` | 手机已连上设备热点 | 建链完成，按 AP 速度展示进度 |
 
 同时要盯 `errorCode`：非 `0` 表示建链失败，此时 `apConnectState` 可能仍停在 `0`。
+
+切到 AP 时系统可能弹出 WiFi 授权框。宿主必须把自身 `onActivityResult` 的结果原样透传给
+SDK 的 `onActivityResult`（见[模块 5](./module-05-audio-import.md)），否则授权结果无法回灌，
+建链会一直停在 `apConnectState == 0`。
 
 ### 退出前切回 BLE
 

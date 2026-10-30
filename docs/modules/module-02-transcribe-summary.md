@@ -2,8 +2,8 @@
 
 | 项 | 内容 |
 |---|---|
-| Demo 页面 | [`NativeRecordDetailActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordDetailActivity.java) |
-| 错误码映射 | [`RecordErrorCode`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/widget/RecordErrorCode.java) |
+| Demo 页面 | [`NativeRecordDetailActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordDetailActivity.kt) |
+| 错误码映射 | [`RecordErrorCode`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/widget/RecordErrorCode.kt) |
 | 全局约定 | [接入指南](./README.md) |
 
 ---
@@ -163,7 +163,7 @@ obj.put("summary", editedBody);
 manager.saveRecordTransferSummaryResult(recordTransferId, obj.toJSONString(), callback);
 ```
 
-Demo 中的实现见 [`TransferTextParser.parseSummaryBody` / `writeSummaryBody`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/widget/TransferTextParser.java)。
+Demo 中的实现见 [`TransferTextParser.parseSummaryBody` / `writeSummaryBody`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/widget/TransferTextParser.kt)。
 
 ---
 
@@ -316,7 +316,7 @@ manager.removeTransferListener(listener);
 
 总结、转写、文件名三者都应本地 + 云端**双写**，Demo 已全部对齐
 （另含已读状态），实现见
-[`AudioContentBusiness`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/business/AudioContentBusiness.java)。
+[`AudioContentBusiness`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/business/AudioContentBusiness.kt)。
 
 ### 编辑正文必须留一份原始结构
 
@@ -344,7 +344,7 @@ manager.saveRecordTransferRecognizeResult(recordTransferId, origin.toJSONString(
 不存在分段映射问题。
 
 调用范式参考 Demo 里已有的
-[`AudioContentBusiness`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/business/AudioContentBusiness.java)
+[`AudioContentBusiness`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/business/AudioContentBusiness.kt)
 （它目前实现的是改名与已读标记，正文编辑可照同样写法追加）：
 
 ```java

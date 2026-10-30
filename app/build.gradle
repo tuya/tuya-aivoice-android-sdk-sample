@@ -7,9 +7,9 @@ android {
     defaultConfig {
         applicationId rootProject.ext.applicationId
         namespace "com.tuya.smart.bizubundle.demo"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 36
-        versionCode 1
+        versionCode 900
         versionName "1.0"
         multiDexEnabled true
 

@@ -1,291 +1,232 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  模块 1 · 录音控制 + 模块 7 · 设备能力。
-  顶部栏与事件日志区由 NativeDemoBaseActivity 提供，此处仅内容区。
+  录音控制页（录音室风格，与生产小程序 Simultaneous 容器同构）。
+  模式由入口弹窗经 extra 锁定，本页没有模式切换 UI：
+  - 白卡片：计时行（状态点 + 时长 + 设备能力）+ 内容区（音频模式=振幅波形 / 文字模式=转写流 / 空态提示）
+    + 卡片底行（语言文字链 + TTS 开关，按模式显隐）
+  - 底部控制条：设备切换入口 + 开始/暂停/继续大胶囊 + 完成
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <!--
-      灌流提示条。开启灌流后波形与转写全部来自音频文件而非麦克风，
-      不显式提示极易被误判成 SDK 异常。点击进入灌流设置页。
-    -->
     <TextView
         android:id="@+id/tv_inject_banner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:background="@color/ai_voice_tag_bg"
-        android:padding="12dp"
-        android:textColor="@color/ai_voice_logout_text"
-        android:textSize="12sp"
-        android:textStyle="bold"
+        style="@style/NativeInfoBlock"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="12dp"
         android:visibility="gone" />
 
-    <!-- ===== 配置区 ===== -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="12dp"
+        android:layout_weight="1"
         app:cardBackgroundColor="@color/ai_voice_action_bg"
-        app:cardCornerRadius="18dp"
-        app:cardElevation="2dp">
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="14dp">
 
-            <!-- 录音模式：决定 recordMode / needAsr / needTranslate / needAmplitude 的组合 -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/native_record_mode"
-                android:textColor="@color/ai_voice_text_secondary"
-                android:textSize="12sp" />
-
-            <Spinner
-                android:id="@+id/native_record_mode"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp" />
-
-            <!-- 设备选择：决定 audioSource 的推导结果 -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="@string/native_device_id"
-                android:textColor="@color/ai_voice_text_secondary"
-                android:textSize="12sp" />
-
-            <Spinner
-                android:id="@+id/native_device_id"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp" />
-
-            <!-- 当前参数摘要 -->
-            <TextView
-                android:id="@+id/native_summary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@color/ai_voice_tag_bg"
-                android:padding="10dp"
-                android:textColor="@color/ai_voice_text_primary"
-                android:textSize="12sp" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="0.5dp"
-                android:layout_marginTop="8dp"
-                android:background="@color/ai_voice_divider" />
-
-            <!-- 高级：模式已给出默认组合，此处允许手动覆盖 -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/native_advanced_section"
-                android:textColor="@color/ai_voice_text_secondary"
-                android:textSize="12sp" />
-
+            <!-- 计时行：状态点 + 时长 + 设备能力（模块 7） -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <CheckBox
-                    android:id="@+id/native_opt_asr"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/native_opt_asr"
-                    android:textSize="13sp" />
-
-                <CheckBox
-                    android:id="@+id/native_opt_amplitude"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/native_opt_amplitude"
-                    android:textSize="13sp" />
-
-                <CheckBox
-                    android:id="@+id/native_opt_translate"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/native_opt_translate"
-                    android:textSize="13sp" />
-            </LinearLayout>
-
-            <!-- TTS：同传时把译文播回耳机 -->
-            <CheckBox
-                android:id="@+id/native_opt_tts"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/native_opt_tts"
-                android:textSize="13sp" />
-
-            <!-- 语言 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/native_source_lang"
-                        android:textColor="@color/ai_voice_text_secondary"
-                        android:textSize="12sp" />
-
-                    <Spinner
-                        android:id="@+id/native_source_lang"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/native_target_lang"
-                        android:textColor="@color/ai_voice_text_secondary"
-                        android:textSize="12sp" />
-
-                    <Spinner
-                        android:id="@+id/native_target_lang"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
-    <!-- ===== 模块 7 · 设备能力状态条 ===== -->
-    <TextView
-        android:id="@+id/native_device_ability"
-        style="@style/NativeInfoBlock"
-        android:text="@string/native_ability_empty" />
-
-    <!-- ===== 状态 + 振幅 ===== -->
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        app:cardBackgroundColor="@color/ai_voice_action_bg"
-        app:cardCornerRadius="18dp"
-        app:cardElevation="2dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                <View
+                    android:id="@+id/native_state_dot"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/bg_native_record_dot" />
 
                 <TextView
-                    android:id="@+id/native_status"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/native_status_0"
-                    android:textColor="@color/ai_voice_status_recording"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/native_duration"
+                    android:id="@+id/native_timer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
                     android:text="@string/native_duration_zero"
+                    android:textColor="@color/ai_voice_text_primary"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/native_device_ability"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:textColor="@color/ai_voice_text_secondary"
-                    android:textSize="14sp" />
+                    android:textSize="11sp" />
             </LinearLayout>
 
-            <com.tuya.smart.ai_voice.nativeui.widget.AmplitudeWaveView
-                android:id="@+id/native_wave"
+            <!-- 内容区：现场/电话=振幅波形；实时/同传=转写流；空闲=空态提示 -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="96dp"
-                android:layout_marginTop="12dp" />
+                android:layout_height="0dp"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1">
+
+                <com.tuya.smart.ai_voice.nativeui.widget.AmplitudeWaveView
+                    android:id="@+id/native_wave"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone" />
+
+                <ScrollView
+                    android:id="@+id/native_transcript_scroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/native_realtime_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:lineSpacingExtra="3dp"
+                        android:textColor="@color/ai_voice_text_secondary"
+                        android:textSize="15sp" />
+                </ScrollView>
+
+                <TextView
+                    android:id="@+id/native_empty_state"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:textColor="@color/ai_voice_text_secondary"
+                    android:textSize="14sp" />
+            </FrameLayout>
+
+            <!-- 卡片底行：语言链（点击弹语言选择）+ TTS 开关 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/native_lang_chain"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="4dp">
+
+                    <TextView
+                        android:id="@+id/native_lang_source"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/ai_voice_text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/native_lang_arrow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_marginEnd="6dp"
+                        android:text="→"
+                        android:textColor="@color/ai_voice_text_secondary"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/native_lang_target"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/ai_voice_text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text=" ›"
+                        android:textColor="@color/ai_voice_text_secondary"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/native_tts_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/ai_voice_tag_bg"
+                    android:padding="6dp"
+                    android:textColor="@color/ai_voice_tab_selected"
+                    android:textSize="12sp" />
+            </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- ===== 控制按钮 ===== -->
+    <!-- 底部控制条 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:orientation="horizontal">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="20dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="12dp">
 
-        <Button
-            android:id="@+id/native_btn_start"
-            style="@style/NativeActionButton"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:text="@string/native_start" />
+        <ImageView
+            android:id="@+id/native_device_entry"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/native_device_id"
+            android:padding="6dp"
+            android:src="@drawable/ic_ai_device" />
 
-        <Button
-            android:id="@+id/native_btn_pause"
-            style="@style/NativeActionButton"
+        <Space
             android:layout_width="0dp"
-            android:layout_marginStart="6dp"
-            android:layout_weight="1"
-            android:text="@string/native_pause" />
+            android:layout_height="1dp"
+            android:layout_weight="1" />
 
-        <Button
-            android:id="@+id/native_btn_resume"
-            style="@style/NativeActionButton"
-            android:layout_width="0dp"
-            android:layout_marginStart="6dp"
-            android:layout_weight="1"
-            android:text="@string/native_resume" />
+        <TextView
+            android:id="@+id/native_capsule"
+            android:layout_width="120dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_native_record_capsule"
+            android:gravity="center"
+            android:text="@string/native_start"
+            android:textColor="@color/ai_voice_text_primary"
+            android:textSize="15sp" />
 
-        <Button
-            android:id="@+id/native_btn_stop"
-            style="@style/NativeActionButtonDanger"
+        <Space
             android:layout_width="0dp"
-            android:layout_marginStart="6dp"
-            android:layout_weight="1"
-            android:text="@string/native_stop" />
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/native_done"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="6dp"
+            android:text="@string/native_record_done"
+            android:textColor="@color/ai_voice_btn_disable"
+            android:textSize="15sp" />
     </LinearLayout>
-
-    <Button
-        android:id="@+id/native_btn_switch_channel"
-        style="@style/NativeActionButton"
-        android:text="@string/native_switch_channel" />
-
-    <!-- ===== 实时转写 ===== -->
-    <TextView
-        style="@style/NativeFieldLabel"
-        android:text="@string/native_realtime" />
-
-    <TextView
-        android:id="@+id/native_realtime_text"
-        style="@style/NativeInfoBlock"
-        android:minHeight="120dp" />
 </LinearLayout>

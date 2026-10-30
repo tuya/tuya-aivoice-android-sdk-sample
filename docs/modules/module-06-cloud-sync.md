@@ -2,8 +2,8 @@
 
 | 项 | 内容 |
 |---|---|
-| Demo 页面 | [`NativeCloudSyncActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeCloudSyncActivity.java) |
-| 开关写入 | [`CloudSyncSwitchBusiness`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/business/CloudSyncSwitchBusiness.java) |
+| Demo 页面 | [`NativeCloudSyncActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeCloudSyncActivity.kt) |
+| 开关写入 | [`CloudSyncSwitchBusiness`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/business/CloudSyncSwitchBusiness.kt) |
 | 全局约定 | [接入指南](./README.md) |
 
 ---
@@ -131,7 +131,7 @@ SDK 会推 `onRecordListSyncSuccess`，列表在那里再全量重拉一次。
 
 > Demo 里两种都有：云同步页的「立即同步」按钮只为便于逐步观察，**不代表推荐的交互**；
 > 录音列表页的下拉刷新才是推荐做法，见
-> [`NativeRecordListActivity.onPullToRefresh`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordListActivity.java)。
+> [`NativeRecordListActivity.onPullToRefresh`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordListActivity.kt)。
 
 #### 怎么知道云端数据到手了
 

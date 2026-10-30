@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- f2f 气泡卡片：白底圆角，同生产 DualChannelASRList 的 textBox -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/ai_voice_action_bg" />
+    <corners android:radius="16dp" />
+</shape>

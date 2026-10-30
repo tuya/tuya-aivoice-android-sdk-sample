@@ -2,15 +2,16 @@
 
 | 项 | 内容 |
 |---|---|
-| Demo 页面 | [`NativeRecordActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordActivity.java) |
-| 错误码映射 | [`RecordErrorCode`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/widget/RecordErrorCode.java) |
+| Demo 页面 | [`NativeRecordActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordActivity.kt) |
+| TTS 回放示例 | [面对面翻译 TTS 设置、缓存与回放](../samples/face-to-face-tts-playback.md) |
+| 错误码映射 | [`RecordErrorCode`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/widget/RecordErrorCode.kt) |
 | 全局约定 | [接入指南](./README.md) |
 
 ---
 
 ## 一、能力概述
 
-录音的完整生命周期：开始、暂停、恢复、停止，以及录音中动态改参、切换收音通道。
+录音的完整生命周期：开始、暂停、恢复、停止，以及录音中动态改参。
 
 设备能力（蓝牙连接状态、电量、信噪比）也在本模块——它们不是独立功能，而是录音流程的组成部分：
 蓝牙没连上不能开录，电量与信噪比是录音中的状态提示。
@@ -27,7 +28,6 @@
 | `pauseRecordTransfer` | 暂停 | `IResultCallback` |
 | `resumeRecordTransfer` | 恢复 | `IResultCallback` |
 | `stopRecordTransfer` | 停止 | `IResultCallback` |
-| `switchRecordChannel` | 切换收音通道 | `IResultCallback` |
 | `getEarPhoneBTConntectedStatus` | 查询耳机蓝牙连接状态 | `IRecordCallBack<BTConnectedStatus>` |
 
 事件监听：`IRecordListener`（录音核心事件）、`INativeAbilityListener`（设备能力）。
@@ -84,13 +84,13 @@ sequenceDiagram
 
 ## 四、接口详解
 
-### `recordTransferTask(String deviceId)`
+### `recordTransferTask(@Nullable String deviceId)`
 
-查询当前设备是否存在进行中的录音任务。**同步返回**，无任务返回 `null`。
+查询是否存在进行中的录音任务。**同步返回**，无任务返回 `null`。
 
 | 参数 | 类型 | 必填 | 说明 |
 |---|---|---|---|
-| `deviceId` | `String` | 是 | 设备 ID；手机本地录音传 `"PHONE"` |
+| `deviceId` | `String` | 否 | 设备 ID；手机录音传 `"PHONE"`。传 `null` 或空串表示不限设备，可查询当前 App 是否有任意录音任务 |
 
 **返回**：[`RecordStatusBean`](#recordstatusbean)，可能为 `null`。
 
@@ -141,20 +141,6 @@ void stopRecordTransfer(String deviceId, IResultCallback callback)
 
 停止的**真正结束以 `onRecordFinish` / `onRecordErrorFinish` 事件为准**，
 `stopRecordTransfer` 的 `onSuccess` 只代表停止指令已下发。
-
----
-
-### `switchRecordChannel(String deviceId, int recordChannel, IResultCallback callback)`
-
-切换收音通道。
-
-| 参数 | 类型 | 必填 | 说明 |
-|---|---|---|---|
-| `deviceId` | `String` | 是 | 设备 ID |
-| `recordChannel` | `int` | 是 | `0` 未指定 / `1` BT（耳机）/ `2` Micro（手机麦） |
-| `callback` | `IResultCallback` | 否 | 结果回调 |
-
-> 该接口在 AI 笔记业务中从未被调用，流程未经验证，不建议接入。
 
 ---
 
@@ -213,13 +199,14 @@ manager.removeNativeAbilityListener(listener);
 | 字段 | 类型 | 默认 | 说明 |
 |---|---|---|---|
 | `updateParams` | `Boolean` | `false` | 是否为「更新参数」。调 `updateParams` 时 SDK 内部置 `true`，调用方无需设置 |
-| `audioSource` | `Integer` | `null` | 音频输入源，取值见下表。**必须与 `audioSourceList` 同时设置** |
-| `audioSourceList` | `List<Integer>` | `null` | 多路音频源。底层按 `audioSourceList[0]` 取录音类型，为空会导致启动失败 |
-| `recordMode` | `Integer` | `null` | `0` 电话 / `1` 现场（会议）/ `2` 面对面 |
-| `f2fChannel` | `Integer` | `null` | 面对面通道：`0` 默认 / `1` 左 / `2` 右。仅 `recordMode=2` 时有效 |
+| `audioSource` | `Integer` | `null` | 音频输入源，取值见下表。与 `audioSourceList` 设其一即可，SDK 会补齐另一个 |
+| `audioSourceList` | `List<Integer>` | `null` | 多路音频源，底层按 `audioSourceList[0]` 取录音类型。与 `audioSource` 互为兜底 |
+| `recordMode` | `Integer` | `null` | `0` 电话 / `1` 现场（会议）/ `2` 面对面（Pro 耳机）/ `3` 面对面（入门版耳机） |
+| `f2fChannel` | `Integer` | `null` | 面对面方向：`0` 左 / 朋友，`1` 右 / 我。用于 `recordMode=3` |
 | `needAsr` | `boolean` | `false` | 是否开启实时转写 |
 | `needTranslate` | `boolean` | `false` | 是否开启翻译。为 `true` 时 `targetLanguage` 必填 |
 | `needTts` | `boolean` | `false` | 是否把译文合成语音播回。为 `true` 时需设置 `ttsConfig` |
+| `ttsPlaybackMode` | `TtsPlaybackMode` | `null` | TTS 播放策略：`IMMEDIATE` 立即播放 / `DEFERRED` 只缓存、不实时播放 / `PLAY_AND_CACHE` 实时播放并缓存。`null` 等同立即播放 |
 | `needAmplitude` | `boolean` | `false` | 是否推送振幅回调。不画波形时关掉可省电 |
 | `originalLanguage` | `String` | `null` | 源语言，如 `"zh"`。开启 ASR 或翻译时必填 |
 | `targetLanguage` | `String` | `null` | 目标语言，如 `"en"`。开启翻译时必填 |
@@ -433,8 +420,8 @@ Pro / 卡片等设备音源配 `DEVICE`。
 2. 进页调 `recordTransferTask(deviceId)` 恢复进行中的任务。
    实时转写模式还要调 `getRecordTransferRealTimeResult(recordId)` 把已转写的句子补回来，
    否则界面上是空白的
-3. 模式决定参数组合，`audioSource` 按设备类型推导，
-   `audioSource` 与 `audioSourceList` 同时设置
+3. 模式决定参数组合，`audioSource` 按设备类型选择；
+   `audioSource` 与 `audioSourceList` 设其一即可
 4. 控制类操作加锁防连点；停止前判状态
 5. `updateParams` 的 `onSuccess` 立即返回，**不代表参数已生效**，
    真正生效以 `onRecordStatusUpdate` 为准
@@ -446,7 +433,10 @@ Pro / 卡片等设备音源配 `DEVICE`。
 
 ## 附：本模块未覆盖的能力
 
+面对面翻译（`recordMode=3` + `f2fChannel`）见
+[`NativeFaceToFaceActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeFaceToFaceActivity.kt)
+与 [TTS 设置、缓存与回放示例](../samples/face-to-face-tts-playback.md)。
+
 | 能力 | 说明 |
 |---|---|
-| 面对面翻译（`recordMode=2` + `f2fChannel`） | 属于 AI Translate 业务，本 Demo 不实现 |
 | `Audio3AConfig` / `autoRecognize` / `startLivingStatus` | AI 笔记业务未使用，字段说明见[第五节](#五数据结构) |

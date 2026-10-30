@@ -39,7 +39,6 @@
     <string name="native_pause">Pause</string>
     <string name="native_resume">Resume</string>
     <string name="native_stop">Stop</string>
-    <string name="native_switch_channel">Switch Channel</string>
     <string name="native_realtime">Real-time Transcription</string>
     <string name="native_status_0">Idle</string>
     <string name="native_status_1">Recording</string>
@@ -202,7 +201,7 @@
     <string name="native_api_list_hint">Entry point for every Native demo page. Items follow the module numbering in docs/modules/; each page demonstrates one module end to end, including listener registration and removal. Greyed-out items cannot be opened from here — see their descriptions.</string>
     <string name="native_api_entry_record_title">Module 1 · Recording control and device ability</string>
     <string name="native_api_entry_record_desc">A full recording lifecycle: start / pause / resume / stop, changing params while recording, switching the capture channel, plus Bluetooth state, battery and SNR</string>
-    <string name="native_api_entry_record_api">startAudioRecording / pauseRecordTransfer / resumeRecordTransfer / stopRecordTransfer / updateParams / switchRecordChannel</string>
+    <string name="native_api_entry_record_api">startAudioRecording / pauseRecordTransfer / resumeRecordTransfer / stopRecordTransfer / updateParams</string>
     <string name="native_api_entry_detail_title">Module 2 · Transcription / summary (open from file management)</string>
     <string name="native_api_entry_detail_desc">The detail page needs a recordId, so it cannot be opened from here. Open "Module 3 · File management" and tap any recording.</string>
     <string name="native_api_entry_detail_api">getRecordTransferRealTimeResult / startTransfer / getSummary / operateRecordShareLink</string>
@@ -423,6 +422,55 @@
     <string name="native_detail_export_chooser">Share transcript</string>
     <string name="native_detail_export_default_name">Transcript</string>
 
+    <string name="native_tts_on">TTS: on</string>
+    <string name="native_tts_off">TTS: off</string>
+    <string name="native_record_done">Done</string>
+    <string name="native_room_empty_live">Live recording captures audio only, no live text. The waveform reacts once you start.</string>
+    <string name="native_room_empty_phone">Call recording must start during a call; otherwise it fails with error 10061.</string>
+    <string name="native_room_empty_realtime">Recognized text appears here in real time once recording starts.</string>
+    <string name="native_room_empty_simultaneous">Original and translated text appear here in real time once simultaneous interpretation starts.</string>
+    <string name="native_mode_f2f">Face-to-face translation</string>
+    <string name="native_mode_desc_live">Audio only, no transcription (recordMode=1)</string>
+    <string name="native_mode_desc_phone">Record a call (recordMode=0, must start during a call)</string>
+    <string name="native_mode_desc_realtime">Live text as you speak; source language only (recordMode=1 + needAsr)</string>
+    <string name="native_mode_desc_simultaneous">Live transcription + translation, source/target languages + optional TTS (recordMode=1 + translate)</string>
+    <string name="native_mode_desc_f2f">Two people take turns; each direction is recognized and translated separately (recordMode=3, phone mic)</string>
+    <string name="native_record_mode_dialog_title">Start recording</string>
+    <string name="native_f2f_title">Face-to-face translation</string>
+    <string name="native_f2f_friend_lang">Friend\'s language</string>
+    <string name="native_f2f_my_lang">My language</string>
+    <string name="native_f2f_swap">⇄</string>
+    <string name="native_f2f_friend_speak">Friend speaks</string>
+    <string name="native_f2f_my_speak">I speak</string>
+    <string name="native_f2f_stop">Finish and save</string>
+    <string name="native_f2f_hint">Tap whoever is speaking. Switching direction restarts the recording with new params (a new session; f2fChannel and the language pair swap together) — switch between sentences.</string>
+    <string name="native_f2f_input_phone">Input: phone ▾</string>
+    <string name="native_f2f_input_earphone">Input: earphone ▾</string>
+    <string name="native_f2f_output_phone">Output: speaker ▾</string>
+    <string name="native_f2f_output_earphone">Output: earphone ▾</string>
+    <string name="native_f2f_playback_immediate">Play: live ▾</string>
+    <string name="native_f2f_playback_deferred">Play: cache ▾</string>
+    <string name="native_f2f_playback_cache">Play: live+cache ▾</string>
+    <string name="native_f2f_pick_input">Capture source</string>
+    <string name="native_f2f_pick_output">Translation output</string>
+    <string name="native_f2f_pick_playback">TTS playback</string>
+    <string name="native_f2f_pick_phone_mic">Phone microphone</string>
+    <string name="native_f2f_pick_earphone_mic">Entry earphone microphone</string>
+    <string name="native_f2f_pick_phone_speaker">Phone speaker</string>
+    <string name="native_f2f_pick_bt_earphone">Bluetooth earphone (system channel)</string>
+    <string name="native_f2f_pick_playback_immediate">Play immediately</string>
+    <string name="native_f2f_pick_playback_deferred">Cache only (for replay)</string>
+    <string name="native_f2f_pick_playback_cache">Play and cache</string>
+    <string name="native_f2f_pick_earphone_title">Pick an entry earphone</string>
+    <string name="native_f2f_no_earphone">No entry earphone in this home; add one first</string>
+    <string name="native_f2f_play_tts">Play this translation</string>
+    <string name="native_f2f_tts_not_ready">The speech for this sentence is not ready yet</string>
+    <string name="native_f2f_tts_play_failed">Failed to play the speech</string>
+    <string name="native_f2f_back_title">Finish recording</string>
+    <string name="native_f2f_back_message">A recording is in progress; going back finishes and saves it.</string>
+    <string name="native_f2f_back_continue">Keep recording</string>
+    <string name="native_f2f_toast_same_direction">Already recording in this direction</string>
+    <string name="native_f2f_toast_stopped">Recording finished and saved</string>
     <!-- ===== Audio injection settings ===== -->
     <string name="native_inject_title">Audio injection</string>
     <string name="native_inject_hint">Audio injection is a test-only capability: it replaces microphone capture with a given audio file so the transcription / translation pipeline runs on reproducible input.\nThree constraints: (1) it only affects the phone MIC channel, not the Bluetooth earphone channel; (2) only 16kHz / mono / 16bit integer-PCM wav is supported; (3) it takes effect on the next recording only — changing it mid-recording does not affect the current one.\nThe config lives in SDK memory and is not persisted, so it is gone after a process restart.</string>

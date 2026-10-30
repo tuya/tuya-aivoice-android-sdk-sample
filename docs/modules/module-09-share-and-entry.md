@@ -2,8 +2,8 @@
 
 | 项 | 内容 |
 |---|---|
-| 快捷入口 Demo 页 | [`NativeQuickEntryActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeQuickEntryActivity.java) |
-| 分享链接 Demo 位置 | [`NativeRecordActionSheet`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordActionSheet.java)（录音详情页「更多操作」） |
+| 快捷入口 Demo 页 | [`NativeQuickEntryActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeQuickEntryActivity.kt) |
+| 分享链接 Demo 位置 | [`NativeRecordActionSheet`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordActionSheet.kt)（录音详情页「更多操作」） |
 | 全局约定 | [接入指南](./README.md) |
 
 ---
@@ -46,14 +46,27 @@
 | `expireTime` | `long` | 是 | **绝对**到期时间戳（毫秒），不是时长 |
 | `shareStatus` | `int` | 是 | `1` 开启分享 / `2` 关闭分享 |
 | `password` | `String` | 否 | 访问密码，传 `null` 表示不设密码 |
-| `callback` | `IOperateRecordShareLinkResult` | 否 | `onSuccess(String link)` 返回链接地址 |
+| `callback` | `IOperateRecordShareLinkResult` | 否 | `onSuccess(String)` 返回原始 JSON，需自行解析 |
 
-`onSuccess` 的 `link` 只在 `shareStatus == 1` 时有值；关闭分享时可能为空串。
-关闭后原链接**立即失效**，再次开启会生成新链接。
+`onSuccess` 收到的是 JSON 字符串，常规字段为 `title` / `message` / `link` / `validDate`。
+`link` 只在开启分享时可使用；关闭分享时不要依赖该字段。
+解析失败应按失败处理，不能当作分享成功。关闭后原链接**立即失效**，再次开启会生成新链接。
 
 ```java
 long expireTime = System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000;   // 7 天后到期
-manager.operateRecordShareLink(recordId, Arrays.asList("link"), expireTime, 1, null, callback);
+manager.operateRecordShareLink(recordId, Arrays.asList("link"), expireTime, 1, null,
+        new IOperateRecordShareLinkResult() {
+            @Override
+            public void onSuccess(String json) {
+                OperateLinkResult result = JSON.parseObject(json, OperateLinkResult.class);
+                // 使用 result.title / result.message / result.link / result.validDate
+            }
+
+            @Override
+            public void onError(String code, String error) {
+                // 失败处理
+            }
+        });
 ```
 
 ---

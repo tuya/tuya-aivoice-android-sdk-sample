@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  对话翻译控制页（recordMode=3，手机麦专用，页面级约束见 NativeFaceToFaceActivity）。
+  结构与生产 FaceToFace/Recording 同构：气泡流转写（朋友左/我右，译文绿/蓝）
+  + 底部固定控制条（语言对 + 交换 + 两枚圆形方向按钮 + 结束并保存）。
+  计时器悬浮在气泡区左上角，不再独占一行，内容区因此可占满剩余高度。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!--
+      内容区：气泡流占满，计时胶囊叠在左上角。
+      胶囊不消费触摸事件，手指落在胶囊上时滚动照常生效。
+    -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_weight="1"
+        android:background="@color/ai_voice_tag_bg">
+
+        <ScrollView
+            android:id="@+id/f2f_bubble_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <!-- 顶部留出胶囊高度，避免首条气泡被悬浮计时器遮住 -->
+            <LinearLayout
+                android:id="@+id/f2f_bubble_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="14dp"
+                android:paddingTop="48dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="14dp" />
+        </ScrollView>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|top"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_native_f2f_timer_chip"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="4dp">
+
+            <View
+                android:id="@+id/f2f_state_dot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/bg_native_record_dot" />
+
+            <TextView
+                android:id="@+id/f2f_timer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="@string/native_duration_zero"
+                android:textColor="@color/ai_voice_text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <TextView
+        style="@style/NativeSectionHint"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="2dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/native_f2f_hint" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/f2f_friend_lang"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:background="@color/ai_voice_tag_bg"
+                android:gravity="center"
+                android:textColor="@color/ai_voice_text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/f2f_swap"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:padding="8dp"
+                android:text="@string/native_f2f_swap"
+                android:textColor="@color/ai_voice_tab_selected"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/f2f_my_lang"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:background="@color/ai_voice_tag_bg"
+                android:gravity="center"
+                android:textColor="@color/ai_voice_text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!--
+          方向按钮区（生产 ControlButton.basicButton 同构的状态机）：
+          空闲/暂停中 = 两枚浅底圆 + 方向色喇叭图标（暂停中点同方向由 SDK 映射为继续）；
+          录音中 = 收成一枚「当前方向色」的暂停圆，点按 = 暂停。
+        -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
+
+            <!-- 朋友通道配置：输入 / 输出 / TTS 播放（圆钮外侧，点按弹单选） -->
+            <LinearLayout
+                android:layout_width="88dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/f2f_friend_input"
+                    style="@style/NativeF2fPicker"
+                    android:text="@string/native_f2f_input_phone" />
+
+                <TextView
+                    android:id="@+id/f2f_friend_output"
+                    style="@style/NativeF2fPicker"
+                    android:text="@string/native_f2f_output_phone" />
+
+                <TextView
+                    android:id="@+id/f2f_friend_playback"
+                    style="@style/NativeF2fPicker"
+                    android:text="@string/native_f2f_playback_immediate" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/f2f_circle_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <FrameLayout
+                    android:id="@+id/f2f_friend_speak"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:background="@drawable/bg_native_f2f_circle">
+
+                    <ImageView
+                        android:id="@+id/f2f_friend_icon"
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/native_start"
+                        android:src="@drawable/ic_native_play"
+                        app:tint="@color/ai_voice_card_green" />
+                </FrameLayout>
+
+                <Space
+                    android:layout_width="32dp"
+                    android:layout_height="1dp" />
+
+                <FrameLayout
+                    android:id="@+id/f2f_my_speak"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:background="@drawable/bg_native_f2f_circle">
+
+                    <ImageView
+                        android:id="@+id/f2f_my_icon"
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/native_start"
+                        android:src="@drawable/ic_native_play"
+                        app:tint="@color/ai_voice_tab_selected" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/f2f_pause_circle"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_native_f2f_pause"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/native_pause"
+                    android:src="@drawable/ic_native_pause" />
+            </FrameLayout>
+
+            <!-- 我的通道配置 -->
+            <LinearLayout
+                android:layout_width="88dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|center_vertical"
+                android:gravity="end"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/f2f_my_input"
+                    style="@style/NativeF2fPicker"
+                    android:text="@string/native_f2f_input_phone" />
+
+                <TextView
+                    android:id="@+id/f2f_my_output"
+                    style="@style/NativeF2fPicker"
+                    android:text="@string/native_f2f_output_phone" />
+
+                <TextView
+                    android:id="@+id/f2f_my_playback"
+                    style="@style/NativeF2fPicker"
+                    android:text="@string/native_f2f_playback_immediate" />
+            </LinearLayout>
+        </FrameLayout>
+    </LinearLayout>
+</LinearLayout>

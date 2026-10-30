@@ -37,6 +37,7 @@ ThingAudioDetectManagerNative manager = ThingAudioDetectManagerNative.getInstanc
 | 8 · 合并录音 | [module-08](./module-08-merge-record.md) | `NativeMergeRecordActivity` |
 | 9 · 分享 / 悬浮球 / 快捷入口 | [module-09](./module-09-share-and-entry.md) | `NativeQuickEntryActivity`、`NativeRecordActionSheet` |
 | 10 · 文本翻译 | [module-10](./module-10-text-translation.md) | 不实现 |
+| 12 · 文件夹管理 | [module-12](./module-12-folder-management.md) | 暂未实现 |
 
 > **模块 7（设备 / 通道 / 流控）** 只有一个真实接口 `getEarPhoneBTConntectedStatus`，
 > 它是录音流程的组成部分，已并入[模块 1](./module-01-record-control.md)；
@@ -51,7 +52,7 @@ ThingAudioDetectManagerNative manager = ThingAudioDetectManagerNative.getInstanc
 
 ### 回调类型
 
-所有异步方法通过以下 6 种标准回调返回结果：
+所有异步方法通过以下标准回调返回结果：
 
 | 回调类型 | 方法 | 适用场景 |
 |---|---|---|
@@ -59,8 +60,9 @@ ThingAudioDetectManagerNative manager = ThingAudioDetectManagerNative.getInstanc
 | `IRecordCallBack<T>` | `onSuccess(T result)` / `onError(String code, String error)` | 带返回数据的查询 |
 | `IAudioImportCallBack` | `onSuccess()` / `onError(Integer code, String error)` | 音频导入。**`code` 是 `Integer`**，与其余不同 |
 | `IOfflineFilesProgress` | `onProgress(DeviceOfflineFileStatus)` / `onSuccess(Long sessionId)` / `onError(String, String)` | 离线文件传输 |
-| `IOperateRecordShareLinkResult` | `onSuccess(String link)` / `onError(String, String)` | 分享链接操作 |
+| `IOperateRecordShareLinkResult` | `onSuccess(String json)` / `onError(String, String)` | 分享链接操作。`json` 含 `title` / `message` / `link` / `validDate`，需自行解析 |
 | `ICloudSyncSwitchCallBack<P, T>` | `onSuccess(P param, T info)` / `onError(String, String)` | 云同步开关查询 |
+| `IAudioFolderCallBack` | `onSuccess(FolderWriteResult)` / `onError(String, String)` | 文件夹新建、重命名、删除、移动、恢复 |
 
 ### 线程
 
@@ -113,6 +115,7 @@ ThingAudioDetectManagerNative manager = ThingAudioDetectManagerNative.getInstanc
 | `addQuickEntryAddListener` / `removeQuickEntryAddListener()` ⚠️无参 | `IQuickEntryAddListener` | 快捷入口添加结果 | [9](./module-09-share-and-entry.md) |
 | `addTranslationListener`（⚠️**无 remove**） | `ITranslationListener` | 文本翻译 TTS 合成完成 | [10](./module-10-text-translation.md) |
 | `addPushRouteInfoListener` / `removePushRouteInfoListener` | `IPushRouteInfoListener` | 推送路由跳转 | 见下 |
+| `addFolderChangeListener` / `removeFolderChangeListener` | `IFolderChangeCallback` | 文件夹删除 / 更新 | [12](./module-12-folder-management.md) |
 
 ### 三个无参 remove
 
@@ -157,6 +160,7 @@ SDK 把该跳哪里告诉 App，由 App 自行 `startActivity`。
 | `NativeAudioInjectActivity` | 灌流设置，见 [灌流调试工具指南](../inject-tool-guide.md) |
 | `NativeInjectBatchActivity` | 灌流批量测试与 WER 评测，见 [灌流调试工具指南](../inject-tool-guide.md) |
 | `NativeRecordActivity` | 模块 1 · 录音控制 |
+| `NativeFaceToFaceActivity` | 模块 1 · 对话翻译；TTS 设置与回放见 [面对面翻译 TTS 示例](../samples/face-to-face-tts-playback.md) |
 | `NativeRecordListActivity` / `NativeRecordListAdapter` | 模块 3 · 列表、搜索、空间统计 |
 | `NativeRecordDetailActivity` | 模块 2 · 转写 / 总结，兼模块 3 详情 |
 | `NativeRecordActionSheet` | 模块 3 重命名 / 标签 / 删除，模块 9 分享，模块 6 按需下载 |

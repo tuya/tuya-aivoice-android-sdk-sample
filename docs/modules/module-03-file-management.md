@@ -2,8 +2,8 @@
 
 | 项 | 内容 |
 |---|---|
-| Demo 页面 | [`NativeRecordListActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordListActivity.java)（列表 / 筛选 / 搜索 / 空间 / 删除）<br>[`NativeRecordDetailActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordDetailActivity.java)（详情）<br>[`NativeRecordActionSheet`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordActionSheet.java)（改名 / 标签 / 删除） |
-| 云端写入 | [`AudioContentBusiness`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/business/AudioContentBusiness.java) |
+| Demo 页面 | [`NativeRecordListActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordListActivity.kt)（列表 / 筛选 / 搜索 / 空间 / 删除）<br>[`NativeRecordDetailActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordDetailActivity.kt)（详情）<br>[`NativeRecordActionSheet`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordActionSheet.kt)（改名 / 标签 / 删除） |
+| 云端写入 | [`AudioContentBusiness`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/business/AudioContentBusiness.kt) |
 | 全局约定 | [接入指南](./README.md) |
 
 ---
@@ -24,6 +24,8 @@
 | `getRecordTransferResultList` | 查询录音列表 | `IRecordCallBack<List<RecordTransferResultBean>>` |
 | `getRecordTransferResultDetail` | 按 `recordId` 查单条详情 | `IRecordCallBack<RecordTransferResultBean>` |
 | `searchRecordTransferResult` | 关键词搜索 | `IRecordCallBack<ArrayList<AudioSearchMixItem>>` |
+| `getCategoryOverview` | 查询状态 / 文件夹 / 来源分类汇总 | `IRecordCallBack<CategoryOverview>` |
+| `queryFilesByCategory` | 按状态、文件夹、来源筛选列表 | `IRecordCallBack<List<RecordTransferResultBean>>` |
 | `updateRecordTransferResult` | 更新元信息（改名 / 已读 / 回收站等） | `IResultCallback` |
 | `removeFileList` | 删除，三种语义 | `IResultCallback` |
 | `getAudioFilesSize` | 本地音频占用空间 | `IRecordCallBack<Integer>` |
@@ -122,6 +124,31 @@ sequenceDiagram
 |---|---|---|---|
 | `param` | [`AudioSearchMixParams`](#audiosearchmixparams) | 是 | 检索条件 |
 | `callback` | `IRecordCallBack<ArrayList<AudioSearchMixItem>>` | 否 | 返回 [`AudioSearchMixItem`](#audiosearchmixitem) 列表 |
+
+---
+
+### `getCategoryOverview(String scope, IRecordCallBack<CategoryOverview> callback)`
+
+查询分类汇总，用于筛选弹窗或文件夹选择。
+
+| `scope` | 返回内容 |
+|---|---|
+| `CategoryOverviewScopeDef.ALL` | 状态、文件夹、来源三组全量返回 |
+| `CategoryOverviewScopeDef.FOLDER` | 只返回文件夹列表，跳过状态和来源聚合 |
+
+回调返回 [`CategoryOverview`](#categoryoverview)，包含 `statusGroup` / `folders` / `sourceGroup`。
+
+---
+
+### `queryFilesByCategory(CategoryFilesParam params, IRecordCallBack<List<RecordTransferResultBean>> callback)`
+
+按分类条件查询录音列表。适用于「所有文件 / 待总结 / 已总结」筛选、按文件夹查看，
+以及回收站列表（`folderIds = ["RECYCLE_BIN"]`）。
+
+| 参数 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| `params` | [`CategoryFilesParam`](#categoryfilesparam) | 是 | 状态、文件夹、来源、排序和分页条件 |
+| `callback` | `IRecordCallBack<List<RecordTransferResultBean>>` | 否 | 返回录音列表 |
 
 ---
 
@@ -241,6 +268,32 @@ manager.removeFileRecordUpdateListener(callback);
 
 构造顺序：`(directoryId, recordType, deviceId, transfer, source, remove, orderBy, asc, lastFileId, pageSize)`。
 
+### `CategoryFilesParam`
+
+分类查询入参，用于 `queryFilesByCategory`。各筛选字段传 `null` 表示该维度不过滤。
+
+| 字段 | 类型 | 默认 | 说明 |
+|---|---|---|---|
+| `statuses` | `List<String>` | `null` | `ALL` / `PENDING_SUMMARY` / `SUMMARIZED` |
+| `folderIds` | `List<String>` | `null` | 文件夹 ID；`UNFILED` 未分类，`RECYCLE_BIN` 回收站 |
+| `sourceCategories` | `List<String>` | `null` | `PHONE` / `PC` / `HEADPHONE` / `RECORDER_CARD` / `IMPORT` / `MERGED` |
+| `orderBy` | `int` | `FILE_ID` | `FILE_ID` / `RECORD_TIME` / `UPDATE_AT` |
+| `asc` | `int` | `DESC` | `DESC` / `ASC` |
+| `pageSize` | `int` | `UNLIMITED` | 每页条数；`UNLIMITED` 返回全部 |
+
+### `CategoryOverview`
+
+分类汇总结果。
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `statusGroup` | `List<StatusCountItem>` | 状态分组，固定为全部 / 待总结 / 已总结 |
+| `folders` | `List<FolderCountItem>` | 文件夹及数量，含 `UNFILED` 首项 |
+| `sourceGroup` | `List<SourceCountItem>` | 来源分组，仅返回数量大于 0 的类目 |
+
+`StatusCountItem` 为 `status` + `count`；`SourceCountItem` 为 `category` + `count`；
+`FolderCountItem` 为 `folderId` / `folderName` / `count` / `sortName`。
+
 ### `RecordTransferResultBean`
 
 列表与详情的返回对象。字段较多，按用途分组：
@@ -258,6 +311,7 @@ manager.removeFileRecordUpdateListener(callback);
 | `deviceId` | `String` | 设备 ID |
 | `deviceUniqueId` | `String` | 设备侧生成的录音唯一标识 |
 | `directoryId` | `Long` | 目录 ID |
+| `folderId` | `String` | 文件夹 ID；未分类 / 回收站为 `UNFILED` / `RECYCLE_BIN` |
 
 **文件与音频**
 
@@ -296,6 +350,9 @@ manager.removeFileRecordUpdateListener(callback);
 | `tags` | `List<String>` | 标签列表 |
 | `offlineUploadProgress` | `Integer` | 离线上传进度 `0`~`100` |
 | `offlineUploadStatus` | `Integer` | 离线上传：`-1` 未开始 / `0` 等待 / `1` 中 / `2` 完成 / `3` 失败 / `4` 取消 |
+| `transcriptEdited` | `Integer` | 转写正文是否被用户编辑：`0` 未编辑 / `1` 已编辑 |
+| `summaryEdited` | `Integer` | 总结正文是否被用户编辑：`0` 未编辑 / `1` 已编辑 |
+| `recycleExpireAt` | `Long` | 回收站过期时间（Unix 秒）；非回收站记录为 `null` |
 
 **语言与其他**
 
@@ -364,6 +421,8 @@ manager.removeFileRecordUpdateListener(callback);
 | `summaryImageStatus` | `int` | 总结配图状态，取值同该 bean 的同名字段 |
 | `summaryImageUrl` | `String` | 总结配图 URL |
 | `tags` | `List<String>` | 标签列表。**`onUpdateWitheTags` 里它已是最新值**，可直接渲染 |
+| `transcriptEdited` | `int` | 转写正文是否已编辑：`0` 未编辑 / `1` 已编辑 |
+| `summaryEdited` | `int` | 总结正文是否已编辑：`0` 未编辑 / `1` 已编辑 |
 
 各状态字段的取值定义都在 [`RecordTransferResultBean`](#recordtransferresultbean)，
 本 bean 只是变更事件的载体，不重复列举。
@@ -392,7 +451,8 @@ manager.removeFileRecordUpdateListener(callback);
 | 空 / `null` | `false` | 清空全部本地音频缓存，所有记录保留 |
 
 另有一种「软删除」不走这个接口：`updateRecordTransferResult(id, remove=true)`
-把记录移入回收站，之后可用 `FilesParam.remove=true` 查回并还原。
+把记录移入回收站；查询回收站用 `queryFilesByCategory(folderIds=["RECYCLE_BIN"])`
+或 `FilesParam.remove=true`，恢复用模块 12 的 `restoreFromRecycleBin`。
 **本 Demo 不演示回收站**，列表固定按「未删除」查询。
 
 ### 重命名要写三处
@@ -509,9 +569,9 @@ audioRecordRequest = {"recordId":"xxx","name":"新名字","ownerId":<当前家�
 | 详情页 | 用事件里的 `tags` **局部刷新** | 只有一条记录，粒度天然细 |
 | 列表页 | **全量重拉** | 列表要跟着当前筛选条件走，重拉最不容易出错 |
 
-Demo 两种都演示了：[`NativeRecordDetailActivity.handleTagsUpdate`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordDetailActivity.java)
-局部刷新，[`NativeRecordListActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordListActivity.java)
-全量重拉，渲染共用 [`RecordTagBinder`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/widget/RecordTagBinder.java)。
+Demo 两种都演示了：[`NativeRecordDetailActivity.handleTagsUpdate`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordDetailActivity.kt)
+局部刷新，[`NativeRecordListActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordListActivity.kt)
+全量重拉，渲染共用 [`RecordTagBinder`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/widget/RecordTagBinder.kt)。
 
 ---
 

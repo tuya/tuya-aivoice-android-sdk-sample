@@ -63,8 +63,49 @@
         <item name="android:textColor">@color/ai_voice_text_primary</item>
         <item name="android:textSize">12sp</item>
         <item name="android:lineSpacingExtra">3dp</item>
-        <item name="android:textIsSelectable">true</item>
+    <item name="android:textIsSelectable">true</item>
     </style>
 
 
+    <!-- 模式选择弹窗的行式条目（发起录音） -->
+    <style name="NativeModePickerRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+    </style>
+
+    <style name="NativeModePickerTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/ai_voice_text_primary</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="NativeModePickerDesc">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:textColor">@color/ai_voice_text_secondary</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- f2f 通道配置的小按钮（输入/输出/播放） -->
+    <style name="NativeF2fPicker">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@color/ai_voice_tag_bg</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:paddingBottom">4dp</item>
+        <item name="android:layout_marginBottom">4dp</item>
+        <item name="android:textColor">@color/ai_voice_text_primary</item>
+        <item name="android:textSize">11sp</item>
+    </style>
 </resources>

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?><resources>
+  <string name="app_name">AiVoiceDemo</string>
   <string name="AES_KEY_LOAD_ERROR">Failed to get decryption service</string>
   <string name="APP_PUSH_F8WMKVXFNEDFV3TZ">You have only {0} minutes left for {1}</string>
   <string name="APP_PUSH_F8WMKVXFNEDFV3TZ_TITLE">Notification</string>

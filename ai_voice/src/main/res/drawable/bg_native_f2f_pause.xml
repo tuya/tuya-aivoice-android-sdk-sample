@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 录音中的单圆态：底色由代码按当前方向 tint（绿=朋友说 / 蓝=我说） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/ai_voice_card_green" />
+</shape>

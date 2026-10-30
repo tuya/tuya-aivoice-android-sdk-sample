@@ -39,7 +39,6 @@
     <string name="native_pause">暂停</string>
     <string name="native_resume">恢复</string>
     <string name="native_stop">结束</string>
-    <string name="native_switch_channel">切换通道</string>
     <string name="native_realtime">实时转写</string>
     <string name="native_status_0">待开始</string>
     <string name="native_status_1">录音中</string>
@@ -202,7 +201,7 @@
     <string name="native_api_list_hint">全部 Native 演示页的入口。条目按 docs/modules/ 的模块编号排列，每页独立演示一个模块的完整流程（含事件监听的注册与注销）。置灰条目无法从本页直接进入，原因见各自说明。</string>
     <string name="native_api_entry_record_title">模块 1 · 录音控制与设备能力</string>
     <string name="native_api_entry_record_desc">一次录音的完整生命周期：开始 / 暂停 / 恢复 / 停止、录音中动态改参、切换收音通道，附带蓝牙连接状态与电量、信噪比</string>
-    <string name="native_api_entry_record_api">startAudioRecording / pauseRecordTransfer / resumeRecordTransfer / stopRecordTransfer / updateParams / switchRecordChannel</string>
+    <string name="native_api_entry_record_api">startAudioRecording / pauseRecordTransfer / resumeRecordTransfer / stopRecordTransfer / updateParams</string>
     <string name="native_api_entry_detail_title">模块 2 · 转写 / 总结（从文件管理进入）</string>
     <string name="native_api_entry_detail_desc">详情页必须带上 recordId 才能打开，无法从本页直接进入。请点开「模块 3 · 文件管理」，再点其中任意一条录音</string>
     <string name="native_api_entry_detail_api">getRecordTransferRealTimeResult / startTransfer / getSummary / operateRecordShareLink</string>
@@ -423,6 +422,54 @@
     <string name="native_detail_export_chooser">分享转写文本</string>
     <string name="native_detail_export_default_name">转写记录</string>
 
+    <string name="native_tts_on">朗读:开</string>
+    <string name="native_tts_off">朗读:关</string>
+    <string name="native_record_done">完成</string>
+    <string name="native_room_empty_live">现场录音只记录音频，无实时文字。点击「开始」后波形会随声音起伏。</string>
+    <string name="native_room_empty_phone">电话录音需在通话中开录，未在通话中开始会返回错误码 10061。</string>
+    <string name="native_room_empty_realtime">开始录音后，识别文字会实时出现在这里。</string>
+    <string name="native_room_empty_simultaneous">开始同传后，原文与译文会实时出现在这里。</string>
+    <string name="native_mode_f2f">对话翻译</string>
+    <string name="native_mode_desc_live">只录音不转写（recordMode=1）</string>
+    <string name="native_mode_desc_phone">录制通话内容（recordMode=0，需在通话中开录）</string>
+    <string name="native_mode_desc_realtime">边录边出文字，只选源语言（recordMode=1 + needAsr）</string>
+    <string name="native_mode_desc_simultaneous">实时转写 + 翻译，源/目标语言 + 可选 TTS（recordMode=1 + translate）</string>
+    <string name="native_mode_desc_f2f">双人轮流说，按方向分别识别与翻译（recordMode=3，手机麦）</string>
+    <string name="native_record_mode_dialog_title">发起录音</string>
+    <string name="native_f2f_title">面对面翻译</string>
+    <string name="native_f2f_friend_lang">朋友的语言</string>
+    <string name="native_f2f_my_lang">我的语言</string>
+    <string name="native_f2f_friend_speak">朋友说</string>
+    <string name="native_f2f_my_speak">我说</string>
+    <string name="native_f2f_stop">结束并保存</string>
+    <string name="native_f2f_hint">轮到谁说话就点谁。方向切换会以新参数重新开始录音（新会话，f2fChannel 与语言对同时交换），请在语句间切换。</string>
+    <string name="native_f2f_input_phone">输入·手机 ▾</string>
+    <string name="native_f2f_input_earphone">输入·耳机 ▾</string>
+    <string name="native_f2f_output_phone">输出·喇叭 ▾</string>
+    <string name="native_f2f_output_earphone">输出·耳机 ▾</string>
+    <string name="native_f2f_playback_immediate">播放·立即 ▾</string>
+    <string name="native_f2f_playback_deferred">播放·缓存 ▾</string>
+    <string name="native_f2f_playback_cache">播放·边播边存 ▾</string>
+    <string name="native_f2f_pick_input">收音源</string>
+    <string name="native_f2f_pick_output">译文输出</string>
+    <string name="native_f2f_pick_playback">TTS 播放</string>
+    <string name="native_f2f_pick_phone_mic">手机麦克风</string>
+    <string name="native_f2f_pick_earphone_mic">入门版耳机麦克风</string>
+    <string name="native_f2f_pick_phone_speaker">手机扬声器</string>
+    <string name="native_f2f_pick_bt_earphone">蓝牙耳机（系统通道）</string>
+    <string name="native_f2f_pick_playback_immediate">立即播放</string>
+    <string name="native_f2f_pick_playback_deferred">只缓存不播放（供回听）</string>
+    <string name="native_f2f_pick_playback_cache">边播边缓存</string>
+    <string name="native_f2f_pick_earphone_title">选择入门版耳机</string>
+    <string name="native_f2f_no_earphone">家庭里没有入门版耳机，请先配网添加</string>
+    <string name="native_f2f_play_tts">播放该句译文</string>
+    <string name="native_f2f_tts_not_ready">该句语音还没生成好，请稍后再试</string>
+    <string name="native_f2f_tts_play_failed">语音播放失败</string>
+    <string name="native_f2f_back_title">结束录音</string>
+    <string name="native_f2f_back_message">录音进行中，返回将结束并保存本次录音。</string>
+    <string name="native_f2f_back_continue">继续录音</string>
+    <string name="native_f2f_toast_same_direction">已在该方向录音中</string>
+    <string name="native_f2f_toast_stopped">录音已结束并保存</string>
     <!-- ===== 灌流（音频注入）设置 ===== -->
     <string name="native_inject_title">灌流设置</string>
     <string name="native_inject_hint">灌流是测试能力：把麦克风采集到的数据替换为指定音频文件，让转写 / 翻译链路跑在可复现的输入上。\n三条约束：① 只作用于手机 MIC 通道，蓝牙耳机通道无效；② 只支持 16kHz / 单声道 / 16bit 的整型 PCM wav；③ 只在下次开始录音时生效，录音中改动对本次录音没有影响。\n配置保存在 SDK 的内存中，不做本地持久化，进程重启即失效。</string>
@@ -456,6 +503,7 @@
 灌流仍处于开启状态，下次开始录音仍会使用该文件。需要恢复真实麦克风采集，请到「灌流设置」关闭。</string>
     <string name="native_inject_end_dialog_ok">知道了</string>
 
+    <string name="native_f2f_swap">⇄</string>
     <!-- ===== 灌流批量测试 ===== -->
     <string name="native_batch_title">灌流批量测试</string>
     <string name="native_batch_hint">用固定音频连续跑多轮 ASR，自动与参考答案计算 WER 并导出报告。\n一轮 = 下发灌流配置 → 开始录音 → 等灌流播完 → 停止录音 → 拉取转写结果 → 算分。任一环节卡住由单轮超时兜底（音频时长 × 3 + 60 秒），超时判该轮失败并继续下一轮。\n跑批期间屏幕保持常亮，退出页面即中止。</string>

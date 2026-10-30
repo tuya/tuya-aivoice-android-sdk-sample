@@ -2,7 +2,7 @@
 
 | 项 | 内容 |
 |---|---|
-| Demo 页面 | [`NativeAudioImportActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeAudioImportActivity.java) |
+| Demo 页面 | [`NativeAudioImportActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeAudioImportActivity.kt) |
 | 全局约定 | [接入指南](./README.md) |
 
 ---
@@ -26,7 +26,7 @@
 | `cancelImport` | 取消进行中的导入 | `IAudioImportCallBack` |
 | `cancelRetry` | 放弃重试，清掉失败列表 | `IAudioImportCallBack` |
 | `getAudioImportStatus` | 查询导入状态快照 | **同步返回** `FileImportStatusEventApp` |
-| `handleImportActivityResult` | 回灌文件选择器结果，**必接** | 同步返回 |
+| `onActivityResult` | 回灌文件选择器 / WiFi 授权结果，**必接** | 同步返回 |
 
 事件监听：`IFileImportStatusListener`。
 
@@ -52,7 +52,7 @@ sequenceDiagram
     UI->>SDK: startImport(callback)
     SDK->>Picker: 拉起文件选择器
     Picker-->>UI: onActivityResult(requestCode, resultCode, data)
-    UI->>SDK: handleImportActivityResult(requestCode, resultCode, data)
+    UI->>SDK: onActivityResult(requestCode, resultCode, data)
     Note right of UI: 必接。漏掉这步选完文件后没有任何反应
 
     SDK-->>UI: onStatusUpdate(status=1 导入中)
@@ -62,7 +62,7 @@ sequenceDiagram
     alt failedFiles 非空
         UI->>SDK: retryImport(callback)
         SDK->>Picker: 再次拉起选择器
-        Picker-->>UI: onActivityResult → handleImportActivityResult
+        Picker-->>UI: onActivityResult → SDK onActivityResult
     else 放弃重试
         UI->>SDK: cancelRetry(callback)
     end
@@ -81,7 +81,7 @@ sequenceDiagram
 ### `startImport(IAudioImportCallBack callback)`
 
 开始导入。调用后 SDK 拉起系统文件选择器，用户选完文件的结果**不会自动回到 SDK**，
-必须由宿主 Activity 回灌，见 [`handleImportActivityResult`](#handleimportactivityresultint-requestcode-int-resultcode-intent-data)。
+必须由宿主 Activity 回灌，见 [`onActivityResult`](#onactivityresultint-requestcode-int-resultcode-nullable-intent-data)。
 
 | 参数 | 类型 | 必填 | 说明 |
 |---|---|---|---|
@@ -123,26 +123,28 @@ sequenceDiagram
 
 ---
 
-### `handleImportActivityResult(int requestCode, int resultCode, Intent data)`
+### `onActivityResult(int requestCode, int resultCode, @Nullable Intent data)`
 
-把系统文件选择器的结果回灌给 SDK。**Native 接入必接**。
+把宿主 Activity 的结果回灌给 SDK。**Native 接入必接**。
+该入口同时处理音频导入的文件选择器结果，以及模块 4 AP 建链时的系统 WiFi 授权结果。
 
 | 参数 | 类型 | 必填 | 说明 |
 |---|---|---|---|
 | `requestCode` | `int` | 是 | 原样透传，**无需自行判断**，SDK 内部识别是否属于自己的请求 |
 | `resultCode` | `int` | 是 | 原样透传 |
-| `data` | `Intent` | 是 | 原样透传，用户取消选择时可能为 `null` |
+| `data` | `Intent` | 否 | 原样透传，用户取消操作时可能为 `null` |
 
 ```java
 @Override
 protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
     ThingAudioDetectManagerNative.getInstance()
-            .handleImportActivityResult(requestCode, resultCode, data);
+            .onActivityResult(requestCode, resultCode, data);
 }
 ```
 
-> 漏掉这一步的表现是「用户选完文件后毫无反应」——既没有报错，也不会有任何状态事件。
+> 漏掉这一步时，导入表现为「选完文件后毫无反应」，AP 建链会停在 `apConnectState == 0`，
+> 都不会有报错或状态事件。
 > 这是本模块最容易踩的坑。
 
 ---
@@ -266,8 +268,8 @@ manager.removeFileImportStatusListener();   // 注意：无参
 
 ## 八、接入清单
 
-1. **宿主 Activity 必须重写 `onActivityResult` 并调 `handleImportActivityResult`**，
-   `requestCode` 无需自行判断。漏掉这步导入会静默失败
+1. **宿主 Activity 必须重写 `onActivityResult` 并调用 SDK 的 `onActivityResult`**，
+   `requestCode` 无需自行判断。漏掉这步导入或 AP 建链都会静默失败
 2. 进页调一次 `getAudioImportStatus()` 取快照（同步返回，**可能为 `null`**），
    之后靠 `IFileImportStatusListener` 增量更新，不要轮询
 3. 发起前判「是否正在导入」，避免重复发起触发 `20115`

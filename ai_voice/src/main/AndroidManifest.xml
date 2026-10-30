@@ -11,6 +11,10 @@
         <activity
             android:name=".nativeui.NativeRecordActivity"
             android:exported="false" />
+        <!-- 对话翻译（recordMode=3，手机麦）：从模式弹窗进入 -->
+        <activity
+            android:name=".nativeui.NativeFaceToFaceActivity"
+            android:exported="false" />
         <!-- 灌流（音频注入）设置，从录音页顶栏进入 -->
         <activity
             android:name=".nativeui.NativeAudioInjectActivity"

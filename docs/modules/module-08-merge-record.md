@@ -2,7 +2,7 @@
 
 | 项 | 内容 |
 |---|---|
-| Demo 页面 | [`NativeMergeRecordActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeMergeRecordActivity.java) |
+| Demo 页面 | [`NativeMergeRecordActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeMergeRecordActivity.kt) |
 | 全局约定 | [接入指南](./README.md) |
 
 ---

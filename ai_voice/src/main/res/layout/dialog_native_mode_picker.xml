@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  发起录音模式弹窗的内容布局（NativeEntryActivity 挂载）。
+  行式条目：模式名 + 一句说明；每行点击由 Activity 分发到对应控制页。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="8dp">
+
+    <LinearLayout
+        android:id="@+id/mode_row_live"
+        style="@style/NativeModePickerRow">
+
+        <TextView
+            style="@style/NativeModePickerTitle"
+            android:text="@string/native_mode_live" />
+
+        <TextView
+            style="@style/NativeModePickerDesc"
+            android:text="@string/native_mode_desc_live" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/mode_row_phone"
+        style="@style/NativeModePickerRow">
+
+        <TextView
+            style="@style/NativeModePickerTitle"
+            android:text="@string/native_mode_phone" />
+
+        <TextView
+            style="@style/NativeModePickerDesc"
+            android:text="@string/native_mode_desc_phone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/mode_row_realtime"
+        style="@style/NativeModePickerRow">
+
+        <TextView
+            style="@style/NativeModePickerTitle"
+            android:text="@string/native_mode_realtime" />
+
+        <TextView
+            style="@style/NativeModePickerDesc"
+            android:text="@string/native_mode_desc_realtime" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/mode_row_simultaneous"
+        style="@style/NativeModePickerRow">
+
+        <TextView
+            style="@style/NativeModePickerTitle"
+            android:text="@string/native_mode_simultaneous" />
+
+        <TextView
+            style="@style/NativeModePickerDesc"
+            android:text="@string/native_mode_desc_simultaneous" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/mode_row_f2f"
+        style="@style/NativeModePickerRow">
+
+        <TextView
+            style="@style/NativeModePickerTitle"
+            android:text="@string/native_mode_f2f" />
+
+        <TextView
+            style="@style/NativeModePickerDesc"
+            android:text="@string/native_mode_desc_f2f" />
+    </LinearLayout>
+</LinearLayout>
