@@ -42,93 +42,11 @@ AI 音频业务包：[https://github.com/tuya/tuya-aivoice-android-sdk-sample.gi
 - **说明**: 请确保在Tuya IOT平台申请了AppKey、AppSecretKey、AppID、签名组件等，并集成到项目中。
 - **文档**：[集成APP SDK准备工作](https://developer.tuya.com/cn/docs/app-development/integrated?id=Ka69nt96cw0uj)
 
+### 2. 依赖配置
 
-### 添加maven仓库
-在项目的根目录下的build.gradle文件中，添加以下内容
-```groovy
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-buildscript {
+根工程仓库、版本基线、Native 最小依赖和完整 UI BizBundle 依赖统一维护在
+[依赖配置指南](./docs/nativesdk-dependency-guide.md)，README 不再重复 Gradle 配置。
 
-    ext {
-        kotlin_version = '2.1.0'
-        hilt_version = '2.58'
-        sdk_version = '7.8.0'
-        ipc_sdk_version = '7.8.1'
-        biz_bom_version = "7.8.15"
-        applicationId = "com.sample.sdk"
-    }
-    repositories {
-        mavenLocal()
-        maven { url "https://maven-other.tuya.com/repository/maven-commercial-releases/" }
-
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.8.0'
-        classpath "com.thingclips.smart:thingsmart-theme-open-plugin:2.0.5"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
-    }
-}
-
-allprojects {
-
-    repositories {
-        maven { url "https://maven-other.tuya.com/repository/maven-commercial-releases/" }
-
-        google()
-        mavenCentral()
-
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        maven { url "https://jitpack.io" }
-        maven { url 'https://developer.huawei.com/repo/' }
-    }
-
-    configurations.all {
-        resolutionStrategy.force 'com.google.code.findbugs:jsr305:1.3.9'
-        resolutionStrategy.force 'com.squareup.okhttp3:okhttp-jvm:5.0.0-alpha.11'
-        resolutionStrategy.force 'com.squareup.okhttp3:okhttp-java-net-cookiejar:5.0.0-alpha.11'
-        resolutionStrategy.force 'com.squareup.okhttp3:okhttp-urlconnection:5.0.0-alpha.11'
-        resolutionStrategy.force 'com.squareup.okio:okio-jvm:3.2.0'
-        resolutionStrategy.force "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-        resolutionStrategy.force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-        resolutionStrategy.force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-        resolutionStrategy.force "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-        exclude group: "com.umeng.umsdk", module: 'huawei-basetb'
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
-
-
-```
-
-### 添加组件依赖
-在集成业务包的module工程下的build.gradle文件中添加以下组件依赖
-```groovy
-api enforcedPlatform("com.thingclips.smart:thingsmart-BizBundlesBom:${biz_bom_version}")
-
-api "com.thingclips.smart:thingsmart-bizbundle-wearkit"
-api "com.thingclips.smart:thingsmart-bizbundle-device_activator"
-api "com.thingclips.smart:thingsmart-bizbundle-qrcode_mlkit"
-api ("com.thingclips.smart:thingsmart-bizbundle-basekit"){
-        exclude group:"com.thingclips.smart",module:"thingplugin-annotation"
-    }
-api "com.thingclips.smart:thingsmart-bizbundle-devicekit"
-api "com.thingclips.smart:thingsmart-bizbundle-bizkit"
-api "com.thingclips.smart:thingsmart-bizbundle-homekit"
-
-api "com.thingclips.smart:thingsmart-bizbundle-panelmore"
-api "com.thingclips.smart:thingsmart-bizbundle-family"
-api "com.thingclips.smart:thingsmart-bizbundle-miniapp"
-api "com.thingclips.smart:thingsmart-bizbundle-share"
-
-api "com.thingclips.smart:thingsmart:${sdk_version}"
-api "com.thingclips.smart:thingsmart-ipcsdk:${ipc_sdk_version}"
-
-```
+- 只使用 Native API：按「仅 Native 接入」引入最小依赖；
+- 使用完整 AI 音频业务包：按「完整 UI BizBundle 接入」引入组件。
 

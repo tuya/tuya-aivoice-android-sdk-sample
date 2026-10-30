@@ -5,6 +5,7 @@
 
 配套的可运行示例在 [`ai_voice/.../nativeui`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui)，
 每个模块的文档都指向对应的 Demo 页面。
+依赖版本与 Gradle 配置见 [`nativesdk-dependency-guide.md`](../nativesdk-dependency-guide.md)。
 
 ---
 
