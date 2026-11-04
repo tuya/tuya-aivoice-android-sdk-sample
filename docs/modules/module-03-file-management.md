@@ -12,8 +12,8 @@
 
 录音文件的查询、筛选、搜索、删除、元信息修改与空间统计。
 
-本模块的 `IRecordFileUpdateCallback` 是**跨模块共用**的数据变更事件源——
-模块 2 的转写完成、模块 5 的导入完成、模块 6 的云同步完成都通过它通知界面刷新。
+本模块的 `IRecordFileUpdateCallback` 是跨模块的状态变更事件源。模块 2 的转写 / 总结完成、
+模块 6 的云同步完成会通过它刷新；
 
 ---
 
@@ -73,7 +73,7 @@ sequenceDiagram
 
     Note over List: 数据变更事件
     SDK-->>List: onUpdate 状态变更
-    SDK-->>List: onRecordOperate 新增 / 修改 / 删除
+    SDK-->>List: onRecordOperate 修改 / 删除
     SDK-->>List: onUpdateWitheTags 标签变更
     SDK-->>List: onRecordListSyncSuccess 云同步完成
     Note right of List: 据此刷新列表
@@ -239,7 +239,7 @@ manager.removeFileRecordUpdateListener(callback);
 | 回调 | 说明 |
 |---|---|
 | `onUpdate(List<RecordUpdateInfo> infos)` | 条目状态变更（转写完成、总结完成等），可做局部刷新 |
-| `onRecordOperate(String operate, List<RecordUpdateInfo> infos)` | 文件新增 / 修改 / 删除。`operate` 取值同 `RecordOperateDef`：`"add"` / `"update"` / `"delete"`；新增会改变列表长度，需全量刷新 |
+| `onRecordOperate(String operate, List<RecordUpdateInfo> infos)` | 文件修改 / 删除等记录操作。`operate` 取值同 `RecordOperateDef`：`"add"` / `"update"` / `"delete"`。⚠️ 导入和合并类新增不派发 `add`；这类任务完成后需主动重拉列表 |
 | `onRecordListSyncSuccess()` | 云同步完成，本地数据可能大批变化，建议全量刷新 |
 | `onUpdateWitheTags(List<RecordUpdateInfo> infos)` | 仅标签变更 |
 
@@ -602,8 +602,9 @@ Demo 两种都演示了：[`NativeRecordDetailActivity.handleTagsUpdate`](../../
    只填要改的那个
 7. `updateRecordTagResult` 的 `bizType=2` 必须传完整新顺序，
    交互上应配合可拖拽列表整体提交，不要让用户手输
-8. 四个数据变更回调各有语义：`onUpdate` 状态变更、`onRecordOperate` 增删改、
-   `onUpdateWitheTags` 标签变更、`onRecordListSyncSuccess` 云同步完成，
+8. 四个数据变更回调各有语义：`onUpdate` 状态变更、`onRecordOperate` 记录操作、
+   `onUpdateWitheTags` 标签变更、`onRecordListSyncSuccess` 云同步完成。
+   导入 / 合并新增不依赖 `onRecordOperate`，完成后主动重拉列表，
    按需决定局部刷新还是全量重拉
 9. 改名与已读都要写云端，否则跨端不一致
 10. 改名还要同步**总结 JSON 里的 `title`**，且要先写 `title` 再刷新，

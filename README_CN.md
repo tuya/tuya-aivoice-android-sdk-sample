@@ -24,7 +24,7 @@ AI 音频业务包：[https://github.com/tuya/tuya-aivoice-android-sdk-sample.gi
 | 2 · 转写 / 总结 | [module-02](./docs/modules/module-02-transcribe-summary.md) |
 | 3 · 文件管理 | [module-03](./docs/modules/module-03-file-management.md) |
 | 4 · 离线文件传输 | [module-04](./docs/modules/module-04-offline-transfer.md) |
-| 5 · 音频导入 | [module-05](./docs/modules/module-05-audio-import.md) |
+| 5 · 音频导入（含业务 Uri 直传） | [module-05](./docs/modules/module-05-audio-import.md) · [直传示例](./docs/samples/audio-import-direct-uri.md) |
 | 6 · 云同步 | [module-06](./docs/modules/module-06-cloud-sync.md) |
 | 8 · 合并录音 | [module-08](./docs/modules/module-08-merge-record.md) |
 | 9 · 分享 / 悬浮球 / 快捷入口 | [module-09](./docs/modules/module-09-share-and-entry.md) |

@@ -68,6 +68,8 @@ sequenceDiagram
 ```
 
 > `status=2` 与 `status=3` 是互斥的终态，一次合并只会走到其中之一。
+> `mergeRecordList` 不触发 `IRecordFileUpdateCallback.onRecordOperate`；
+> 合并成功后的新记录需在收到 `status=2` 后主动刷新录音列表，详情可直接使用事件里的 `recordId`。
 
 ---
 
@@ -205,3 +207,4 @@ manager.removeMergeStatusListener();   // 注意：无参
 6. 进度按 `subStatus` 映射，下载阶段封顶 90%
 7. `errorCode == 20230` 是主动取消，与真正的失败区别对待
 8. 合并不会删除原录音，需要清理由业务自行调 `removeFileList`
+9. `mergeRecordList` 不触发 `onRecordOperate`；`status=2` 后主动刷新录音列表

@@ -53,7 +53,9 @@ dependencies {
 
     //demo use only start
     api "com.thingclips.smart:thingsmart:${sdk_version}"
+    api "com.thingclips.smart:thingsmart-ipcsdk:${ipc_sdk_version}"
     api "com.thingclips.smart:thingsmart-bizbundle-wearkit"
     api "com.thingclips.smart:thingsmart-bizbundle-panelmore"
     api "com.thingclips.smart:thingsmart-bizbundle-family"
+    api "com.thingclips.smart:thingsmart-bizbundle-camera"
 }

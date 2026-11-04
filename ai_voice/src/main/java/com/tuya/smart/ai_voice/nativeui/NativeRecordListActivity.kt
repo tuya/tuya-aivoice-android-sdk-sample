@@ -234,7 +234,8 @@ class NativeRecordListActivity : NativeDemoBaseActivity() {
 
             override fun onRecordOperate(operate: String, infos: MutableList<RecordUpdateInfo?>?) {
                 runOnUi {
-                    // 新增会改变列表长度，必须全量刷新；改/删同样重拉以保证与筛选条件一致
+                    // 只依赖该回调处理改/删；导入和合并的新增不触发它，
+                    // 这些任务完成后靠回到本页的 onResume / 下拉刷新全量重拉
                     loadList()
                 }
             }

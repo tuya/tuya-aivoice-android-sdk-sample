@@ -6,13 +6,13 @@ import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import com.tuya.smart.ai_voice.R
 import com.tuya.smart.ai_voice.databinding.ActivityNativeEntryBinding
 import com.tuya.smart.ai_voice.databinding.ItemNativeApiEntryBinding
 import com.tuya.smart.ai_voice.nativeui.base.NativeDemoBaseActivity
+import com.tuya.smart.ai_voice.nativeui.impt.NativeAudioImportActivity
 import com.tuya.smart.ai_voice.nativeui.widget.InjectEndDispatcher.Companion.get
 
 /**

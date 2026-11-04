@@ -23,9 +23,9 @@ README 不再重复版本号或 Gradle 配置，避免多处维护后出现版�
 | Android Gradle Plugin | `com.android.tools.build:gradle` | `8.8.0` |
 | 主题插件 | `thingsmart-theme-open-plugin` | `2.0.5` |
 | BizBundle 插件 | `bizbundlePlugin` | `2.0.6` |
-| Tuya SDK | `sdk_version` | `7.11.0` |
-| IPC SDK | `ipc_sdk_version` | `7.11.1` |
-| BizBundle BOM | `biz_bom_version` | `7.11.19` |
+| Tuya SDK | `sdk_version` | `7.11.3` |
+| IPC SDK | `ipc_sdk_version` | `7.11.3` |
+| BizBundle BOM | `biz_bom_version` | `7.11.21` |
 
 升级依赖时先改这张表，再同步根工程和业务模块中的变量引用。
 
@@ -41,9 +41,9 @@ buildscript {
     ext {
         kotlin_version = '2.1.0'
         hilt_version = '2.58'
-        sdk_version = '7.11.0'
-        ipc_sdk_version = '7.11.1'
-        biz_bom_version = "7.11.19"
+        sdk_version = '7.11.3'
+        ipc_sdk_version = '7.11.3'
+        biz_bom_version = "7.11.21"
         applicationId = "com.sample.sdk"
     }
     repositories {

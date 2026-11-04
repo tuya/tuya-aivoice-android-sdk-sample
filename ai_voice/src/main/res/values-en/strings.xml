@@ -198,7 +198,7 @@
     <!-- More Native capabilities -->
     <string name="native_entry_card">Native Capabilities</string>
     <string name="native_api_list_title">Native Capabilities</string>
-    <string name="native_api_list_hint">Entry point for every Native demo page. Items follow the module numbering in docs/modules/; each page demonstrates one module end to end, including listener registration and removal. Greyed-out items cannot be opened from here — see their descriptions.</string>
+    <string name="native_api_list_hint">Native demo entry; greyed-out pages open from related flows.</string>
     <string name="native_api_entry_record_title">Module 1 · Recording control and device ability</string>
     <string name="native_api_entry_record_desc">A full recording lifecycle: start / pause / resume / stop, changing params while recording, switching the capture channel, plus Bluetooth state, battery and SNR</string>
     <string name="native_api_entry_record_api">startAudioRecording / pauseRecordTransfer / resumeRecordTransfer / stopRecordTransfer / updateParams</string>
@@ -232,7 +232,7 @@
 
     <!-- Module 4 · Offline file transfer -->
     <string name="native_offline_title">Module 4 · Offline file transfer</string>
-    <string name="native_offline_hint">Download recordings cached on a card or earphone. The mini program does this automatically: after recording stops it scans online card devices and starts a BLE download as soon as it finds pending files (total &gt; 0). This page splits it into three manual steps for observability.</string>
+    <string name="native_offline_hint">Download recordings cached on devices, step by step.</string>
     <string name="native_offline_device">Device (a real device is required)</string>
     <string name="native_offline_btn_query">① Query offline file status</string>
     <string name="native_offline_btn_load">② Start / resume download</string>
@@ -262,12 +262,26 @@
 
     <!-- Module 5 · Audio import -->
     <string name="native_import_title">Module 5 · Audio import</string>
-    <string name="native_import_hint">startImport opens the system file picker. The host Activity must override onActivityResult and call handleImportActivityResult, otherwise nothing happens after the user picks a file. This step is Native-only; the mini program container handles it.</string>
+    <string name="native_import_tab_picker">File picker</string>
+    <string name="native_import_tab_direct">Direct import</string>
+    <string name="native_import_hint">Import local audio; the host Activity must forward the picker result to the SDK.</string>
+    <string name="native_import_direct_section">Business-supplied URI import</string>
+    <string name="native_import_direct_hint">importAudioFilesForNative imports URIs supplied by your business without opening the system picker. This demo copies every MP3 / M4A / WAV from assets/audio_impt first.</string>
+    <string name="native_import_btn_direct">Import built-in audio</string>
+    <string name="native_import_toast_no_audio">No importable audio in assets/audio_impt</string>
+    <string name="native_import_toast_copy_failed">Failed to prepare built-in audio: %1$s</string>
+    <string name="native_import_dialog_single_title">Import finished</string>
+    <string name="native_import_dialog_single_message">Open the file detail page?</string>
+    <string name="native_import_dialog_multiple_title">Import finished</string>
+    <string name="native_import_dialog_multiple_message">Open the record list?</string>
+    <string name="native_import_toast_list_not_ready">Import finished, but detail data is not ready. Check it later in the record list.</string>
+    <string name="native_import_dialog_enter">Open</string>
+    <string name="native_import_dialog_stay">Stay here</string>
     <string name="native_import_status_empty">Not imported yet</string>
     <string name="native_import_btn_start">Start import (opens file picker)</string>
     <string name="native_import_btn_cancel">Cancel import</string>
     <string name="native_import_retry_section">Retry failures</string>
-    <string name="native_import_retry_hint">If files failed after import, retry or give up. retryImport also opens the file picker.</string>
+    <string name="native_import_retry_hint">If files failed after import, retry or give up. retryImport resumes from import records and does not open the file picker.</string>
     <string name="native_import_btn_retry">Retry import</string>
     <string name="native_import_btn_cancel_retry">Cancel retry</string>
     <string name="native_import_failed_section">Failed files</string>
@@ -298,15 +312,15 @@
 
     <!-- Module 6 · Cloud sync -->
     <string name="native_cloud_title">Module 6 · Cloud sync</string>
-    <string name="native_cloud_hint">Status comes from two sources: a snapshot fetched once via getCloudSyncSwitchStatus on entry, then incremental updates from SyncObserver. The mini program\'s onFileListUpdateStatusEvent is synthesised by the container; Native has no such event channel, so the snapshot rides along with the switch query and the increments must be aggregated by hand.</string>
+    <string name="native_cloud_hint">Fetch a snapshot on entry, then apply incremental sync events.</string>
     <string name="native_cloud_switch_section">Cloud sync switch</string>
-    <string name="native_cloud_switch_hint">Writing the switch is NOT a TTT SDK capability: the mini program calls the atop API m.wearable.sync.switch.save directly, and the SDK only offers a getter. The API is a full submit — enabled and syncType must both be sent every time.</string>
+    <string name="native_cloud_switch_hint">The switch is saved by a business cloud API with a full submit.</string>
     <string name="native_cloud_switch_enabled">Enable cloud sync</string>
     <string name="native_cloud_switch_wifi_only">Sync over Wi-Fi only</string>
     <string name="native_cloud_switch_empty">Not queried yet</string>
     <string name="native_cloud_btn_query_switch">Query switch status and sync snapshot</string>
     <string name="native_cloud_aggregate_section">Aggregated sync status</string>
-    <string name="native_cloud_aggregate_hint">Status is driven by uploads only; downloads do not affect it (matching the underlying implementation) and are shown as counters. The underlying IDLE state (never synced) also maps to "Synced". Note that downloadError / downloadSuccess still mean "downloading" — only onFinish is a real end.</string>
+    <string name="native_cloud_aggregate_hint">Status is driven by uploads; downloads are shown as counters.</string>
     <string name="native_cloud_sync_empty">Waiting for sync events…</string>
     <string name="native_cloud_btn_sync">Sync now (syncNoteRecord)</string>
     <string name="native_cloud_switch_format">Switch: %1$s　Sync type: %2$s\nSwitch updated at: %3$s\nLast synced at: %4$s</string>
@@ -336,11 +350,11 @@
 
     <!-- Module 8 · Merge recordings -->
     <string name="native_merge_title">Module 8 · Merge recordings</string>
-    <string name="native_merge_hint">Merge several recordings into one in the selected order. Note the API takes business recordId (String), not recordTransferId (Long).</string>
+    <string name="native_merge_hint">Merge recordings in the selected order using business recordId.</string>
     <string name="native_merge_btn_load_list">Reload recording list</string>
     <string name="native_merge_candidate_section">Candidates (tick to include)</string>
     <string name="native_merge_selected_section">Selected order</string>
-    <string name="native_merge_order_hint">List order is the audio concatenation order. The mini program uses drag and drop; this page uses up/down buttons with the same semantics.</string>
+    <string name="native_merge_order_hint">List order is the audio concatenation order.</string>
     <string name="native_merge_selected_empty">Nothing selected</string>
     <string name="native_merge_move_up">↑</string>
     <string name="native_merge_move_down">↓</string>
@@ -379,7 +393,7 @@
 
     <!-- Module 9 · Quick entries -->
     <string name="native_quick_title">Module 9 · Quick entries</string>
-    <string name="native_quick_hint">Query and toggle home-screen widgets, shortcuts and tiles. These components must be registered by the host app; this demo project registers none, so an empty list or all "hidden" states is expected. Share links are demonstrated in the record detail page.</string>
+    <string name="native_quick_hint">Query and toggle widgets, shortcuts and tiles; an empty list means none are registered.</string>
     <string name="native_quick_btn_query">Query entry status</string>
     <string name="native_quick_empty">No quick entries found (expected — this demo registers no components)</string>
     <string name="native_quick_entry_state_format">type=%1$d　componentId=%2$d　state: %3$s</string>
@@ -394,7 +408,7 @@
     <string name="native_quick_state_not_added">Not added</string>
     <string name="native_quick_state_hide">Hidden</string>
     <string name="native_quick_noop_section">Module 7 · two no-op APIs</string>
-    <string name="native_quick_noop_hint">Both APIs are no-ops on Android Native. They return onSuccess immediately and exist only to keep parity with the mini program interface.</string>
+    <string name="native_quick_noop_hint">These APIs are no-ops on Native and return success.</string>
     <string name="native_quick_btn_event_limit">operateEventLimit (no-op)</string>
     <string name="native_quick_btn_setup_channel">readyToSetupNativeChannel (no-op)</string>
     <string name="native_quick_hint_manual_add">This system does not allow the app to trigger the add; the user must long-press an empty area on the home screen and add it manually</string>
@@ -402,13 +416,13 @@
     <string name="native_quick_toast_add_failed">Failed to add</string>
     <string name="native_quick_toast_requested">Requested — check system permissions if nothing happens</string>
     <string name="native_detail_tab_mindmap">Mind Map</string>
-    <string name="native_detail_mindmap_hint">This tab shares the same data as Summary; there is no dedicated SDK API.\nIt comes from the outline / question fields of the summary JSON (double-encoded strings that need one extra decode). A real product renders a mind map from them; this demo only shows the structured data.</string>
+    <string name="native_detail_mindmap_hint">Shows structured summary data; the demo does not render graphics.</string>
     <string name="native_detail_mindmap_empty">No data yet. The outline structure appears here once a summary is generated.</string>
     <string name="native_toast_api_failed">Request failed: %1$s %2$s</string>
     <string name="native_action_share_link">Share link: %1$s</string>
     <string name="native_action_rename_no_home">No home ID; the cloud-side name was not updated</string>
     <string name="native_tag_more">+%1$d</string>
-    <string name="native_detail_transfer_edit_hint">Long-press the text to edit a single segment. The body is read-only because free-form edits cannot be mapped back to the original structure.</string>
+    <string name="native_detail_transfer_edit_hint">Long-press the text to edit one segment.</string>
     <string name="native_action_toast_download_done">Audio downloaded</string>
     <string name="native_action_toast_download_failed">Audio download failed</string>
     <string name="native_action_toast_download_started">Download started; you will be notified when it finishes</string>
@@ -443,7 +457,7 @@
     <string name="native_f2f_friend_speak">Friend speaks</string>
     <string name="native_f2f_my_speak">I speak</string>
     <string name="native_f2f_stop">Finish and save</string>
-    <string name="native_f2f_hint">Tap whoever is speaking. Switching direction restarts the recording with new params (a new session; f2fChannel and the language pair swap together) — switch between sentences.</string>
+    <string name="native_f2f_hint">Tap the current speaking direction; switch between sentences.</string>
     <string name="native_f2f_input_phone">Input: phone ▾</string>
     <string name="native_f2f_input_earphone">Input: earphone ▾</string>
     <string name="native_f2f_output_phone">Output: speaker ▾</string>
@@ -473,7 +487,7 @@
     <string name="native_f2f_toast_stopped">Recording finished and saved</string>
     <!-- ===== Audio injection settings ===== -->
     <string name="native_inject_title">Audio injection</string>
-    <string name="native_inject_hint">Audio injection is a test-only capability: it replaces microphone capture with a given audio file so the transcription / translation pipeline runs on reproducible input.\nThree constraints: (1) it only affects the phone MIC channel, not the Bluetooth earphone channel; (2) only 16kHz / mono / 16bit integer-PCM wav is supported; (3) it takes effect on the next recording only — changing it mid-recording does not affect the current one.\nThe config lives in SDK memory and is not persisted, so it is gone after a process restart.</string>
+    <string name="native_inject_hint">Replaces microphone input with PCM WAV; applies on the next recording.</string>
     <string name="native_inject_device_warning">\"%1$s\" is selected, which does not use the phone MIC channel, so these settings do not apply to it. Switch the device back to phone recording to verify injection.</string>
     <string name="native_inject_switch_section">Injection switch</string>
     <string name="native_inject_switch_enabled">Enable injection (turning it off restores real microphone capture)</string>
@@ -506,13 +520,13 @@ Injection is still enabled, so the next recording will use the same file. To res
 
     <!-- ===== Batch injection test ===== -->
     <string name="native_batch_title">Batch injection test</string>
-    <string name="native_batch_hint">Runs ASR over fixed audio for several rounds, scores WER against the reference answer and exports a report.\nOne round = push injection config → start recording → wait for playback to finish → stop recording → fetch the transcript → score. A per-round timeout (audio length × 3 + 60s) covers anything that stalls; a timed-out round is marked failed and the batch continues.\nThe screen stays on while running, and leaving the page aborts the batch.</string>
+    <string name="native_batch_hint">Runs fixed audio repeatedly, scores WER and exports a report; leaving aborts the batch.</string>
     <string name="native_batch_file_section">Audio (multiple)</string>
-    <string name="native_batch_file_hint">Only wav is listed, from the bundled samples in assets plus whatever you imported from a local folder; imported files win on a name clash. The reference answer is a txt with the same name as the audio (imported folder first, then assets); without it the round still runs but is not scored. Audio must be 16kHz / mono / 16bit integer PCM.</string>
+    <string name="native_batch_file_hint">Supports WAV and same-named TXT references; WER is skipped without TXT.</string>
     <string name="native_inject_file_item_builtin">%1$s (bundled)</string>
     <string name="native_inject_file_item_imported">%1$s (imported)</string>
     <string name="native_batch_config_section">Batch parameters (shared by every round)</string>
-    <string name="native_batch_config_hint">Languages and capability switches apply to every round in this batch. A batch can only use one source language, so run mixed-language material in separate batches — the cumulative CSV has a sourceLang column for cross-batch trends. These settings are not persisted; the page resets to defaults each time.</string>
+    <string name="native_batch_config_hint">Settings apply to every round and are not persisted.</string>
     <string name="native_batch_target_none">No translation</string>
     <string name="native_batch_cfg_asr">Live transcription</string>
     <string name="native_batch_cfg_translate">Live translation</string>
@@ -523,8 +537,7 @@ Injection is still enabled, so the next recording will use the same file. To res
     <string name="native_batch_import_done">Imported %1$d audio file(s) and %2$d reference file(s)</string>
     <string name="native_batch_import_empty">No wav or txt to import in that folder</string>
     <string name="native_batch_import_no_picker">No file picker available on this device</string>
-    <string name="native_batch_import_hint">Pick wav files and their same-named txt from a local folder (such as Download); no permission is required.
-Remember to include the txt: a corpus imported without one still runs, it just is not scored. Imported files accumulate and survive an app restart.</string>
+    <string name="native_batch_import_hint">Pick WAV files and same-named TXT references; no storage permission required.</string>
     <string name="native_batch_clear_title">Clear imported corpora</string>
     <string name="native_batch_clear_message">This deletes every imported audio and reference file. Bundled corpora are untouched.</string>
     <string name="native_batch_clear_confirm">Clear</string>
@@ -533,7 +546,7 @@ Remember to include the txt: a corpus imported without one still runs, it just i
     <string name="native_batch_file_warn_format">Sample rate / channels / bit depth differ from 16kHz mono 16bit; you may still try, but results may be off</string>
     <string name="native_batch_no_file">No wav sample is bundled.</string>
     <string name="native_batch_repeat_section">Repeats</string>
-    <string name="native_batch_repeat_hint">How many times each audio runs in a row, to observe variance on the same material. Total rounds = selected audio × repeats, iterating files on the outside and repeats on the inside.</string>
+    <string name="native_batch_repeat_hint">Repeats per audio; total rounds equal audio count multiplied by repeats.</string>
     <string name="native_batch_btn_start">Start batch</string>
     <string name="native_batch_btn_abort">Abort</string>
     <string name="native_batch_btn_share">Share report</string>

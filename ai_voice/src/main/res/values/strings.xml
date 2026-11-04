@@ -198,7 +198,7 @@
     <!-- 更多 Native 能力清单 -->
     <string name="native_entry_card">Native 能力</string>
     <string name="native_api_list_title">Native 能力</string>
-    <string name="native_api_list_hint">全部 Native 演示页的入口。条目按 docs/modules/ 的模块编号排列，每页独立演示一个模块的完整流程（含事件监听的注册与注销）。置灰条目无法从本页直接进入，原因见各自说明。</string>
+    <string name="native_api_list_hint">Native 演示页入口；置灰页面需从对应流程进入。</string>
     <string name="native_api_entry_record_title">模块 1 · 录音控制与设备能力</string>
     <string name="native_api_entry_record_desc">一次录音的完整生命周期：开始 / 暂停 / 恢复 / 停止、录音中动态改参、切换收音通道，附带蓝牙连接状态与电量、信噪比</string>
     <string name="native_api_entry_record_api">startAudioRecording / pauseRecordTransfer / resumeRecordTransfer / stopRecordTransfer / updateParams</string>
@@ -232,7 +232,7 @@
 
     <!-- 模块 4 · 离线文件传输 -->
     <string name="native_offline_title">模块 4 · 离线文件传输</string>
-    <string name="native_offline_hint">把录音卡片 / 耳机本地缓存的录音下载到手机。小程序中这一步是自动的：录音结束后遍历在线卡片设备，发现待传文件（total &gt; 0）即以 BLE 通道发起下载。本页拆成手动三步便于观察。</string>
+    <string name="native_offline_hint">把设备缓存录音下载到手机，可手动分步观察。</string>
     <string name="native_offline_device">设备（离线传输需选择真实设备）</string>
     <string name="native_offline_btn_query">① 查询离线文件状态</string>
     <string name="native_offline_btn_load">② 开始 / 续传下载</string>
@@ -262,12 +262,26 @@
 
     <!-- 模块 5 · 音频导入 -->
     <string name="native_import_title">模块 5 · 音频导入</string>
-    <string name="native_import_hint">startImport 会拉起系统文件选择器，宿主 Activity 必须重写 onActivityResult 并调用 handleImportActivityResult 回灌结果，否则选完文件后不会有任何状态事件。这一步是 Native 独有的，小程序侧由容器代劳。</string>
+    <string name="native_import_tab_picker">文件选择器</string>
+    <string name="native_import_tab_direct">业务直传</string>
+    <string name="native_import_hint">选择本地音频导入；宿主 Activity 需把选择器结果回灌给 SDK。</string>
+    <string name="native_import_direct_section">业务指定 Uri 直传</string>
+    <string name="native_import_direct_hint">importAudioFilesForNative 适合业务自己拿到 Uri 后直传，不拉起系统选择器。Demo 会拷贝 assets/audio_impt 下全部 MP3 / M4A / WAV 后导入。</string>
+    <string name="native_import_btn_direct">直传内置音频</string>
+    <string name="native_import_toast_no_audio">assets/audio_impt 下没有可导入的音频</string>
+    <string name="native_import_toast_copy_failed">内置音频准备失败：%1$s</string>
+    <string name="native_import_dialog_single_title">导入完成</string>
+    <string name="native_import_dialog_single_message">是否进入文件详情？</string>
+    <string name="native_import_dialog_multiple_title">导入完成</string>
+    <string name="native_import_dialog_multiple_message">是否进入文件列表？</string>
+    <string name="native_import_toast_list_not_ready">导入完成，但详情数据未就绪，请稍后在列表页查看</string>
+    <string name="native_import_dialog_enter">进入</string>
+    <string name="native_import_dialog_stay">留在本页</string>
     <string name="native_import_status_empty">尚未导入</string>
     <string name="native_import_btn_start">发起导入（拉起文件选择器）</string>
     <string name="native_import_btn_cancel">取消导入</string>
     <string name="native_import_retry_section">失败重试</string>
-    <string name="native_import_retry_hint">导入完成后若存在失败文件，可重试或放弃。retryImport 同样会拉起文件选择器。</string>
+    <string name="native_import_retry_hint">导入完成后若存在失败文件，可重试或放弃。retryImport 会从导入记录恢复，不再拉起文件选择器。</string>
     <string name="native_import_btn_retry">重试导入</string>
     <string name="native_import_btn_cancel_retry">取消重试</string>
     <string name="native_import_failed_section">失败文件</string>
@@ -298,15 +312,15 @@
 
     <!-- 模块 6 · 云同步 -->
     <string name="native_cloud_title">模块 6 · 云同步</string>
-    <string name="native_cloud_hint">状态有两个来源：进页用 getCloudSyncSwitchStatus 取一次快照，之后靠 SyncObserver 增量更新。小程序的 onFileListUpdateStatusEvent 由容器合成，Native 无此事件通道，故快照随开关查询一并返回、增量需自行聚合。</string>
+    <string name="native_cloud_hint">进页取一次状态快照，之后靠同步事件增量更新。</string>
     <string name="native_cloud_switch_section">云同步开关</string>
-    <string name="native_cloud_switch_hint">开关的「写入」不属于 TTT SDK 能力：小程序自己直调 atop 云接口 m.wearable.sync.switch.save，SDK 只提供查询。接口为全量提交，enabled 与 syncType 每次都要一起传。</string>
+    <string name="native_cloud_switch_hint">开关写入由业务云接口完成，需全量提交开关与同步方式。</string>
     <string name="native_cloud_switch_enabled">开启云同步</string>
     <string name="native_cloud_switch_wifi_only">仅在 Wi-Fi 下同步</string>
     <string name="native_cloud_switch_empty">尚未查询</string>
     <string name="native_cloud_btn_query_switch">查询开关状态与同步快照</string>
     <string name="native_cloud_aggregate_section">同步聚合状态</string>
-    <string name="native_cloud_aggregate_hint">状态只由上传决定，下载不参与计算（与底层一致），仅计数展示。底层 IDLE（从未同步）也归入「同步成功」。注意 downloadError / downloadSuccess 语义仍是「下载中」，只有 onFinish 才是真结束。</string>
+    <string name="native_cloud_aggregate_hint">状态由上传决定；下载仅计数展示。</string>
     <string name="native_cloud_sync_empty">等待同步事件…</string>
     <string name="native_cloud_btn_sync">立即同步（syncNoteRecord）</string>
     <string name="native_cloud_switch_format">开关：%1$s　同步类型：%2$s\n开关更新时间：%3$s\n最近同步时间：%4$s</string>
@@ -336,11 +350,11 @@
 
     <!-- 模块 8 · 合并录音 -->
     <string name="native_merge_title">模块 8 · 合并录音</string>
-    <string name="native_merge_hint">把多条录音按选定顺序合并为一条。注意合并接口传的是业务 recordId（String），不是 recordTransferId（Long）。</string>
+    <string name="native_merge_hint">按选定顺序合并录音；接口使用业务 recordId。</string>
     <string name="native_merge_btn_load_list">重新加载录音列表</string>
     <string name="native_merge_candidate_section">候选录音（勾选参与合并）</string>
     <string name="native_merge_selected_section">已选顺序</string>
-    <string name="native_merge_order_hint">列表顺序即音频拼接次序。小程序用拖拽排序，此处用上移/下移，语义相同。</string>
+    <string name="native_merge_order_hint">列表顺序即音频拼接顺序。</string>
     <string name="native_merge_selected_empty">尚未选择</string>
     <string name="native_merge_move_up">↑</string>
     <string name="native_merge_move_down">↓</string>
@@ -379,7 +393,7 @@
 
     <!-- 模块 9 · 快捷入口 -->
     <string name="native_quick_title">模块 9 · 快捷入口</string>
-    <string name="native_quick_hint">查询与开关桌面小组件 / 快捷方式 / 磁贴。这些组件需宿主 App 事先注册，本 Demo 工程未注册任何此类组件，返回空列表或全部「隐藏添加」属正常。分享链接在录音详情页的更多操作中演示。</string>
+    <string name="native_quick_hint">查询并开关小组件、快捷方式和磁贴；空列表表示宿主未注册。</string>
     <string name="native_quick_btn_query">查询入口状态</string>
     <string name="native_quick_empty">未查询到快捷入口（本 Demo 未注册组件，属正常）</string>
     <string name="native_quick_entry_state_format">type=%1$d　componentId=%2$d　状态：%3$s</string>
@@ -394,7 +408,7 @@
     <string name="native_quick_state_not_added">未添加</string>
     <string name="native_quick_state_hide">隐藏添加</string>
     <string name="native_quick_noop_section">模块 7 · 两个 no-op 接口</string>
-    <string name="native_quick_noop_hint">以下两个接口在 Android Native 侧无实际行为，直接回 onSuccess，仅为与小程序接口对齐而保留。</string>
+    <string name="native_quick_noop_hint">以下接口在 Native 侧无实际行为，直接返回成功。</string>
     <string name="native_quick_btn_event_limit">operateEventLimit（no-op）</string>
     <string name="native_quick_btn_setup_channel">readyToSetupNativeChannel（no-op）</string>
     <string name="native_quick_hint_manual_add">当前系统不支持由 App 发起添加，需用户在桌面长按空白处手动添加</string>
@@ -402,13 +416,13 @@
     <string name="native_quick_toast_add_failed">添加失败</string>
     <string name="native_quick_toast_requested">已请求，若未生效请检查系统权限</string>
     <string name="native_detail_tab_mindmap">思维导图</string>
-    <string name="native_detail_mindmap_hint">本 Tab 与「总结」共用同一份数据，没有独立的 SDK 接口。\n数据源是总结 JSON 的 outline / question 字段（原始值是二次编码的字符串，需解一层）。真实产品应据此渲染成思维导图，本 Demo 只展示结构化数据。</string>
+    <string name="native_detail_mindmap_hint">展示总结 JSON 中的结构化数据，Demo 不渲染图形。</string>
     <string name="native_detail_mindmap_empty">暂无数据。生成总结后，这里会显示 outline 结构。</string>
     <string name="native_toast_api_failed">调用失败：%1$s %2$s</string>
     <string name="native_action_share_link">分享链接：%1$s</string>
     <string name="native_action_rename_no_home">未获取到家庭 ID，云端名称未同步</string>
     <string name="native_tag_more">+%1$d</string>
-    <string name="native_detail_transfer_edit_hint">长按正文可选择某一段修改。整段直接编辑无法安全写回原始结构，故正文为只读。</string>
+    <string name="native_detail_transfer_edit_hint">长按正文选择某一段修改。</string>
     <string name="native_action_toast_download_done">音频已下载到本地</string>
     <string name="native_action_toast_download_failed">音频下载失败</string>
     <string name="native_action_toast_download_started">已发起下载，完成后会提示</string>
@@ -442,7 +456,7 @@
     <string name="native_f2f_friend_speak">朋友说</string>
     <string name="native_f2f_my_speak">我说</string>
     <string name="native_f2f_stop">结束并保存</string>
-    <string name="native_f2f_hint">轮到谁说话就点谁。方向切换会以新参数重新开始录音（新会话，f2fChannel 与语言对同时交换），请在语句间切换。</string>
+    <string name="native_f2f_hint">点当前说话方向；切换请在语句间进行。</string>
     <string name="native_f2f_input_phone">输入·手机 ▾</string>
     <string name="native_f2f_input_earphone">输入·耳机 ▾</string>
     <string name="native_f2f_output_phone">输出·喇叭 ▾</string>
@@ -472,7 +486,7 @@
     <string name="native_f2f_toast_stopped">录音已结束并保存</string>
     <!-- ===== 灌流（音频注入）设置 ===== -->
     <string name="native_inject_title">灌流设置</string>
-    <string name="native_inject_hint">灌流是测试能力：把麦克风采集到的数据替换为指定音频文件，让转写 / 翻译链路跑在可复现的输入上。\n三条约束：① 只作用于手机 MIC 通道，蓝牙耳机通道无效；② 只支持 16kHz / 单声道 / 16bit 的整型 PCM wav；③ 只在下次开始录音时生效，录音中改动对本次录音没有影响。\n配置保存在 SDK 的内存中，不做本地持久化，进程重启即失效。</string>
+    <string name="native_inject_hint">用指定音频替换麦克风输入；支持 PCM WAV，下次开始录音生效。</string>
     <string name="native_inject_device_warning">当前选中的是「%1$s」，走的不是手机 MIC 通道，本页设置对它不生效。需要验证灌流请把设备切回「手机本地录音」。</string>
     <string name="native_inject_switch_section">灌流开关</string>
     <string name="native_inject_switch_enabled">开启灌流（关闭后恢复真实麦克风采集）</string>
@@ -506,13 +520,13 @@
     <string name="native_f2f_swap">⇄</string>
     <!-- ===== 灌流批量测试 ===== -->
     <string name="native_batch_title">灌流批量测试</string>
-    <string name="native_batch_hint">用固定音频连续跑多轮 ASR，自动与参考答案计算 WER 并导出报告。\n一轮 = 下发灌流配置 → 开始录音 → 等灌流播完 → 停止录音 → 拉取转写结果 → 算分。任一环节卡住由单轮超时兜底（音频时长 × 3 + 60 秒），超时判该轮失败并继续下一轮。\n跑批期间屏幕保持常亮，退出页面即中止。</string>
+    <string name="native_batch_hint">固定音频连续跑批，自动计算 WER 并导出报告；退出即中止。</string>
     <string name="native_batch_file_section">音频（可多选）</string>
-    <string name="native_batch_file_hint">只列 wav，来源为 assets 内置样例与你从本地目录导入的语料，同名时导入优先。参考答案是与音频同名的 txt（导入目录优先，其次 assets），缺失时照常跑但不算 WER。音频需为 16kHz / 单声道 / 16bit 的整型 PCM。</string>
+    <string name="native_batch_file_hint">只支持 WAV 和同名 TXT 参考；TXT 缺失时不算 WER。</string>
     <string name="native_inject_file_item_builtin">%1$s（内置）</string>
     <string name="native_inject_file_item_imported">%1$s（导入）</string>
     <string name="native_batch_config_section">跑批参数（整批共用）</string>
-    <string name="native_batch_config_hint">语言与能力开关对本批全部轮次生效。同一批只能用一个源语言，混语种请分批跑——累积 CSV 里有 sourceLang 列，跨批次筛出来看趋势即可。本页配置不做持久化，每次进入回到默认值。</string>
+    <string name="native_batch_config_hint">配置对本批全部轮次生效，不做持久化。</string>
     <string name="native_batch_target_none">不翻译</string>
     <string name="native_batch_cfg_asr">实时转写</string>
     <string name="native_batch_cfg_translate">实时翻译</string>
@@ -523,8 +537,7 @@
     <string name="native_batch_import_done">导入完成：音频 %1$d 个，参考答案 %2$d 个</string>
     <string name="native_batch_import_empty">该目录下没有可导入的 wav 或 txt</string>
     <string name="native_batch_import_no_picker">系统没有可用的文件选择器</string>
-    <string name="native_batch_import_hint">从手机本地目录（如 Download）多选 wav 与同名 txt 导入，不需要任何权限。
-记得把 txt 一起选上：只导入 wav 的语料照样能跑，只是不计算 WER。导入的文件会累积保留，重启应用仍在。</string>
+    <string name="native_batch_import_hint">从本地多选 WAV 与同名 TXT，无需存储权限。</string>
     <string name="native_batch_clear_title">清空导入语料</string>
     <string name="native_batch_clear_message">将删除全部导入的音频与参考答案。内置语料不受影响。</string>
     <string name="native_batch_clear_confirm">清空</string>
@@ -533,7 +546,7 @@
     <string name="native_batch_file_warn_format">采样率 / 声道 / 位深与 16kHz 单声道 16bit 不符，可以试跑但结果未必正常</string>
     <string name="native_batch_no_file">没有内置的 wav 样例。</string>
     <string name="native_batch_repeat_section">重复次数</string>
-    <string name="native_batch_repeat_hint">每个音频连跑几次，用于观察同一语料的结果抖动。总轮数 = 选中音频数 × 重复次数，顺序为文件外层、重复内层。</string>
+    <string name="native_batch_repeat_hint">每个音频重复跑的次数；总轮数为音频数乘以重复次数。</string>
     <string name="native_batch_btn_start">开始跑批</string>
     <string name="native_batch_btn_abort">中止</string>
     <string name="native_batch_btn_share">分享报告</string>

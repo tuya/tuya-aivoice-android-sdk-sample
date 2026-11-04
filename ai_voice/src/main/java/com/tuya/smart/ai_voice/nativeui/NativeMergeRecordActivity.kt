@@ -386,6 +386,8 @@ class NativeMergeRecordActivity : NativeDemoBaseActivity() {
 
 
         if (status == MergeStatusEvent.STATUS_FINISHED) {
+            // mergeRecordList 不触发 onRecordOperate(add)；
+            // 列表页需回到本页 / 下拉刷新重拉，这里用事件 recordId 直接打开结果详情。
             mergedRecordId = event.recordId
             binding.btnOpenResult.setEnabled(!TextUtils.isEmpty(mergedRecordId))
             toast(getString(R.string.native_merge_toast_finished, mergedRecordId))

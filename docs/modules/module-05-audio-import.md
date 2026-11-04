@@ -2,7 +2,7 @@
 
 | 项 | 内容 |
 |---|---|
-| Demo 页面 | [`NativeAudioImportActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeAudioImportActivity.kt) |
+| Demo 页面 | [`NativeAudioImportActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/impt/NativeAudioImportActivity.kt) |
 | 全局约定 | [接入指南](./README.md) |
 
 ---
@@ -10,10 +10,27 @@
 ## 一、能力概述
 
 把手机本地已有的音频文件导入为录音记录。导入后它就是一条普通录音，
-可以照常转写、总结、重命名、加标签。
+可以照常转写、总结、翻译、重命名、加标签。
 
-导入本身由 SDK 全程接管：拉起系统文件选择器、解码、转码、落库。
-接入方要做的只有三件事——**回灌选择器结果**、渲染进度、处理失败重试。
+Demo 页使用两个 Tab 分开展示入口：
+
+| Tab | 入口 | 说明 |
+|---|---|---|
+| 文件选择器 | `startImport` / `retryImport` | 拉起系统文件选择器，宿主必须回灌 `onActivityResult` |
+| 业务直传 | `importAudioFilesForNative` | 业务直接传 `Uri`，Demo 使用 `assets/audio_impt` |
+
+两个 Tab 各自展示状态和失败列表，但 SDK 内部是同一个导入任务状态。
+
+导入有两种发起方式：
+
+1. `startImport` 拉起系统文件选择器，由用户选文件；
+2. `importAudioFilesForNative` 由业务直接传入 `Uri`，不拉起选择器，
+   适合“已经从业务侧拿到音频地址”的场景。
+
+两种方式后续都由 SDK 解码、转码、落库，都使用同一套导入状态监听。
+`startImport`、`retryImport` 和 `importAudioFilesForNative` 都不派发录音列表新增事件，
+导入完成后调用方需主动刷新列表。直传示例见
+[`docs/samples/audio-import-direct-uri.md`](../samples/audio-import-direct-uri.md)。
 
 ---
 
@@ -22,7 +39,8 @@
 | 方法 | 作用 | 回调 |
 |---|---|---|
 | `startImport` | 开始导入，会拉起系统文件选择器 | `IAudioImportCallBack` |
-| `retryImport` | 重试失败的文件，同样拉起选择器 | `IAudioImportCallBack` |
+| `retryImport` | 从导入记录恢复并重试失败文件 | `IAudioImportCallBack` |
+| `importAudioFilesForNative` | 直传业务指定的 Uri 列表；需 SDK >= 7.11.0 | 无 |
 | `cancelImport` | 取消进行中的导入 | `IAudioImportCallBack` |
 | `cancelRetry` | 放弃重试，清掉失败列表 | `IAudioImportCallBack` |
 | `getAudioImportStatus` | 查询导入状态快照 | **同步返回** `FileImportStatusEventApp` |
@@ -55,14 +73,17 @@ sequenceDiagram
     UI->>SDK: onActivityResult(requestCode, resultCode, data)
     Note right of UI: 必接。漏掉这步选完文件后没有任何反应
 
+    Note over UI: 或点「直传业务 Uri」
+    UI->>SDK: importAudioFilesForNative(uris)
+    Note right of UI: 不拉起选择器，也不需要 onActivityResult 回灌
+
     SDK-->>UI: onStatusUpdate(status=1 导入中)
     SDK-->>UI: onStatusUpdate(status=2 导入完成)
-    Note right of UI: 进度取 successCount / totalFileCount
+    Note right of UI: 进度取 successCount / totalFileCount<br/>不触发 onRecordOperate(add)，需主动刷新列表
 
     alt failedFiles 非空
         UI->>SDK: retryImport(callback)
-        SDK->>Picker: 再次拉起选择器
-        Picker-->>UI: onActivityResult → SDK onActivityResult
+        SDK->>SDK: 从导入记录恢复并继续处理失败文件
     else 放弃重试
         UI->>SDK: cancelRetry(callback)
     end
@@ -94,13 +115,41 @@ sequenceDiagram
 ### `retryImport(IAudioImportCallBack callback)` / `cancelRetry(IAudioImportCallBack callback)`
 
 `status == 2` 且 `failedFiles` 非空时的两条出路：重试或放弃。
-`retryImport` 同样会拉起文件选择器，同样需要回灌结果。
+`retryImport` 会从已保存的导入记录恢复，**不会拉起文件选择器**，也不需要回灌结果。
+重新直传适合 `Uri` 已失效或业务想换文件的场景。
 
 | 参数 | 类型 | 必填 | 说明 |
 |---|---|---|---|
 | `callback` | `IAudioImportCallBack` | 否 | 结果回调 |
 
 `cancelRetry` 清掉失败列表，之后可重新发起一次全新的导入。
+
+---
+
+### `importAudioFilesForNative(@NonNull List<Uri> uris)`
+
+直传业务指定的音频文件，不拉起系统文件选择器。需要 SDK >= 7.11.0。
+
+| 参数 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| `uris` | `List<Uri>` | 是 | 待导入文件；支持 `content://` 与 `file://` |
+
+行为与约定：
+
+- 不返回回调，导入进度以 `IFileImportStatusListener` 为准；
+- 同一时刻只允许一个批次；重复调用会取消上一批次尚未完成的导入；
+- 重复 `Uri` 不去重，会逐文件独立导入；
+- `content://` 必须可读，`file://` 通常是应用私有文件；
+- SDK 导入会持有临时副本，但调用后尽快导入更可靠，不要长期复用未持久化授权的 `content://`。
+
+```java
+List<Uri> uris = Arrays.asList(
+        Uri.fromFile(new File(getCacheDir(), "meeting_01.mp3")),
+        Uri.fromFile(new File(getCacheDir(), "meeting_02.m4a")),
+        Uri.fromFile(new File(getCacheDir(), "meeting_03.wav"))
+);
+manager.importAudioFilesForNative(uris);
+```
 
 ---
 
@@ -179,6 +228,7 @@ manager.removeFileImportStatusListener();   // 注意：无参
 | `totalFileCount` | `Int?` | 本次导入的文件总数 |
 | `successCount` | `Int?` | 已成功导入数，进度即 `successCount / totalFileCount` |
 | `failedFiles` | `List<FailedFileInfo>?` | 失败文件列表 |
+| `importedFiles` | `List<FileImportedFileInfo>?` | 成功明细，含 `recordId` / `fileId` / `sourceUri` / `displayName` / `durationMs` |
 | `timestamp` | `Long` | 事件时间戳 |
 
 **`status` 取值**
@@ -203,7 +253,33 @@ manager.removeFileImportStatusListener();   // 注意：无参
 
 ---
 
+### `FileImportedFileInfo`
+
+单条音频导入成功后的明细。`importedFiles` 只在成功时返回对应条目。
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `sourceUri` | `Uri` | 调用 `importAudioFilesForNative` 时传入的原始 Uri |
+| `recordId` | `String` | 业务录音 ID，用于打开详情页 |
+| `fileId` | `Long` | 录音文件数据库主键，发起转写 / 总结任务时使用 |
+| `durationMs` | `Long` | 音频时长，单位毫秒 |
+| `displayName` | `String?` | 显示名，含扩展名 |
+
+---
+
 ## 六、关键约定
+
+### 支持范围与上限
+
+| 项 | 当前支持 |
+|---|---|
+| 音频格式 | MP3 / M4A / WAV |
+| URI 协议 | `content://` / `file://` |
+| 单文件大小 | 不超过 500 MB |
+| 单文件时长 | 不超过 5 小时 |
+| 单批数量 | 20 个 |
+
+超过限制时不会生成录音记录，会出现在 `failedFiles` 中。
 
 ### 按原因归类展示失败
 
@@ -223,9 +299,9 @@ manager.removeFileImportStatusListener();   // 注意：无参
 
 ### 导入成功的文件会进录音列表
 
-导入完成后这些文件就是普通录音记录，文件列表页可通过
-`IRecordFileUpdateCallback.onRecordOperate`（新增）感知并刷新，
-无需在导入页额外通知列表页。
+导入完成后这些文件就是普通录音记录。`startImport`、`retryImport` 和
+`importAudioFilesForNative` 都**不触发** `IRecordFileUpdateCallback.onRecordOperate`，
+导入完成（`status == 2`）后由调用方自行刷新录音列表。
 
 ---
 
@@ -277,3 +353,8 @@ manager.removeFileImportStatusListener();   // 注意：无参
 5. 失败原因按类归并展示，不要把裸码抛给用户
 6. `removeFileImportStatusListener()` **无参**，会移除全部导入监听，多页面注册时注意
 7. `cancelImport` 只中止未处理的部分，已导入的文件保留
+8. 业务直传用 `importAudioFilesForNative`，`SDK >= 7.11.0`；
+   发起前检查格式、大小、时长、数量和 Uri 读权限
+9. `startImport` / `retryImport` / `importAudioFilesForNative` 均不触发
+   `onRecordOperate`；完成后主动重拉录音列表
+10. `onStatusUpdate` 可能在子线程；更新 UI、弹窗或跳转前必须切主线程

@@ -51,7 +51,6 @@ import java.util.Locale
  * 本地录音有没有存上云   SyncObserver.UploadListener      → 本页的聚合状态
  * 云端记录有没有拉回本地  IRecordFileUpdateCallback         → 列表页全量重拉
  * .onRecordListSyncSuccess()
- * .onRecordOperate(ADD)
  * 某条录音的音频下完没有  SyncObserver.DownloadListener     → 单条状态
  * .onFinish
  * </pre>

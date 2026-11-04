@@ -13,11 +13,11 @@ import com.tuya.smart.ai_voice.nativeui.base.NativeDemoBaseActivity
 
 /**
  * 模块 4 · 离线文件传输演示页。
- * 
- * 
+ *
+ *
  * 把**录音卡片**本地缓存的录音文件下载到手机，支持 BLE 与 AP（Wi-Fi 快传）两种通道。
- * 
- * 
+ *
+ *
  * **本模块只支持录音卡片**（`product_type == "card"`，即
  * `AudioDeviceCategory.CATEGORY_CARD`）：卡片没有屏幕也不常连手机，
  * 录下的音频先存在设备上、之后再回传；耳机类设备走实时链路，不产生设备侧缓存文件。
@@ -31,8 +31,8 @@ import com.tuya.smart.ai_voice.nativeui.base.NativeDemoBaseActivity
  * **AI 笔记中这一步是自动的**：录音结束或首页可见时遍历在线卡片设备，
  * 逐个 `getDeviceOfflineFileStatus`，发现 `response.total > 0` 就直接以
  * `channel=BLE、sessionId=已有值或 0` 发起下载，全程无用户操作。
- * 
- * 
+ *
+ *
  * **进度回调有两条路径，本页两条都演示：**
  * 
  *  * `registerFileProgressCallback` 注册的全局回调 —— 主用。建议在 App 级注册一次，
@@ -46,8 +46,8 @@ import com.tuya.smart.ai_voice.nativeui.base.NativeDemoBaseActivity
  * **AP 建链状态机的数据源是进度回调，不是接口返回值**：
  * `response.apConnectState`（0 热点未开启 / 1 已开启 / 2 已连接）与
  * `DeviceOfflineFileStatus.errorCode` 共同驱动 UI，见 [.renderProgress]。
- * 
- * 
+ *
+ *
  * 本页有意**不**实现的两点（属于产品交互，各家 App 自行决定）：
  * 
  *  * 建链失败重试计数 —— AI 笔记的策略是最多重试 3 次 `switchMode(AP)`，超限弹错误框

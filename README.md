@@ -26,7 +26,7 @@ per-parameter reference, data structure field tables, error codes and an integra
 | 2 · Transcription & summary | [module-02](./docs/modules/module-02-transcribe-summary.md) |
 | 3 · File management | [module-03](./docs/modules/module-03-file-management.md) |
 | 4 · Offline file transfer | [module-04](./docs/modules/module-04-offline-transfer.md) |
-| 5 · Audio import | [module-05](./docs/modules/module-05-audio-import.md) |
+| 5 · Audio import (business URI import) | [module-05](./docs/modules/module-05-audio-import.md) · [direct URI sample](./docs/samples/audio-import-direct-uri.md) |
 | 6 · Cloud sync | [module-06](./docs/modules/module-06-cloud-sync.md) |
 | 8 · Merge recordings | [module-08](./docs/modules/module-08-merge-record.md) |
 | 9 · Share / floating ball / quick entry | [module-09](./docs/modules/module-09-share-and-entry.md) |

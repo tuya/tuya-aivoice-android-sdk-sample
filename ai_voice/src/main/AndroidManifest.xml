@@ -43,7 +43,7 @@
             android:name=".nativeui.NativeOfflineFileActivity"
             android:exported="false" />
         <activity
-            android:name=".nativeui.NativeAudioImportActivity"
+            android:name=".nativeui.impt.NativeAudioImportActivity"
             android:exported="false" />
         <activity
             android:name=".nativeui.NativeCloudSyncActivity"
