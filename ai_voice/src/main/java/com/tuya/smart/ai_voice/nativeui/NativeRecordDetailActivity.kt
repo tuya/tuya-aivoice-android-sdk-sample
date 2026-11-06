@@ -1,18 +1,29 @@
 package com.tuya.smart.ai_voice.nativeui
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
+
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.text.TextUtils
 import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.GridLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
+import androidx.recyclerview.widget.RecyclerView
 import com.alibaba.fastjson.JSONArray
+import com.alibaba.fastjson.JSONObject
+import com.bumptech.glide.Glide
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.tabs.TabLayout
 import com.thingclips.smart.ai.audio.sync.api.DownloadListener
@@ -34,9 +45,12 @@ import com.thingclips.smart.earphone.enhance.api.listener.ITransferListener
 import com.thingclips.smart.sdk.api.IResultCallback
 import com.tuya.smart.ai_voice.R
 import com.tuya.smart.ai_voice.databinding.ActivityNativeRecordDetailBinding
+import com.tuya.smart.ai_voice.databinding.DialogNativeTemplateSheetBinding
 import com.tuya.smart.ai_voice.databinding.DialogNativeInputBinding
+import com.tuya.smart.ai_voice.databinding.ItemNativeTemplateCardBinding
 import com.tuya.smart.ai_voice.nativeui.base.NativeDemoBaseActivity
 import com.tuya.smart.ai_voice.nativeui.business.AudioContentBusiness
+import com.tuya.smart.ai_voice.nativeui.business.SummaryTemplateBusiness
 import com.tuya.smart.ai_voice.nativeui.widget.RecordErrorCode.messageOf
 import com.tuya.smart.ai_voice.nativeui.widget.RecordTagBinder
 import com.tuya.smart.ai_voice.nativeui.widget.TranscriptFileProvider
@@ -101,6 +115,11 @@ class NativeRecordDetailActivity : NativeDemoBaseActivity() {
     private var summaryStatus = -1
     private var originalLanguage: String? = null
     private var currentName: String? = null
+    private var translateLang: String? = null
+    private var summaryLang: String? = null
+    private var templateId: String? = null
+    private var templateName: String? = null
+    private val templateBusiness = SummaryTemplateBusiness()
 
     /** 转写模式与来源，决定正文走哪条取数分支。  */
     private var transferType = 0
@@ -171,7 +190,15 @@ class NativeRecordDetailActivity : NativeDemoBaseActivity() {
             return
         }
         bindViews()
+        refreshTranslateButton()
+        refreshSummaryLangButton()
         loadDetail()
+    }
+
+    override fun onDestroy() {
+        stopPulse(binding.nativeDetailTransferDot)
+        stopPulse(binding.nativeDetailSummaryDot)
+        super.onDestroy()
     }
 
     private fun bindViews() {
@@ -180,8 +207,13 @@ class NativeRecordDetailActivity : NativeDemoBaseActivity() {
 
         binding.nativeDetailBtnTransfer.setOnClickListener(View.OnClickListener { v: View? -> generateTransfer() })
         binding.nativeDetailBtnSummary.setOnClickListener(View.OnClickListener { v: View? -> generateSummary() })
-        binding.nativeDetailBtnRefresh.setOnClickListener(View.OnClickListener { v: View? -> loadDetail() })
-        binding.nativeDetailBtnMore.setOnClickListener(View.OnClickListener { v: View? -> showMoreActions() })
+        setTopBarAction(
+            R.drawable.ic_native_more,
+            R.string.native_detail_more
+        ) { showMoreActions() }
+        binding.nativeDetailTranslateLang.setOnClickListener { showTranslateLangPicker() }
+        binding.nativeDetailSummaryLang.setOnClickListener { showSummaryLangPicker() }
+        binding.nativeDetailTemplate.setOnClickListener { showTemplatePicker() }
         binding.nativeDetailBtnSaveSummary.setOnClickListener(View.OnClickListener { v: View? -> saveSummary() })
 
         // 两种转写模式统一用「长按 → 选一段 → 弹窗改」，只是底层保存接口不同
@@ -412,10 +444,10 @@ class NativeRecordDetailActivity : NativeDemoBaseActivity() {
 
         currentName =
             if (TextUtils.isEmpty(bean.name)) getString(R.string.native_unnamed) else bean.name
-        binding.nativeDetailName.setText(currentName)
+        setTitleText(currentName)
         val time =
             if (bean.recordTime == null) "" else dateFmt.format(Date(bean.recordTime * 1000L))
-        binding.nativeDetailMeta.setText(
+        setTitleSubtitle(
             getString(
                 R.string.native_detail_meta_format,
                 formatDuration(durationMs), time
@@ -466,8 +498,295 @@ class NativeRecordDetailActivity : NativeDemoBaseActivity() {
     }
 
     private fun refreshBadges() {
-        binding.nativeDetailTransferBadge.setText(transferBadgeText(transferStatus))
-        binding.nativeDetailSummaryBadge.setText(summaryBadgeText(summaryStatus))
+        if (transferStatus == TRANSFER_DONE) {
+            hideUploadNotice()
+        }
+        refreshBadge(
+            binding.nativeDetailTransferBadge,
+            transferBadgeText(transferStatus),
+            when (transferStatus) {
+                TRANSFER_RUNNING -> R.drawable.bg_native_status_blue
+                TRANSFER_DONE -> R.drawable.bg_native_status_green
+                TRANSFER_FAILED -> R.drawable.bg_native_status_red
+                else -> R.drawable.bg_native_status_gray
+            },
+            when (transferStatus) {
+                TRANSFER_RUNNING -> R.color.ai_voice_tab_selected
+                TRANSFER_DONE -> R.color.ai_voice_card_green
+                TRANSFER_FAILED -> R.color.ai_voice_logout_text
+                else -> R.color.ai_voice_text_secondary
+            },
+            when (transferStatus) {
+                TRANSFER_DONE -> R.drawable.ic_native_check
+                TRANSFER_FAILED -> R.drawable.ic_native_warning
+                else -> null
+            },
+            transferStatus == TRANSFER_RUNNING
+        )
+        refreshBadge(
+            binding.nativeDetailSummaryBadge,
+            summaryBadgeText(summaryStatus),
+            when (summaryStatus) {
+                SUMMARY_RUNNING -> R.drawable.bg_native_status_blue
+                SUMMARY_DONE -> R.drawable.bg_native_status_green
+                SUMMARY_FAILED -> R.drawable.bg_native_status_red
+                else -> R.drawable.bg_native_status_gray
+            },
+            when (summaryStatus) {
+                SUMMARY_RUNNING -> R.color.ai_voice_tab_selected
+                SUMMARY_DONE -> R.color.ai_voice_card_green
+                SUMMARY_FAILED -> R.color.ai_voice_logout_text
+                else -> R.color.ai_voice_text_secondary
+            },
+            when (summaryStatus) {
+                SUMMARY_DONE -> R.drawable.ic_native_check
+                SUMMARY_FAILED -> R.drawable.ic_native_warning
+                else -> null
+            },
+            summaryStatus == SUMMARY_RUNNING
+        )
+    }
+
+    private fun refreshBadge(
+        view: LinearLayout,
+        text: String,
+        backgroundRes: Int,
+        colorRes: Int,
+        iconRes: Int?,
+        running: Boolean
+    ) {
+        val dot = view.getChildAt(0) as ImageView
+        val label = view.getChildAt(1) as TextView
+        val icon = view.getChildAt(2) as ImageView
+        val color = getColor(colorRes)
+
+        view.setBackgroundResource(backgroundRes)
+        dot.background?.mutate()?.setTint(color)
+        label.text = text
+        label.setTextColor(color)
+        if (running) {
+            icon.visibility = View.GONE
+            startPulse(dot)
+        } else {
+            stopPulse(dot)
+            if (iconRes == null) {
+                icon.visibility = View.GONE
+            } else {
+                icon.visibility = View.VISIBLE
+                icon.setImageResource(iconRes)
+                icon.setColorFilter(color)
+            }
+        }
+    }
+
+    private fun startPulse(view: ImageView) {
+        if (view.getTag(R.id.native_detail_transfer_dot) is ObjectAnimator) return
+        ObjectAnimator.ofFloat(view, View.ALPHA, 1f, 0.25f).apply {
+            duration = 700L
+            repeatCount = ValueAnimator.INFINITE
+            repeatMode = ValueAnimator.REVERSE
+            start()
+        }.also { view.setTag(R.id.native_detail_transfer_dot, it) }
+    }
+
+    private fun stopPulse(view: ImageView) {
+        (view.getTag(R.id.native_detail_transfer_dot) as? ObjectAnimator)?.cancel()
+        view.setTag(R.id.native_detail_transfer_dot, null)
+        view.alpha = 1f
+    }
+
+    private fun hideUploadNotice() {
+        binding.nativeDetailUpload.visibility = View.GONE
+    }
+
+    private fun showTranslateLangPicker() {
+        val options = listOf(getString(R.string.native_detail_translate_off), *LANGS)
+        val current = if (translateLang == null) 0 else LANGS.indexOf(translateLang) + 1
+        AlertDialog.Builder(this)
+            .setTitle(R.string.native_detail_hint_translate_lang)
+            .setSingleChoiceItems(options.toTypedArray(), current) { dialog, which ->
+                translateLang = if (which == 0) null else LANGS[which - 1]
+                refreshTranslateButton()
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun refreshTranslateButton() {
+        val language = translateLang
+        binding.nativeDetailTranslateLang.text = if (language == null) {
+            getString(R.string.native_detail_translate_lang_empty)
+        } else {
+            getString(R.string.native_detail_translate_lang_selected, language)
+        }
+    }
+
+    private fun showSummaryLangPicker() {
+        val current = LANGS.indexOf(summaryLang)
+        AlertDialog.Builder(this)
+            .setTitle(R.string.native_detail_hint_summary_lang)
+            .setSingleChoiceItems(LANGS, current) { dialog, which ->
+                summaryLang = LANGS[which]
+                refreshSummaryLangButton()
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun refreshSummaryLangButton() {
+        val language = summaryLang
+        binding.nativeDetailSummaryLang.text = if (language == null) {
+            getString(R.string.native_detail_summary_lang_empty)
+        } else {
+            getString(R.string.native_detail_summary_lang_selected, language)
+        }
+    }
+
+    private fun showTemplatePicker() {
+        toast(getString(R.string.native_detail_template_loading))
+        templateBusiness.getTemplates(
+            deviceId,
+            BIZ_TYPE_AUDIO,
+            object : Business.ResultListener<String?> {
+                override fun onSuccess(
+                    response: BusinessResponse?,
+                    result: String?,
+                    errorMsg: String?
+                ) {
+                    runOnUi { showTemplateSheet(result.orEmpty()) }
+                }
+
+                override fun onFailure(
+                    response: BusinessResponse?,
+                    result: String?,
+                    errorMsg: String?
+                ) {
+                    runOnUi { toast(getString(R.string.native_detail_template_load_failed)) }
+                }
+            })
+    }
+
+    private fun showTemplateSheet(payload: String) {
+        val groups = parseTemplateGroups(payload)
+        if (groups.isNullOrEmpty()) {
+            toast(getString(R.string.native_detail_template_load_failed))
+            return
+        }
+
+        maybeSelectDefaultTemplate(groups)
+        val dialog = BottomSheetDialog(this)
+        val binding = DialogNativeTemplateSheetBinding.inflate(layoutInflater)
+        binding.nativeTemplateClose.setOnClickListener { dialog.dismiss() }
+        groups.forEach { group ->
+            val groupObj = group as? JSONObject ?: return@forEach
+            val templates = groupObj.getJSONArray("templates") ?: return@forEach
+            if (templates.isEmpty()) return@forEach
+            binding.nativeTemplateContainer.addView(createTemplateGroupHeader(groupObj))
+            binding.nativeTemplateContainer.addView(createTemplateGrid(dialog, templates))
+        }
+        dialog.setContentView(binding.root)
+        dialog.show()
+    }
+
+    private fun parseTemplateGroups(payload: String): JSONArray? {
+        val direct = runCatching { JSONObject.parseArray(payload) }.getOrNull()
+        if (!direct.isNullOrEmpty()) return direct
+        return runCatching {
+            JSONObject.parseObject(payload).getJSONArray("result")
+        }.getOrNull()
+    }
+
+    private fun maybeSelectDefaultTemplate(groups: JSONArray) {
+        if (!TextUtils.isEmpty(templateId)) return
+        val defaultTemplate = groups.asSequence()
+            .filterIsInstance<JSONObject>()
+            .mapNotNull { it.getJSONArray("templates") }
+            .flatMap { it.asSequence().filterIsInstance<JSONObject>() }
+            .firstOrNull { it.getString("templateCode") == "firstRecommend" }
+            ?: groups.asSequence()
+                .filterIsInstance<JSONObject>()
+                .mapNotNull { it.getJSONArray("templates") }
+                .flatMap { it.asSequence().filterIsInstance<JSONObject>() }
+                .firstOrNull()
+        if (defaultTemplate != null) {
+            templateId = defaultTemplate.getString("id")
+            templateName = defaultTemplate.getString("templateName")
+        }
+        refreshTemplateButton()
+    }
+
+    private fun isSameTemplate(template: JSONObject): Boolean {
+        return templateId == template.getString("id")
+    }
+
+    private fun refreshTemplateButton() {
+        val name = templateName
+        binding.nativeDetailTemplate.text = if (name == null) {
+            getString(R.string.native_detail_template_empty)
+        } else {
+            getString(R.string.native_detail_template_selected, name)
+        }
+    }
+
+    private fun createTemplateGroupHeader(group: JSONObject): View {
+        return TextView(this).apply {
+            text = group.getString("nodeName")
+            textSize = 12f
+            setTextColor(getColor(R.color.ai_voice_text_secondary))
+            setPadding(0, 6, 0, 6)
+        }
+    }
+
+    private fun createTemplateGrid(
+        dialog: BottomSheetDialog,
+        templates: JSONArray
+    ): GridLayout {
+        val grid = GridLayout(this).apply {
+            columnCount = 2
+            useDefaultMargins = false
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+        templates.forEach { item ->
+            val template = item as? JSONObject ?: return@forEach
+            val card = createTemplateCard(dialog, template, isSameTemplate(template))
+            val params = GridLayout.LayoutParams(
+                GridLayout.spec(GridLayout.UNDEFINED),
+                GridLayout.spec(GridLayout.UNDEFINED, GridLayout.FILL, 1f)
+            )
+            params.width = 0
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT
+            val margin = (6 * resources.displayMetrics.density).toInt()
+            params.setMargins(margin, margin, margin, margin)
+            grid.addView(card, params)
+        }
+        return grid
+    }
+
+    private fun createTemplateCard(
+        dialog: BottomSheetDialog,
+        template: JSONObject,
+        isSelected: Boolean
+    ): View {
+        val row = ItemNativeTemplateCardBinding.inflate(layoutInflater)
+        row.root.isSelected = isSelected
+        row.nativeTemplateSelected.visibility = if (isSelected) View.VISIBLE else View.GONE
+        Glide.with(this@NativeRecordDetailActivity)
+            .load(template.getString("icon"))
+            .placeholder(R.drawable.ic_ai_note)
+            .error(R.drawable.ic_ai_note)
+            .into(row.nativeTemplateIcon)
+        row.nativeTemplateName.text = template.getString("templateName")
+        row.nativeTemplateDesc.text = template.getString("templateDesc")
+        row.root.setOnClickListener {
+            templateId = template.getString("id")
+            templateName = template.getString("templateName")
+            refreshTemplateButton()
+            dialog.dismiss()
+        }
+        return row.root
     }
 
     // ===================== 转写 / 总结正文 =====================
@@ -510,6 +829,7 @@ class NativeRecordDetailActivity : NativeDemoBaseActivity() {
         }
         realtimeSentences.addAll(result.filterNotNull())
         binding.nativeDetailTransferText.setText(buildRealtimeText(result.filterNotNull()))
+        hideUploadNotice()
     }
 
     /**
@@ -595,7 +915,7 @@ class NativeRecordDetailActivity : NativeDemoBaseActivity() {
      */
     private fun syncTitleToSummary(newName: String?) {
         currentName = newName
-        binding.nativeDetailName.setText(newName)
+        setTitleText(newName)
 
         val payload = writeSummaryTitle(rawSummaryJson, newName)
         if (payload == null || recordTransferId <= 0) {
@@ -787,7 +1107,7 @@ class NativeRecordDetailActivity : NativeDemoBaseActivity() {
                 override fun onSuccess() {
                     runOnUi {
                         currentName = title
-                        binding.nativeDetailName.setText(title)
+                        setTitleText(title)
                         renameOnCloud(title)
                     }
                 }
@@ -1096,6 +1416,9 @@ class NativeRecordDetailActivity : NativeDemoBaseActivity() {
                         // 原始数组单独留一份，编辑保存时以它为模板
                         originRecognizeList = parseTranscriptArray(text ?: "")
                         binding.nativeDetailTransferText.setText(parseTranscript(text ?: "", durationMs))
+                        if (!originRecognizeList.isNullOrEmpty()) {
+                            hideUploadNotice()
+                        }
                     }
                 }
 
@@ -1151,16 +1474,16 @@ class NativeRecordDetailActivity : NativeDemoBaseActivity() {
             toast(getString(R.string.native_detail_toast_no_record_id))
             return
         }
-        if (summaryStatus == SUMMARY_RUNNING) {
-            toast(getString(R.string.native_detail_toast_summary_running))
-            return
-        }
-        if (transferStatus == TRANSFER_NOT_STARTED) {
-            toast(getString(R.string.native_detail_toast_downgrade))
-            requestGenerate(TASK_TRANSCRIPTION)
-            return
-        }
-        requestGenerate(TASK_SUMMARY)
+//        if (summaryStatus == SUMMARY_RUNNING) {
+//            toast(getString(R.string.native_detail_toast_summary_running))
+//            return
+//        }
+//        if (transferStatus == TRANSFER_NOT_STARTED) {
+//            toast(getString(R.string.native_detail_toast_downgrade))
+//            requestGenerate(TASK_TRANSCRIPTION)
+//            return
+//        }
+        requestGenerate(2)
     }
 
     /**
@@ -1178,15 +1501,16 @@ class NativeRecordDetailActivity : NativeDemoBaseActivity() {
             getString(R.string.native_detail_task_transcription)
         else
             getString(R.string.native_detail_task_summary)
-        // 三个可选参数：模板留空即用默认；总结语言留空即跟随转写语言；说话人分离按需开
-        val template = binding.nativeDetailTemplate.getText().toString().trim { it <= ' ' }
-        val summaryLang = binding.nativeDetailSummaryLang.getText().toString().trim { it <= ' ' }
+        // 转写时 transLang 非空则同时翻译；总结依赖已有转写结果。
+        val template = templateId
         val enableSpeaker = binding.nativeDetailEnableSpeaker.isChecked()
+        val translateLang = if (taskType == TASK_TRANSCRIPTION) translateLang else null
 
         // 构造顺序：(fileId, template, transferType, audioLang, transLang, summaryLang, enableSpeaker)
         val param = TranscribeParam(
-            recordTransferId, template, taskType, lang, null,
-            if (TextUtils.isEmpty(summaryLang)) null else summaryLang, enableSpeaker
+            recordTransferId, template, taskType, lang,
+            if (TextUtils.isEmpty(translateLang)) null else translateLang,
+            summaryLang, enableSpeaker
         )
         manager.processRecordTransferResult(param, object : IResultCallback {
             override fun onSuccess() {
@@ -1588,12 +1912,23 @@ class NativeRecordDetailActivity : NativeDemoBaseActivity() {
         /** 已转写。  */
         private const val TRANSFER_DONE = 2
 
+        /** 转写失败。  */
+        private const val TRANSFER_FAILED = 3
+
         // ===== RecordTransferResultBean.summary =====
         /** 总结中。  */
         private const val SUMMARY_RUNNING = 2
 
         /** 已总结。  */
         private const val SUMMARY_DONE = 3
+
+        /** 总结失败。  */
+        private const val SUMMARY_FAILED = 4
+
+        private val LANGS = arrayOf("zh", "en", "de", "ja", "ko", "fr", "es")
+
+        /** 总结模板推荐接口的业务类型。 */
+        private const val BIZ_TYPE_AUDIO = "audio"
 
         // ===== RecordTransferResultBean.transferType =====
         /** 实时转写。  */

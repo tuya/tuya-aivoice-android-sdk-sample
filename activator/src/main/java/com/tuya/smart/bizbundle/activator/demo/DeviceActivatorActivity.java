@@ -24,6 +24,8 @@ public class DeviceActivatorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_activator);
         infoEt = findViewById(R.id.et_info);
+
+        registerListener();
     }
 
     @SuppressLint("HandlerLeak")
@@ -41,7 +43,13 @@ public class DeviceActivatorActivity extends AppCompatActivity {
 
     public void actionConfig(View view) {
         ThingDeviceActivatorManager.INSTANCE.startDeviceActiveAction(this);
+    }
 
+    public void actionScan(View view){
+        ScanManager.INSTANCE.openScan(this);
+    }
+
+    private void registerListener() {
         ThingDeviceActivatorManager.INSTANCE.addListener(new IThingDeviceActiveListener() {
             @Override
             public void onDevicesAdd(List<String> list) {
@@ -69,7 +77,4 @@ public class DeviceActivatorActivity extends AppCompatActivity {
         });
     }
 
-    public void actionScan(View view){
-        ScanManager.INSTANCE.openScan(this);
-    }
 }

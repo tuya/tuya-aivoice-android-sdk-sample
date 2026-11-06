@@ -30,14 +30,13 @@ ThingAudioDetectManagerNative manager = ThingAudioDetectManagerNative.getInstanc
 | 模块 | 文档 | Demo 页面 |
 |---|---|---|
 | 1 · 录音控制与设备能力 | [module-01](./module-01-record-control.md) | `NativeRecordActivity` |
-| 2 · 转写 / 总结 | [module-02](./module-02-transcribe-summary.md) | `NativeRecordDetailActivity` |
-| 3 · 文件管理 | [module-03](./module-03-file-management.md) | `NativeRecordListActivity` |
+| 2 / 3 · 文件管理与转写详情 | [module-02](./module-02-transcribe-summary.md) · [module-03](./module-03-file-management.md) | `NativeRecordListActivity` → `NativeRecordDetailActivity` |
 | 4 · 离线文件传输 | [module-04](./module-04-offline-transfer.md) | `NativeOfflineFileActivity` |
 | 5 · 音频导入 | [module-05](./module-05-audio-import.md) | `NativeAudioImportActivity` |
 | 6 · 云同步 | [module-06](./module-06-cloud-sync.md) | `NativeCloudSyncActivity` |
 | 8 · 合并录音 | [module-08](./module-08-merge-record.md) | `NativeMergeRecordActivity` |
 | 9 · 分享 / 悬浮球 / 快捷入口 | [module-09](./module-09-share-and-entry.md) | `NativeQuickEntryActivity`、`NativeRecordActionSheet` |
-| 10 · 文本翻译 | [module-10](./module-10-text-translation.md) | 不实现 |
+| 10 · 文本翻译 | [module-10](./module-10-text-translation.md) | Demo 入口不展示 |
 | 12 · 文件夹管理 | [module-12](./module-12-folder-management.md) | 暂未实现 |
 
 > **模块 7（设备 / 通道 / 流控）** 只有一个真实接口 `getEarPhoneBTConntectedStatus`，
@@ -162,7 +161,7 @@ SDK 把该跳哪里告诉 App，由 App 自行 `startActivity`。
 | `NativeInjectBatchActivity` | 灌流批量测试与 WER 评测，见 [灌流调试工具指南](../inject-tool-guide.md) |
 | `NativeRecordActivity` | 模块 1 · 录音控制 |
 | `NativeFaceToFaceActivity` | 模块 1 · 对话翻译；TTS 设置与回放见 [面对面翻译 TTS 示例](../samples/face-to-face-tts-playback.md) |
-| `NativeRecordListActivity` / `NativeRecordListAdapter` | 模块 3 · 列表、搜索、空间统计 |
+| `NativeRecordListActivity` / `NativeRecordListAdapter` | 模块 3 · 列表、搜索、空间统计；点击进入模块 2 详情 |
 | `NativeRecordDetailActivity` | 模块 2 · 转写 / 总结，兼模块 3 详情 |
 | `NativeRecordActionSheet` | 模块 3 重命名 / 标签 / 删除，模块 9 分享，模块 6 按需下载 |
 | `NativeOfflineFileActivity` | 模块 4 · 离线文件传输 |
@@ -172,6 +171,7 @@ SDK 把该跳哪里告诉 App，由 App 自行 `startActivity`。
 | `NativeQuickEntryActivity` | 模块 9 · 快捷入口 |
 | `business/CloudSyncSwitchBusiness` | atop：云同步开关写入 |
 | `business/AudioContentBusiness` | atop：文件重命名、已读状态写云端 |
+| `business/SummaryTemplateBusiness` | atop：总结模板推荐 |
 
 ### 有几件事 SDK 不管
 
@@ -182,6 +182,7 @@ SDK 把该跳哪里告诉 App，由 App 自行 `startActivity`。
 | 云同步开关写入 | `m.wearable.sync.switch.save` | 全量提交，见[模块 6](./module-06-cloud-sync.md) |
 | 文件重命名（云端） | `m.wearable.audio.record.add` | SDK 只写本地，见[模块 3](./module-03-file-management.md) |
 | 已读状态（云端） | `m.wearable.audio.record.read.update` | 同上 |
+| 总结模板推荐 | `m.wearable.summary.template.recommend.list.get` | 选择 `TranscribeParam.template` 前拉取，见[模块 2](./module-02-transcribe-summary.md) |
 | 转写正文编辑（云端） | `m.wearable.audio.content.edit` | **Demo 未实现**，见[模块 2](./module-02-transcribe-summary.md) |
 | 总结正文编辑（云端） | `m.wearable.audio.summary.edit` | 同上 |
 

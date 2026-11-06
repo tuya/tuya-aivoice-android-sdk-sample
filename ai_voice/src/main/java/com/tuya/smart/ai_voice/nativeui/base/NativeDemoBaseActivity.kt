@@ -153,6 +153,16 @@ abstract class NativeDemoBaseActivity : AppCompatActivity() {
         binding.tvTitle.setText(resId)
     }
 
+    protected fun setTitleText(text: CharSequence?) {
+        binding.tvTitle.text = text ?: getString(titleResId)
+    }
+
+    /** 顶栏标题下方的补充信息；详情页用它展示时长和录音时间。 */
+    protected fun setTitleSubtitle(text: CharSequence?) {
+        binding.tvSubtitle.text = text ?: ""
+        binding.tvSubtitle.visibility = if (text.isNullOrEmpty()) View.GONE else View.VISIBLE
+    }
+
     /** @return 顶栏返回键，子类需要接管返回行为时重新绑点击事件  */
     protected fun topBarBackView(): View = binding.ivBack
 

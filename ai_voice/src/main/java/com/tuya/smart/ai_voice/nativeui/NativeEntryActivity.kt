@@ -30,13 +30,8 @@ import com.tuya.smart.ai_voice.nativeui.widget.InjectEndDispatcher.Companion.get
  * 本页与其余演示页一样是 `exported="false"`：这是一组调试页，
  * 没有理由允许其它应用拉起。**接入方的正式包中请移除对本组件的依赖。**
  * 
- * <h3>进不去的两个模块</h3>
- * 
- *  * 模块 2 转写 / 总结 —— [NativeRecordDetailActivity] 必须带
- * `EXTRA_RECORD_ID`，只能从文件管理页点进某条录音
- *  * 模块 10 文本翻译 —— 属于 AI Translate 业务（`businessType=1`），本 Demo 不实现
- * 
- * 这两条以置灰形式保留在清单里：不列出来会让人误以为 SDK 不支持。
+ * 模块 2 详情必须带 `EXTRA_RECORD_ID`，与模块 3 文件管理合并为一个入口展示。
+ * 模块 10 属于 AI Translate 业务，本 Demo 不实现，不在入口页展示。
  */
 class NativeEntryActivity : NativeDemoBaseActivity() {
     /** 内容布局绑定。  */
@@ -177,12 +172,6 @@ class NativeEntryActivity : NativeDemoBaseActivity() {
                 NativeRecordActivity::class.java
             ),
             Entry(
-                R.string.native_api_entry_detail_title,
-                R.string.native_api_entry_detail_desc,
-                R.string.native_api_entry_detail_api,
-                null
-            ),
-            Entry(
                 R.string.native_api_entry_file_title,
                 R.string.native_api_entry_file_desc,
                 R.string.native_api_entry_file_api,
@@ -217,12 +206,6 @@ class NativeEntryActivity : NativeDemoBaseActivity() {
                 R.string.native_api_entry_quick_desc,
                 R.string.native_api_entry_quick_api,
                 NativeQuickEntryActivity::class.java
-            ),
-            Entry(
-                R.string.native_api_entry_translate_title,
-                R.string.native_api_entry_translate_desc,
-                R.string.native_api_entry_translate_api,
-                null
             ),
             Entry(
                 R.string.native_api_entry_inject_title,

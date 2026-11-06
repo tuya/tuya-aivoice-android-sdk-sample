@@ -14,6 +14,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.thingclips.smart.ai.audio.sync.api.DownloadListener
+import com.thingclips.smart.ai.audio.sync.api.UploadListener
+import com.thingclips.smart.ai.audio.sync.api.ttt.SyncObserver
+import com.thingclips.smart.ai.db.entity.RecordFile
 import com.thingclips.smart.earphone.enhance.api.bean.AudioSearchMixItem
 import com.thingclips.smart.earphone.enhance.api.bean.AudioSearchMixParams
 import com.thingclips.smart.earphone.enhance.api.bean.FilesParam
@@ -78,6 +82,9 @@ class NativeRecordListActivity : NativeDemoBaseActivity() {
     /** 数据变更监听，用字段持有，remove 时传同一引用。  */
     private var updateCallback: IRecordFileUpdateCallback<MutableList<RecordUpdateInfo?>?>? = null
 
+    /** 音频下载结束监听，用来刷新本地占用。  */
+    private var syncObserver: SyncObserver? = null
+
     override val contentLayoutId: Int
         get() = R.layout.activity_native_record_list
 
@@ -97,13 +104,17 @@ class NativeRecordListActivity : NativeDemoBaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (firstRefreshDone) return
-        firstRefreshDone = true
-        // 首次进入主动触发一次下拉刷新（含云同步）。post 到下一帧：
-        // SwipeRefreshLayout 未完成 attach 时 setRefreshing(true) 不会显示刷新动画
-        binding.nativeListRefresh.post {
-            binding.nativeListRefresh.setRefreshing(true)
-            onPullToRefresh()
+        if (!firstRefreshDone) {
+            firstRefreshDone = true
+            // 首次进入主动触发一次下拉刷新（含云同步）。post 到下一帧：
+            // SwipeRefreshLayout 未完成 attach 时 setRefreshing(true) 不会显示刷新动画
+            binding.nativeListRefresh.post {
+                binding.nativeListRefresh.setRefreshing(true)
+                onPullToRefresh()
+            }
+        } else {
+            loadList()
+            loadAudioSize()
         }
     }
 
@@ -237,6 +248,7 @@ class NativeRecordListActivity : NativeDemoBaseActivity() {
                     // 只依赖该回调处理改/删；导入和合并的新增不触发它，
                     // 这些任务完成后靠回到本页的 onResume / 下拉刷新全量重拉
                     loadList()
+                    loadAudioSize()
                 }
             }
 
@@ -247,6 +259,7 @@ class NativeRecordListActivity : NativeDemoBaseActivity() {
                 // 本地数据可能大批变化，全量刷新
                 runOnUi {
                     loadList()
+                    loadAudioSize()
                 }
             }
 
@@ -260,12 +273,20 @@ class NativeRecordListActivity : NativeDemoBaseActivity() {
             }
         }
         updateCallback?.let { manager.addFileRecordUpdateListener(it) }
+
+        syncObserver = SyncObserver(AudioSizeDownloadListener(), NoopUploadListener())
+        syncObserver?.let { manager.addAudioSyncObserver(it) }
     }
 
     override fun unregisterListeners() {
         if (updateCallback != null) {
             updateCallback?.let { manager.removeFileRecordUpdateListener(it) }
             updateCallback = null
+        }
+
+        syncObserver?.let {
+            manager.removeAudioSyncObserver(it)
+            syncObserver = null
         }
     }
 
@@ -289,6 +310,7 @@ class NativeRecordListActivity : NativeDemoBaseActivity() {
     private fun onPullToRefresh() {
         syncNoteRecord()
         loadList()
+        loadAudioSize()
     }
 
     /**
@@ -448,6 +470,70 @@ class NativeRecordListActivity : NativeDemoBaseActivity() {
 
     private fun nullToDash(s: String?): String {
         return if (s.isNullOrEmpty()) "-" else s
+    }
+
+    private inner class AudioSizeDownloadListener : DownloadListener {
+        override fun onStart() {
+        }
+
+        override fun onPause() {
+        }
+
+        override fun downloading(
+            recordFile: RecordFile,
+            downloadedBytes: Long,
+            totalBytes: Long,
+            progressPercent: Int
+        ) {
+        }
+
+        override fun downloadSuccess(recordFile: RecordFile) {
+        }
+
+        override fun downloadError(recordFile: RecordFile, errorCode: String, errorMsg: String) {
+        }
+
+        override fun downloadErrorBatch(
+            recordFiles: List<RecordFile>,
+            errorCode: Int,
+            errorMsg: String
+        ) {
+        }
+
+        override fun onFinish(
+            succeedRecords: List<RecordFile>,
+            failedRecords: List<RecordFile>
+        ) {
+            if (succeedRecords.isNotEmpty()) {
+                runOnUi { loadAudioSize() }
+            }
+        }
+    }
+
+    private class NoopUploadListener : UploadListener {
+        override fun onStart() {
+        }
+
+        override fun onPause() {
+        }
+
+        override fun uploading(recordFile: RecordFile, progress: Int) {
+        }
+
+        override fun uploadSuccess(recordFile: RecordFile) {
+        }
+
+        override fun uploadError(recordFile: RecordFile, errorCode: String, errorMsg: String) {
+        }
+
+        override fun onFinish(
+            succeedRecords: List<RecordFile>,
+            failedRecords: List<RecordFile>
+        ) {
+        }
+
+        override fun onError(errorCode: Int?, errorMsg: String?) {
+        }
     }
 
     // ===================== 空间统计 =====================
