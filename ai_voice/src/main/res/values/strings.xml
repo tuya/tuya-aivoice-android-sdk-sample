@@ -55,10 +55,12 @@
     <string name="native_transfer_1">转写中</string>
     <string name="native_transfer_2">转写完成</string>
     <string name="native_transfer_3">转写失败</string>
+    <string name="native_list_transfer_failed">失败</string>
     <string name="native_summary_1">未总结</string>
     <string name="native_summary_2">总结中</string>
     <string name="native_summary_3">总结完成</string>
     <string name="native_summary_4">总结失败</string>
+    <string name="native_list_summary_failed">失败</string>
     <string name="native_list_empty">暂无录音文件</string>
     <string name="native_list_loading">加载中…</string>
     <string name="native_list_load_fail">加载失败，下拉重试</string>
@@ -72,8 +74,10 @@
     <!-- 模块 3 · 筛选 / 搜索 / 空间 / 删除语义 -->
     <string name="native_list_search_hint">搜索标题、标签、摘要、转写正文</string>
     <string name="native_list_search">搜索</string>
+    <string name="native_list_clear_search">清空搜索</string>
     <string name="native_list_search_empty">没有匹配的结果</string>
     <string name="native_list_search_result_title">搜索结果（%1$d 条）</string>
+    <string name="native_list_search_result_badge">搜索</string>
     <string name="native_list_filter_type_all">全部类型</string>
     <string name="native_list_filter_transfer_all">全部转写状态</string>
     <string name="native_list_order_record_time">按录音时间</string>
@@ -212,7 +216,7 @@
     <!-- 更多 Native 能力清单 -->
     <string name="native_entry_card">Native 能力</string>
     <string name="native_api_list_title">Native 能力</string>
-    <string name="native_api_list_hint">Native 演示页入口；置灰页面需从对应流程进入。</string>
+    <string name="native_api_entry_arrow">进入</string>
     <string name="native_api_entry_record_title">模块 1 · 录音控制与设备能力</string>
     <string name="native_api_entry_record_desc">一次录音的完整生命周期：开始 / 暂停 / 恢复 / 停止、录音中动态改参、切换收音通道，附带蓝牙连接状态与电量、信噪比</string>
     <string name="native_api_entry_record_api">startAudioRecording / pauseRecordTransfer / resumeRecordTransfer / stopRecordTransfer / updateParams</string>

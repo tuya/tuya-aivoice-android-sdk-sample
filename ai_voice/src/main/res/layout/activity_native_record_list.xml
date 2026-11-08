@@ -12,24 +12,40 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/bg_native_search"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="16dp">
+        android:paddingStart="14dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="4dp">
 
         <EditText
             android:id="@+id/et_search"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@color/ai_voice_action_bg"
+            android:background="@android:color/transparent"
             android:hint="@string/native_list_search_hint"
             android:imeOptions="actionSearch"
             android:importantForAutofill="no"
             android:inputType="text"
-            android:padding="10dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
             android:textSize="13sp" />
+
+        <ImageView
+            android:id="@+id/btn_clear_search"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/native_list_clear_search"
+            android:padding="8dp"
+            android:src="@drawable/ic_native_close"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/btn_search"
@@ -41,6 +57,16 @@
             android:paddingEnd="14dp"
             android:text="@string/native_list_search" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_audio_size"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="20dp"
+        android:textColor="@color/ai_voice_text_secondary"
+        android:textSize="11sp" />
 
     <!-- 筛选：FilesParam 的 recordType / transfer / remove / orderBy -->
     <LinearLayout
@@ -72,17 +98,6 @@
             android:layout_marginStart="6dp"
             android:layout_weight="1" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/tv_audio_size"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="end"
-        android:paddingStart="16dp"
-        android:paddingTop="6dp"
-        android:paddingEnd="16dp"
-        android:textColor="@color/ai_voice_text_secondary"
-        android:textSize="12sp" />
 
     <TextView
         android:id="@+id/native_list_tip"

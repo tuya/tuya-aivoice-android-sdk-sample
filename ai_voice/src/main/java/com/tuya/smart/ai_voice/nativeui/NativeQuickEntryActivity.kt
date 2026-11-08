@@ -29,7 +29,7 @@ import com.tuya.smart.ai_voice.nativeui.base.NativeDemoBaseActivity
  * 
  * 模块 9 的分享链接 `operateRecordShareLink` 不在本页——它是「对某条录音的操作」，
  * 放在 [NativeRecordDetailActivity] 的更多操作里。
- * 页面底部另附模块 7 的两个 no-op 接口，仅为接口对齐保留，Android 侧无实际行为。
+ * 模块 7 的两个 no-op 接口不在本页展示，接口说明见 `docs/modules/README.md`。
  */
 class NativeQuickEntryActivity : NativeDemoBaseActivity() {
     /** 内容布局绑定。  */
@@ -50,8 +50,6 @@ class NativeQuickEntryActivity : NativeDemoBaseActivity() {
     override fun onContentViewCreated() {
         binding = ActivityNativeQuickEntryBinding.bind(contentView())
         binding.btnQueryEntry.setOnClickListener(View.OnClickListener { v: View? -> queryEntryList() })
-        binding.btnEventLimit.setOnClickListener(View.OnClickListener { v: View? -> callEventLimit() })
-        binding.btnSetupChannel.setOnClickListener(View.OnClickListener { v: View? -> callSetupChannel() })
         queryEntryList()
     }
 
@@ -241,36 +239,6 @@ class NativeQuickEntryActivity : NativeDemoBaseActivity() {
         }
     }
 
-    // ===================== 模块 7 的两个 no-op 接口 =====================
-    /**
-     * 事件流控。**Native 版为 no-op**：不做任何节流，直接回 `onSuccess`，
-     * 仅为接口对齐而保留，原用于在页面不可见时降低事件频率。
-     */
-    private fun callEventLimit() {
-        manager.operateEventLimit(SAMPLE_EVENT_NAME, true, object : IResultCallback {
-            override fun onSuccess() {
-            }
-
-            override fun onError(code: String?, error: String?) {
-                toastError(code, error)
-            }
-        })
-    }
-
-    /**
-     * 建立原生通道。**Android 侧为 no-op**（仅 iOS 需要），直接回 `onSuccess`。
-     */
-    private fun callSetupChannel() {
-        manager.readyToSetupNativeChannel(object : IResultCallback {
-            override fun onSuccess() {
-            }
-
-            override fun onError(code: String?, error: String?) {
-                toastError(code, error)
-            }
-        })
-    }
-
     companion object {
         /** 快捷入口开启。  */
         private const val ENABLED = 1
@@ -289,7 +257,5 @@ class NativeQuickEntryActivity : NativeDemoBaseActivity() {
          */
         private const val CLICK_LOCK_MS = 800L
 
-        /** `operateEventLimit` 的示例事件名，仅用于演示调用，Native 侧不做流控。  */
-        private const val SAMPLE_EVENT_NAME = "onRecordStatusUpdate"
     }
 }

@@ -92,6 +92,9 @@ manager.operateRecordShareLink(recordId, Arrays.asList("link"), expireTime, 1, n
 > 这些组件需宿主 App 事先注册（AppWidget、Shortcut、QuickSettings Tile）。
 > 本 Demo 工程未注册任何此类组件，`getQuickEntryList` 返回空列表或全部「不显示添加」属正常。
 
+> 模块 7 的两个 no-op 接口不在本 Demo 快捷入口页展示；
+> 接口对齐说明见[总览 · 其他接口](./README.md#六其他接口)。
+
 ### 整体时序
 
 ```mermaid

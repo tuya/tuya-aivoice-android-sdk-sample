@@ -66,6 +66,18 @@
     <item name="android:textIsSelectable">true</item>
     </style>
 
+    <style name="NativeStateBlock">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:background">@drawable/bg_native_detail_card</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:textColor">@color/ai_voice_text_primary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:lineSpacingExtra">3dp</item>
+        <item name="android:textIsSelectable">true</item>
+    </style>
+
 
     <!-- 模式选择弹窗的行式条目（发起录音） -->
     <style name="NativeModePickerRow">

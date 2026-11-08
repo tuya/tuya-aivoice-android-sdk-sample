@@ -34,7 +34,7 @@
 
     <TextView
         android:id="@+id/tv_switch_status"
-        style="@style/NativeInfoBlock"
+        style="@style/NativeStateBlock"
         android:text="@string/native_cloud_switch_empty" />
 
     <Button
@@ -70,7 +70,7 @@
 
     <TextView
         android:id="@+id/tv_sync_status"
-        style="@style/NativeInfoBlock"
+        style="@style/NativeStateBlock"
         android:text="@string/native_cloud_sync_empty" />
 
     <Button

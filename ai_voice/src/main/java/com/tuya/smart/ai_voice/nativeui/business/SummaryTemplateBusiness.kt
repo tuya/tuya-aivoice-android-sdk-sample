@@ -3,7 +3,7 @@ package com.tuya.smart.ai_voice.nativeui.business
 import com.thingclips.smart.android.base.ApiParams
 import com.thingclips.smart.android.network.Business
 
-/** 拉取推荐总结模板。 */
+/** 拉取推荐总结模版。 */
 class SummaryTemplateBusiness : Business() {
     fun getTemplates(
         deviceId: String?,

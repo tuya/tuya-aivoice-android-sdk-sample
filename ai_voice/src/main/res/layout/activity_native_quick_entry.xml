@@ -20,21 +20,4 @@
         android:layout_height="wrap_content"
         android:orientation="vertical" />
 
-    <TextView
-        style="@style/NativeFieldLabel"
-        android:text="@string/native_quick_noop_section" />
-
-    <TextView
-        style="@style/NativeSectionHint"
-        android:text="@string/native_quick_noop_hint" />
-
-    <Button
-        android:id="@+id/btn_event_limit"
-        style="@style/NativeActionButton"
-        android:text="@string/native_quick_btn_event_limit" />
-
-    <Button
-        android:id="@+id/btn_setup_channel"
-        style="@style/NativeActionButton"
-        android:text="@string/native_quick_btn_setup_channel" />
 </LinearLayout>

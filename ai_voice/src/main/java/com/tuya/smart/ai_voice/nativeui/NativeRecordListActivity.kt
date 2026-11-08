@@ -2,9 +2,9 @@ package com.tuya.smart.ai_voice.nativeui
 
 import android.content.DialogInterface
 import android.content.Intent
-import android.text.Html
 import android.text.TextUtils
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.EditText
@@ -39,7 +39,8 @@ import java.util.Locale
  * 
  *  * 列表 —— `getRecordTransferResultList`，`pageSize` 传 `null` 一次查全部
  *  * 筛选 —— `FilesParam` 的 `recordType` / `transfer` / `orderBy`
- *  * 搜索 —— `searchRecordTransferResult`，命中片段带 `<em>` 标记，需转成富文本高亮
+ *  * 搜索 —— `searchRecordTransferResult` 只用于定位命中 `recordId`；
+ * 再用 `getRecordTransferResultList` 回查原始记录，列表仍按普通录音条目渲染
  *  * 空间统计 —— `getAudioFilesSize`，返回本地音频占用字节数
  *  * 标签 —— `RecordTransferResultBean.tags`，只读展示，最多 3 个、其余折叠为 +N
  *  * 数据变更 —— [IRecordFileUpdateCallback] 的四个回调，分别对应局部刷新与全量刷新
@@ -125,7 +126,19 @@ class NativeRecordListActivity : NativeDemoBaseActivity() {
         binding.nativeListRefresh.setOnRefreshListener { this.onPullToRefresh() }
 
         binding.btnSearch.setOnClickListener { search() }
-
+        binding.etSearch.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                hideSearchKeyboard()
+                search()
+                true
+            } else {
+                false
+            }
+        }
+        binding.btnClearSearch.setOnClickListener {
+            binding.etSearch.setText("")
+            loadList()
+        }
         // 点击 → 详情页。传 recordId，详情页据其取详情并拿到 recordTransferId
         adapter.setOnItemClickListener { bean ->
             if (bean == null || TextUtils.isEmpty(bean.recordId)) {
@@ -140,6 +153,11 @@ class NativeRecordListActivity : NativeDemoBaseActivity() {
         adapter.setOnItemLongClickListener { item ->
             this.showDeleteOptions(item)
         }
+    }
+
+    private fun hideSearchKeyboard() {
+        val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(binding.etSearch.windowToken, 0)
     }
 
     // ===================== 筛选 =====================
@@ -416,8 +434,8 @@ class NativeRecordListActivity : NativeDemoBaseActivity() {
      * 关键词搜索，跨标题 / 标签 / 摘要 / 转写正文。
      * 
      * 
-     * 返回的 `title` / `summary` / `content` 中，命中部分被
-     * `<em>` 包裹，需按富文本渲染才能看到高亮；此处以弹窗形式展示结果。
+     * 命中片段不参与列表展示：Demo 只取 `recordId`，
+     * 再回查原始记录，保证搜索结果与普通列表样式、状态和操作完全一致。
      */
     private fun search() {
         val keyword = binding.etSearch.getText().toString().trim { it <= ' ' }
@@ -433,7 +451,9 @@ class NativeRecordListActivity : NativeDemoBaseActivity() {
             param,
             object : IRecordCallBack<ArrayList<AudioSearchMixItem>?> {
             override fun onSuccess(result: ArrayList<AudioSearchMixItem>?) {
-                    runOnUi { showSearchResult(result) }
+            runOnUi {
+                showSearchResult(result)
+            }
                 }
 
                 override fun onError(code: String?, error: String?) {
@@ -446,26 +466,53 @@ class NativeRecordListActivity : NativeDemoBaseActivity() {
 
     private fun showSearchResult(result: MutableList<AudioSearchMixItem>?) {
         if (result == null || result.isEmpty()) {
-            toast(getString(R.string.native_list_search_empty))
+            showTip(getString(R.string.native_list_search_empty), false)
             return
         }
-        val sb = StringBuilder()
-        for (item in result) {
-            sb.append("<b>").append(nullToDash(item.title)).append("</b><br/>")
-            if (!TextUtils.isEmpty(item.summary)) {
-                sb.append(item.summary).append("<br/>")
-            }
-            if (!TextUtils.isEmpty(item.content)) {
-                sb.append(item.content).append("<br/>")
-            }
-            sb.append("<br/>")
+        val recordIds = result.mapNotNull { it.recordId }.filter { it.isNotEmpty() }
+        if (recordIds.isEmpty()) {
+            adapter.submitList(mutableListOf())
+            showTip(getString(R.string.native_list_search_empty), false)
+            return
         }
-        // <em> 是接口约定的高亮标记，交给 Html 解析成斜体富文本
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.native_list_search_result_title, result.size))
-            .setMessage(Html.fromHtml(sb.toString(), Html.FROM_HTML_MODE_COMPACT))
-            .setPositiveButton(R.string.native_list_delete_cancel, null)
-            .show()
+        loadRecords(recordIds)
+    }
+
+    private fun loadRecords(recordIds: List<String>) {
+        manager.getRecordTransferResultList(
+            FilesParam(
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                ORDER_BY_RECORD_TIME,
+                ORDER_DESC,
+                null,
+                null
+            ),
+            object : IRecordCallBack<MutableList<RecordTransferResultBean?>?> {
+                override fun onSuccess(list: MutableList<RecordTransferResultBean?>?) {
+                    runOnUi {
+                        val recordIdSet = recordIds.toSet()
+                        val records = list?.filter { it != null && recordIdSet.contains(it.recordId) }
+                        adapter.submitList(records?.toMutableList())
+                        if (records.isNullOrEmpty()) {
+                            showTip(getString(R.string.native_list_search_empty), false)
+                        } else {
+                            showTip(null, true)
+                        }
+                    }
+                }
+
+                override fun onError(code: String?, error: String?) {
+                    runOnUi {
+                        adapter.submitList(mutableListOf())
+                        showTip(getString(R.string.native_list_search_empty), false)
+                    }
+                }
+            })
     }
 
     private fun nullToDash(s: String?): String {

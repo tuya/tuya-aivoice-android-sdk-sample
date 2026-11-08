@@ -27,7 +27,7 @@
 
     <TextView
         android:id="@+id/tv_status"
-        style="@style/NativeInfoBlock"
+        style="@style/NativeStateBlock"
         android:text="@string/native_offline_status_empty" />
 
     <!-- 步骤 2：发起 / 续传 -->
@@ -43,7 +43,7 @@
 
     <TextView
         android:id="@+id/tv_channel"
-        style="@style/NativeInfoBlock"
+        style="@style/NativeStateBlock"
         android:text="@string/native_offline_channel_ble" />
 
     <LinearLayout
@@ -69,6 +69,6 @@
 
     <TextView
         android:id="@+id/tv_progress"
-        style="@style/NativeInfoBlock"
+        style="@style/NativeStateBlock"
         android:text="@string/native_offline_progress_empty" />
 </LinearLayout>

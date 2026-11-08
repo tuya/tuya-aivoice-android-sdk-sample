@@ -58,7 +58,9 @@ sequenceDiagram
 
     Note over List: 搜索
     List->>SDK: searchRecordTransferResult(AudioSearchMixParams)
-    SDK-->>List: 命中列表，片段含 em 高亮标记
+    SDK-->>List: 命中 recordId 列表
+    List->>SDK: getRecordTransferResultList 回查原始记录
+    SDK-->>List: 原始 RecordTransferResultBean 列表
 
     Note over List: 点击条目
     List->>Detail: 传 recordId
@@ -198,6 +200,10 @@ void updateRecordTransferResult(long recordTransferId, String name, Integer stat
 | 参数 | 类型 | 必填 | 说明 |
 |---|---|---|---|
 | `callback` | `IRecordCallBack<Integer>` | 否 | 返回**字节数**，展示时需自行换算 |
+
+> ⚠️ 当前 SDK 只统计**已同步且有本地文件**的记录；本地文件已存在但未上传 / 未下载的记录不计入。
+> 返回类型是 `Int`，总占用超过 `2GB` 时可能溢出，SDK 后续应改为 `Long`。
+> Demo 在进页 / 回页 / 下拉刷新 / 记录变更 / 音频下载完成后刷新。
 
 ---
 
@@ -376,7 +382,7 @@ manager.removeFileRecordUpdateListener(callback);
 
 ### `AudioSearchMixItem`
 
-搜索结果单条。
+搜索结果单条。Demo 只使用 `recordId` 回查原始录音，其余字段不参与列表渲染。
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
@@ -392,7 +398,8 @@ manager.removeFileRecordUpdateListener(callback);
 | `recordTime` | `long` | 录音时间（秒） |
 | `duration` | `long` | 录音时长（毫秒） |
 
-> `<em>` 是接口约定的高亮标记，需转成富文本渲染才能看到效果。
+> `<em>` 是接口约定的高亮标记。如果接入方需要展示命中片段，需自行转成富文本；
+> Demo 当前只用 `recordId` 回查原始记录，保持普通列表样式。
 
 ### `UpdateRecordTagResultParams`
 

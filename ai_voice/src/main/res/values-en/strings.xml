@@ -55,10 +55,12 @@
     <string name="native_transfer_1">Transcribing</string>
     <string name="native_transfer_2">Transcription completed</string>
     <string name="native_transfer_3">Transcribe failed</string>
+    <string name="native_list_transfer_failed">Failed</string>
     <string name="native_summary_1">No summary</string>
     <string name="native_summary_2">Summarizing</string>
     <string name="native_summary_3">Summary completed</string>
     <string name="native_summary_4">Summary failed</string>
+    <string name="native_list_summary_failed">Failed</string>
     <string name="native_list_empty">No recordings</string>
     <string name="native_list_loading">Loading…</string>
     <string name="native_list_load_fail">Load failed, pull down to retry</string>
@@ -136,8 +138,10 @@
     <!-- Module 3 · filter / search / storage / delete semantics -->
     <string name="native_list_search_hint">Search titles, tags, summaries, transcripts</string>
     <string name="native_list_search">Search</string>
+    <string name="native_list_clear_search">Clear search</string>
     <string name="native_list_search_empty">No matching results</string>
     <string name="native_list_search_result_title">Search results (%1$d)</string>
+    <string name="native_list_search_result_badge">Search</string>
     <string name="native_list_filter_type_all">All types</string>
     <string name="native_list_filter_transfer_all">All transcription states</string>
     <string name="native_list_order_record_time">By record time</string>
@@ -212,7 +216,7 @@
     <!-- More Native capabilities -->
     <string name="native_entry_card">Native Capabilities</string>
     <string name="native_api_list_title">Native Capabilities</string>
-    <string name="native_api_list_hint">Native demo entry; greyed-out pages open from related flows.</string>
+    <string name="native_api_entry_arrow">Open</string>
     <string name="native_api_entry_record_title">Module 1 · Recording control and device ability</string>
     <string name="native_api_entry_record_desc">A full recording lifecycle: start / pause / resume / stop, changing params while recording, switching the capture channel, plus Bluetooth state, battery and SNR</string>
     <string name="native_api_entry_record_api">startAudioRecording / pauseRecordTransfer / resumeRecordTransfer / stopRecordTransfer / updateParams</string>

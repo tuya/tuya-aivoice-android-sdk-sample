@@ -1927,7 +1927,7 @@ class NativeRecordDetailActivity : NativeDemoBaseActivity() {
 
         private val LANGS = arrayOf("zh", "en", "de", "ja", "ko", "fr", "es")
 
-        /** 总结模板推荐接口的业务类型。 */
+        /** 总结模版推荐接口的业务类型。 */
         private const val BIZ_TYPE_AUDIO = "audio"
 
         // ===== RecordTransferResultBean.transferType =====

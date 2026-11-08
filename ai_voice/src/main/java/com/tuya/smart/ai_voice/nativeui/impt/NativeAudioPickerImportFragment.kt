@@ -16,6 +16,12 @@ class NativeAudioPickerImportFragment : NativeAudioImportBaseFragment() {
         binding.btnCancelImport.setOnClickListener { cancelImport() }
         binding.btnRetryImport.setOnClickListener { retryImport() }
         binding.btnCancelRetry.setOnClickListener { cancelRetry() }
+        registerPrimaryActions(
+            binding.btnStartImport,
+            binding.btnCancelImport,
+            binding.btnRetryImport,
+            binding.btnCancelRetry
+        )
     }
 
     private fun startImport() {

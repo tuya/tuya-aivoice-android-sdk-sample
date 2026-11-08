@@ -28,6 +28,7 @@ abstract class NativeAudioImportBaseFragment : Fragment() {
     private lateinit var rootView: View
     private lateinit var statusView: TextView
     private lateinit var failedFilesView: TextView
+    private val actionButtons = mutableListOf<View>()
     protected var importing = false
     private var lastRenderedStatus = -1
     private var importStatusListener: IFileImportStatusListener? = null
@@ -84,6 +85,7 @@ abstract class NativeAudioImportBaseFragment : Fragment() {
             statusView.setText(R.string.native_import_status_empty)
             failedFilesView.setText(R.string.native_import_failed_empty)
             importing = false
+            refreshActionButtons()
             lastRenderedStatus = STATUS_NOT_STARTED
             return
         }
@@ -91,6 +93,7 @@ abstract class NativeAudioImportBaseFragment : Fragment() {
         val previousStatus = lastRenderedStatus
         lastRenderedStatus = status
         importing = status == STATUS_IMPORTING
+        refreshActionButtons()
 
         val total = event.totalFileCount ?: 0
         val success = event.successCount ?: 0
@@ -161,6 +164,16 @@ abstract class NativeAudioImportBaseFragment : Fragment() {
         if (isAdded) {
             Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
         }
+    }
+
+    protected fun registerPrimaryActions(vararg views: View) {
+        actionButtons.clear()
+        actionButtons.addAll(views)
+        refreshActionButtons()
+    }
+
+    private fun refreshActionButtons() {
+        actionButtons.forEach { it.isEnabled = !importing }
     }
 
     protected fun runOnUi(action: () -> Unit) {

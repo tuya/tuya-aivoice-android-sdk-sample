@@ -6,7 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.LinearLayout
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.thingclips.smart.earphone.enhance.api.bean.AudioSearchMixItem
 import com.google.android.material.chip.ChipGroup
 import com.thingclips.smart.earphone.enhance.api.bean.RecordTransferResultBean
 import com.tuya.smart.ai_voice.R
@@ -45,6 +48,10 @@ class NativeRecordListAdapter : RecyclerView.Adapter<NativeRecordListAdapter.Ite
             addAllNonNull(list)
         }
         notifyDataSetChanged()
+    }
+
+    fun submitSearchList(list: MutableList<RecordTransferResultBean?>?) {
+        submitList(list)
     }
 
     fun appendList(list: MutableList<RecordTransferResultBean?>?) {
@@ -97,10 +104,14 @@ class NativeRecordListAdapter : RecyclerView.Adapter<NativeRecordListAdapter.Ite
     }
 
     override fun onBindViewHolder(holder: ItemVh, position: Int) {
-        val b = data.get(position)
+        bindRecord(holder, data.get(position))
+    }
+
+    private fun bindRecord(holder: ItemVh, b: RecordTransferResultBean) {
         val ctx = holder.itemView.getContext()
         holder.name.setText(if (TextUtils.isEmpty(b.name)) ctx.getString(R.string.native_unnamed) else b.name)
         holder.transfer.setText(transferText(ctx, b.transfer))
+        refreshTransferBadge(holder.transfer, b.transfer)
         holder.type.setText(
             ctx.getString(
                 R.string.native_record_type_format,
@@ -111,6 +122,7 @@ class NativeRecordListAdapter : RecyclerView.Adapter<NativeRecordListAdapter.Ite
         holder.duration.setText(formatDuration(b.duration))
         holder.time.setText(if (b.recordTime == null) "" else dateFmt.format(Date(b.recordTime * 1000L)))
         holder.summary.setText(summaryText(ctx, b.summary))
+        refreshSummaryBadge(holder.summary, b.summary)
         holder.unread.setVisibility(if (isUnread(b.visit)) View.VISIBLE else View.GONE)
         // 标签只做扫读，超出 3 个折叠为 +N；无标签时整块隐藏
         bind(holder.tags, b.tags, RecordTagBinder.LIMIT_LIST)
@@ -169,6 +181,58 @@ class NativeRecordListAdapter : RecyclerView.Adapter<NativeRecordListAdapter.Ite
             3 -> return ctx.getString(R.string.native_summary_3)
             4 -> return ctx.getString(R.string.native_summary_4)
             else -> return ""
+        }
+    }
+
+    private fun refreshTransferBadge(view: TextView, status: Int?) {
+        val context = view.context
+        view.setTextColor(ContextCompat.getColor(context, statusColorRes(status)))
+        view.setBackgroundResource(statusBackgroundRes(status))
+    }
+
+    private fun refreshSummaryBadge(view: TextView, status: Int?) {
+        if (status == null || status <= 1) {
+            view.visibility = View.GONE
+            return
+        }
+        view.visibility = View.VISIBLE
+        val context = view.context
+        if (status == 2) {
+            view.setText(R.string.native_summary_2)
+        } else if (status == 3) {
+            view.setText(R.string.native_summary_3)
+        } else if (status == 4) {
+            view.setText(R.string.native_summary_4)
+        }
+        view.setTextColor(ContextCompat.getColor(context, statusColorRes(status - 1)))
+        view.setBackgroundResource(statusBackgroundRes(status - 1))
+    }
+
+    private fun statusColorRes(status: Int?): Int {
+        return when (status) {
+            1 -> R.color.ai_voice_tab_selected
+            2 -> R.color.ai_voice_card_green
+            3 -> R.color.ai_voice_logout_text
+            else -> R.color.ai_voice_text_secondary
+        }
+    }
+
+    private fun statusBackgroundRes(status: Int?): Int {
+        return when (status) {
+            1 -> R.drawable.bg_native_status_blue
+            2 -> R.drawable.bg_native_status_green
+            3 -> R.drawable.bg_native_status_red
+            else -> R.drawable.bg_native_status_gray
+        }
+    }
+
+    private fun typeIconRes(type: Int?): Int {
+        return when (type) {
+            0 -> R.drawable.ic_ai_phone
+            1 -> R.drawable.ic_ai_note
+            2, 3 -> R.drawable.ic_ai_dialog
+            4 -> R.drawable.ic_ai_globe
+            else -> R.drawable.ic_ai_mic
         }
     }
 

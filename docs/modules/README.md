@@ -171,7 +171,7 @@ SDK 把该跳哪里告诉 App，由 App 自行 `startActivity`。
 | `NativeQuickEntryActivity` | 模块 9 · 快捷入口 |
 | `business/CloudSyncSwitchBusiness` | atop：云同步开关写入 |
 | `business/AudioContentBusiness` | atop：文件重命名、已读状态写云端 |
-| `business/SummaryTemplateBusiness` | atop：总结模板推荐 |
+| `business/SummaryTemplateBusiness` | atop：总结模版推荐 |
 
 ### 有几件事 SDK 不管
 
@@ -182,7 +182,7 @@ SDK 把该跳哪里告诉 App，由 App 自行 `startActivity`。
 | 云同步开关写入 | `m.wearable.sync.switch.save` | 全量提交，见[模块 6](./module-06-cloud-sync.md) |
 | 文件重命名（云端） | `m.wearable.audio.record.add` | SDK 只写本地，见[模块 3](./module-03-file-management.md) |
 | 已读状态（云端） | `m.wearable.audio.record.read.update` | 同上 |
-| 总结模板推荐 | `m.wearable.summary.template.recommend.list.get` | 选择 `TranscribeParam.template` 前拉取，见[模块 2](./module-02-transcribe-summary.md) |
+| 总结模版推荐 | `m.wearable.summary.template.recommend.list.get` | 选择 `TranscribeParam.template` 前拉取，见[模块 2](./module-02-transcribe-summary.md) |
 | 转写正文编辑（云端） | `m.wearable.audio.content.edit` | **Demo 未实现**，见[模块 2](./module-02-transcribe-summary.md) |
 | 总结正文编辑（云端） | `m.wearable.audio.summary.edit` | 同上 |
 

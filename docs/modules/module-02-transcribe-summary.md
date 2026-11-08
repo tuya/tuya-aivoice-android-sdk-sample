@@ -3,7 +3,7 @@
 | 项 | 内容 |
 |---|---|
 | Demo 页面 | [`NativeRecordDetailActivity`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/NativeRecordDetailActivity.kt) |
-| 模板推荐业务 | [`SummaryTemplateBusiness`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/business/SummaryTemplateBusiness.kt) |
+| 模版推荐业务 | [`SummaryTemplateBusiness`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/business/SummaryTemplateBusiness.kt) |
 | 错误码映射 | [`RecordErrorCode`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/widget/RecordErrorCode.kt) |
 | 全局约定 | [接入指南](./README.md) |
 
@@ -32,7 +32,7 @@
 
 事件监听：`ITransferListener`（音频上传进度）、`IRecordFileUpdateCallback`（转写 / 总结状态变化，见[模块 3](./module-03-file-management.md#事件监听)）。
 
-云端能力：`SummaryTemplateBusiness`（拉取总结模板推荐，见[总结模板推荐](#总结模板推荐)）。
+云端能力：`SummaryTemplateBusiness`（拉取总结模版推荐，见[总结模版推荐](#总结模版推荐)）。
 
 ---
 
@@ -228,9 +228,9 @@ manager.removeTransferListener(listener);
 
 ---
 
-### 总结模板推荐 · `m.wearable.summary.template.recommend.list.get`
+### 总结模版推荐 · `m.wearable.summary.template.recommend.list.get`
 
-选择总结模板前先拉取模板列表。**这不是 SDK 方法**，Demo 封装在
+选择总结模版前先拉取模版列表。**这不是 SDK 方法**，Demo 封装在
 [`SummaryTemplateBusiness`](../../ai_voice/src/main/java/com/tuya/smart/ai_voice/nativeui/business/SummaryTemplateBusiness.kt)。
 
 | 请求字段 | 类型 | 必填 | 说明 |
@@ -240,7 +240,7 @@ manager.removeTransferListener(listener);
 
 请求要求登录态（`isSessionRequire = true`），接口版本为 `1.0`。
 
-返回的 `result` 是模板分组数组，`templates` 里的数字 `id` 就是
+返回的 `result` 是模版分组数组，`templates` 里的数字 `id` 就是
 [`TranscribeParam.template`](#transcribeparam) 需要的值：
 
 ```json
@@ -267,9 +267,9 @@ manager.removeTransferListener(listener);
 
 接入时注意：
 
-- 发起总结时传模板数字 `id`，**不要传 `templateCode` 或 `templateName`**
+- 发起总结时传模版数字 `id`，**不要传 `templateCode` 或 `templateName`**
 - `templateCode == "firstRecommend"` 表示推荐分组的「AI 智能匹配」，可作为默认选中项
-- 模板列表和 `TranscribeParam.template` 都是页面态配置，**不要持久化到 SDK**
+- 模版列表和 `TranscribeParam.template` 都是页面态配置，**不要持久化到 SDK**
 - Demo 已兼容两种响应形态：标准 `result` 包裹数组、直接返回分组裸数组
 
 ---
@@ -283,7 +283,7 @@ manager.removeTransferListener(listener);
 | 字段 | 类型 | 必填 | 说明 |
 |---|---|---|---|
 | `fileId` | `Long` | 是 | 文件 ID，即 `recordTransferId` |
-| `template` | `String` | 否 | **总结模板数字 `id`**，不是 `templateCode` / `templateName`。留空（`null`）用智能推荐 |
+| `template` | `String` | 否 | **总结模版数字 `id`**，不是 `templateCode` / `templateName`。留空（`null`）用智能推荐 |
 | `transferType` | `Integer` | 是 | **任务类型**，取值同 `TaskTypeDef`：`0` 转写 / `1` 总结 / `2` 翻译。别与 `RecordTransferResultBean.transferType`（转写模式）混淆，同名不同义 |
 | `audioLang` | `String` | 否 | ASR 语言，取录音的 `originalLanguage`；留空由底层判定 |
 | `transLang` | `String` | 否 | 翻译目标语言。`transferType=2` 时必填；`transferType=0` 时可一并设置，转写同时生成翻译 |

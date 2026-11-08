@@ -61,7 +61,7 @@
 
     <TextView
         android:id="@+id/tv_merge_status"
-        style="@style/NativeInfoBlock"
+        style="@style/NativeStateBlock"
         android:text="@string/native_merge_status_empty" />
 
     <Button

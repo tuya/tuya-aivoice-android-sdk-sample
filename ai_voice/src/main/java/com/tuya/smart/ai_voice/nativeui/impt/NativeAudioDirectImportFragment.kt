@@ -26,6 +26,7 @@ class NativeAudioDirectImportFragment : NativeAudioImportBaseFragment() {
         binding.btnCancelImport.setOnClickListener {
             manager.cancelImport(simpleCallback("cancelImport"))
         }
+        registerPrimaryActions(binding.btnDirectImport, binding.btnCancelImport)
     }
 
     override fun onImportCompleted(
